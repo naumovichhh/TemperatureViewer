@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TemperatureViewer.BackgroundServices;
 using TemperatureViewer.Data;
 
 namespace TemperatureViewer
@@ -43,6 +44,11 @@ namespace TemperatureViewer
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddSingleton<ISingletonProcessingService, TemperatureDataCollectingService>();
+                    services.AddHostedService<DefaultBackgroundService>();
                 });
     }
 }

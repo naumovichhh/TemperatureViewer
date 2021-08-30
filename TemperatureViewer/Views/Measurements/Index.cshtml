@@ -13,13 +13,13 @@
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.MeasurementTime)
+                <a asp-action="Index" asp-route-sortOrder="@ViewData["TimeSortParm"]">@Html.DisplayNameFor(model => model.MeasurementTime)</a>
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Temperature)
+                <a asp-action="Index" asp-route-sortOrder="@ViewData["TemperatureSortParm"]">@Html.DisplayNameFor(model => model.Temperature)</a>
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Termometer)
+                @Html.DisplayNameFor(model => model.Sensor)
             </th>
             <th></th>
         </tr>
@@ -34,7 +34,7 @@
                 @Html.DisplayFor(modelItem => item.Temperature)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Termometer.Id)
+                @Html.DisplayFor(modelItem => item.Sensor.Id)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |

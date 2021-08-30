@@ -20,10 +20,28 @@ namespace TemperatureViewer.Controllers
         }
 
         // GET: Measurements
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string sortOrder)
         {
-            var defaultContext = _context.Measurements.Include(m => m.Termometer);
-            return View(await defaultContext.ToListAsync());
+            ViewData["TimeSortParm"] = String.IsNullOrEmpty(sortOrder) ? "time_desc" : "";
+            ViewData["TemperatureSortParm"] = sortOrder == "temperature" ? "temperature_desc" : "temperature";
+            var measurements = from m in _context.Measurements
+                           select m;
+            switch (sortOrder)
+            {
+                case "time_desc":
+                    measurements = measurements.OrderByDescending(s => s.MeasurementTime);
+                    break;
+                case "temperature":
+                    measurements = measurements.OrderBy(s => s.Temperature);
+                    break;
+                case "temperature_desc":
+                    measurements = measurements.OrderByDescending(s => s.Temperature);
+                    break;
+                default:
+                    measurements = measurements.OrderBy(s => s.MeasurementTime);
+                    break;
+            }
+            return View(await measurements.AsNoTracking().ToListAsync());
         }
 
         // GET: Measurements/Details/5
@@ -35,7 +53,7 @@ namespace TemperatureViewer.Controllers
             }
 
             var measurement = await _context.Measurements
-                .Include(m => m.Termometer)
+                .Include(m => m.Sensor)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (measurement == null)
             {
@@ -48,7 +66,7 @@ namespace TemperatureViewer.Controllers
         // GET: Measurements/Create
         public IActionResult Create()
         {
-            ViewData["TermometerId"] = new SelectList(_context.Termometers, "Id", "Id");
+            ViewData["TermometerId"] = new SelectList(_context.Sensors, "Id", "Id");
             return View();
         }
 
@@ -65,7 +83,7 @@ namespace TemperatureViewer.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["TermometerId"] = new SelectList(_context.Termometers, "Id", "Id", measurement.TermometerId);
+            ViewData["TermometerId"] = new SelectList(_context.Sensors, "Id", "Id", measurement.SensorId);
             return View(measurement);
         }
 
@@ -82,7 +100,7 @@ namespace TemperatureViewer.Controllers
             {
                 return NotFound();
             }
-            ViewData["TermometerId"] = new SelectList(_context.Termometers, "Id", "Id", measurement.TermometerId);
+            ViewData["TermometerId"] = new SelectList(_context.Sensors, "Id", "Id", measurement.SensorId);
             return View(measurement);
         }
 
