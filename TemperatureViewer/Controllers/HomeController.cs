@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using TemperatureViewer.Data;
 using TemperatureViewer.Models;
 
 namespace TemperatureViewer.Controllers
@@ -12,10 +14,12 @@ namespace TemperatureViewer.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private DefaultContext _context;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, DefaultContext context)
         {
             _logger = logger;
+            _context = context;
         }
 
         public IActionResult Index()
@@ -32,6 +36,13 @@ namespace TemperatureViewer.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+        public void About()
+        {
+            IQueryable<MeasurementDateGroup> data = _context
+                .Measurements.AsNoTracking().GroupBy(m => m.MeasurementTime.Date)
+                .Select(k => new MeasurementDateGroup() { MeasurementsCount = k.Count(), MeasurementDate = k.Key });
         }
     }
 }

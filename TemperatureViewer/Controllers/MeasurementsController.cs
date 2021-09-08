@@ -20,12 +20,33 @@ namespace TemperatureViewer.Controllers
         }
 
         // GET: Measurements
-        public async Task<IActionResult> Index(string sortOrder)
+        public async Task<IActionResult> Index(
+            string sortOrder,
+            string currentFilter,
+            string searchString,
+            int? pageNumber)
         {
+            ViewData["CurrentSort"] = sortOrder;
             ViewData["TimeSortParm"] = String.IsNullOrEmpty(sortOrder) ? "time_desc" : "";
             ViewData["TemperatureSortParm"] = sortOrder == "temperature" ? "temperature_desc" : "temperature";
+
+            if (searchString != null)
+            {
+                pageNumber = 1;
+            }
+            else
+            {
+                searchString = currentFilter;
+            }
+
+            ViewData["CurrentFilter"] = searchString;
             var measurements = from m in _context.Measurements
                            select m;
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                measurements = measurements.Where(m => m.MeasurementTime.ToString().Contains(searchString));
+            }
+
             switch (sortOrder)
             {
                 case "time_desc":
@@ -41,7 +62,9 @@ namespace TemperatureViewer.Controllers
                     measurements = measurements.OrderBy(s => s.MeasurementTime);
                     break;
             }
-            return View(await measurements.AsNoTracking().ToListAsync());
+
+            int pageSize = 10;
+            return View(await PaginatedList<Measurement>.CreateAsync(measurements.AsNoTracking(), pageNumber ?? 1, pageSize));
         }
 
         // GET: Measurements/Details/5
