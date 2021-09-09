@@ -38,11 +38,17 @@ namespace TemperatureViewer.Controllers
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
-        public void About()
+        public async Task<IActionResult> About()
         {
-            IQueryable<MeasurementDateGroup> data = _context
-                .Measurements.AsNoTracking().GroupBy(m => m.MeasurementTime.Date)
-                .Select(k => new MeasurementDateGroup() { MeasurementsCount = k.Count(), MeasurementDate = k.Key });
+            IQueryable<MeasurementDateGroup> data =
+                from measurement in _context.Measurements
+                group measurement by measurement.MeasurementTime.Date into dateGroup
+                select new MeasurementDateGroup()
+                {
+                    MeasurementsCount = dateGroup.Count(),
+                    MeasurementDate = dateGroup.Key
+                };
+            return View(await data.AsNoTracking().ToListAsync());
         }
     }
 }
