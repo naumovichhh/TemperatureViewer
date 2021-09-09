@@ -1,0 +1,30 @@
+﻿@model IEnumerable<MeasurementDateGroup>
+
+@{
+    ViewData["Title"] = "Measurement Body Statistics";
+}
+
+<h2>Measurement Body Statistics</h2>
+
+<table>
+    <tr>
+        <th>
+            Measurement Date
+        </th>
+        <th>
+            Measurements
+        </th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.MeasurementDate)
+            </td>
+            <td>
+                @item.MeasurementsCount
+            </td>
+        </tr>
+    }
+</table>
