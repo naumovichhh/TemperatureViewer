@@ -19,7 +19,7 @@ namespace TemperatureViewer.Data
 
             Sensor[] termometers = new Sensor[]
             {
-                new Sensor() { Name = "Termometer1", Uri = "http://10.195.6.59/temp1.txt" }
+                new Sensor() { Name = "ОАСУП", Uri = "http://10.195.6.59/temp1.txt" }
             };
             context.Sensors.AddRange(termometers);
             context.SaveChanges();

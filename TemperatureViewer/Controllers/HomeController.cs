@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using TemperatureViewer.BackgroundServices;
 using TemperatureViewer.Data;
 using TemperatureViewer.Models;
 
@@ -15,16 +16,19 @@ namespace TemperatureViewer.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private DefaultContext _context;
+        private ISensorsAccessService _sensorsAccessService;
 
-        public HomeController(ILogger<HomeController> logger, DefaultContext context)
+        public HomeController(ILogger<HomeController> logger, DefaultContext context, ISensorsAccessService temperatureService)
         {
             _logger = logger;
             _context = context;
+            _sensorsAccessService = temperatureService;
         }
 
         public IActionResult Index()
         {
-            return View();
+            var list = _sensorsAccessService.GetMeasurements();
+            return View(list);
         }
 
         public IActionResult Privacy()
