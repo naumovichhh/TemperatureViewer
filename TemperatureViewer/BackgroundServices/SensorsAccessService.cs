@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -55,7 +56,7 @@ namespace TemperatureViewer.BackgroundServices
                 {
                     sensors = context.Sensors.ToList();
                 }
-                
+
                 while (!stoppingToken.IsCancellationRequested)
                 {
                     Sensor[] sensorsArray;
@@ -64,7 +65,7 @@ namespace TemperatureViewer.BackgroundServices
                         sensorsArray = sensors.ToArray();
                     }
 
-                    Parallel.ForEach(sensorsArray, WriteMeasurementsFromTxt);
+                    //Parallel.ForEach(sensorsArray, WriteMeasurementsFromTxt);
 
                     await Task.Delay(nextMeasurementTime - DateTime.Now, stoppingToken);
                     nextMeasurementTime = nextMeasurementTime + TimeSpan.FromSeconds(2);
@@ -85,7 +86,8 @@ namespace TemperatureViewer.BackgroundServices
             {
                 using (var httpClient = new HttpClient())
                 {
-                    var str = httpClient.GetStringAsync(sensorsArray[i].Uri).Result;
+                    var request = new HttpRequestMessage(HttpMethod.Get, sensorsArray[i].Uri);
+                    var str = httpClient.GetStringAsync(request,).Result;
                     decimal measured;
                     if (decimal.TryParse(str, out measured) || decimal.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out measured))
                     {
