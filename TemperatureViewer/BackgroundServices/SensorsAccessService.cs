@@ -65,7 +65,7 @@ namespace TemperatureViewer.BackgroundServices
                         sensorsArray = sensors.ToArray();
                     }
 
-                    //Parallel.ForEach(sensorsArray, WriteMeasurementsFromTxt);
+                    Parallel.ForEach(sensorsArray, WriteMeasurementsFromTxt);
 
                     await Task.Delay(nextMeasurementTime - DateTime.Now, stoppingToken);
                     nextMeasurementTime = nextMeasurementTime + TimeSpan.FromSeconds(2);
