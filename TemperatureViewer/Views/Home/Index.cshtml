@@ -10,7 +10,7 @@
             <div class="therm">@measurement.Temperature</div>
         </div>
         <div class="col-8">
-            <div class="therm-name">@measurement.SensorName</div>
+            <div class="therm-name"><a asp-controller="Home" asp-action="History" asp-route-id="@measurement.SensorId">@measurement.SensorName</a></div>
         </div>
     </div>
 }

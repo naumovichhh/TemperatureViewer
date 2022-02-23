@@ -28,14 +28,19 @@ namespace TemperatureViewer.Controllers
         public IActionResult Index()
         {
             var measurements = _sensorsAccessService.GetMeasurements();
-            var viewModel = measurements?.Select(e => new MeasurementViewModel() { Temperature = e.Temperature, SensorName = e.Sensor.Name });
+            var viewModel = measurements?.Select(e => new MeasurementViewModel() { Temperature = e.Temperature, SensorName = e.Sensor.Name, SensorId = e.Sensor.Id });
             return View(viewModel);
         }
 
         public IActionResult History(int? id)
         {
-            var groups = _context.Measurements.Include(m => m.Sensor).AsEnumerable().GroupBy(m => m.SensorId);
-            List<SensorHistoryViewModel> model = groups.Select(
+            IEnumerable<IGrouping<int, Measurement>> grouping;
+            if (id != null)
+                grouping = _context.Measurements.Where(m => m.SensorId == id).Include(m => m.Sensor).AsEnumerable().GroupBy(m => m.SensorId);
+            else
+                grouping = _context.Measurements.Include(m => m.Sensor).AsEnumerable().GroupBy(m => m.SensorId);
+
+            List<SensorHistoryViewModel> model = grouping.Select(
                 g => new SensorHistoryViewModel() { SensorName = g.First().Sensor.Name, Measurements = g.Select(
                     m => new MeasurementOfTime() { Value = m.Temperature, Time = m.MeasurementTime }) 
                 }
