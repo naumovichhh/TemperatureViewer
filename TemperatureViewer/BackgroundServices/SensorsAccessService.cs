@@ -71,7 +71,7 @@ namespace TemperatureViewer.BackgroundServices
                     Parallel.ForEach(sensorsArray, WriteMeasurementsFromTxt);
 
                     await Task.Delay(nextMeasurementTime - DateTime.Now, stoppingToken);
-                    nextMeasurementTime = nextMeasurementTime + TimeSpan.FromSeconds(2);
+                    nextMeasurementTime = nextMeasurementTime + TimeSpan.FromSeconds(20);
                 }
             }
         }
@@ -83,7 +83,7 @@ namespace TemperatureViewer.BackgroundServices
             {
                 sensorsArray = sensors.ToArray();
             }
-            Measurement[] result = new Measurement[sensorsArray.Length];
+            List<Measurement> list = new List<Measurement>();
 
             Parallel.For(0, sensorsArray.Length, (i) =>
             {
@@ -93,12 +93,12 @@ namespace TemperatureViewer.BackgroundServices
                     decimal measured;
                     if (decimal.TryParse(str, out measured) || decimal.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out measured))
                     {
-                        result[i] = new Measurement() { Temperature = measured, Sensor = sensorsArray[i] };
+                        list.Add(new Measurement() { Temperature = measured, Sensor = sensorsArray[i] });
                     }
                 }
             });
 
-            return result;
+            return list.ToArray();
         }
 
         private void WriteMeasurementsFromTxt(Sensor sensor)
