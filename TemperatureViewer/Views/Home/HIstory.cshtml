@@ -5,8 +5,11 @@
 
 <h1>History</h1>
 <canvas id="chart" height="400" width="500"></canvas>
+<script>
+    var modelJson = @Json.Serialize(Model);
+</script>
 
 @section Scripts {
-    <script src="~/lib/chart/dist~/lib/chart/dist/chart.min.js"></script>
-    <script src="~/js/index.js" asp-append-version="true"></script>
+    <script src="~/lib/chart/dist/chart.min.js"></script>
+    <script src="~/js/history.js" asp-append-version="true"></script>
 }

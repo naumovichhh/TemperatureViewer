@@ -20,9 +20,11 @@ namespace TemperatureViewer.BackgroundServices
     {
         private DefaultContext context;
         private object lockObject = new object();
+        private object contextLock = new object();
         private DateTime nextMeasurementTime;
         private List<Sensor> sensors;
         private IServiceProvider serviceProvider;
+        private DateTime now;
 
         public SensorsAccessService(IServiceProvider serviceProvider)
         {
@@ -65,6 +67,7 @@ namespace TemperatureViewer.BackgroundServices
                         sensorsArray = sensors.ToArray();
                     }
 
+                    now = DateTime.Now;
                     Parallel.ForEach(sensorsArray, WriteMeasurementsFromTxt);
 
                     await Task.Delay(nextMeasurementTime - DateTime.Now, stoppingToken);
@@ -108,13 +111,17 @@ namespace TemperatureViewer.BackgroundServices
                 {
                     Measurement measurement = new Measurement()
                     {
-                        MeasurementTime = DateTime.Now,
+                        MeasurementTime = now,
                         Sensor = sensor,
                         SensorId = sensor.Id,
                         Temperature = measured
                     };
-                    context.Measurements.Add(measurement);
-                    context.SaveChanges();
+
+                    lock (contextLock)
+                    {
+                        context.Measurements.Add(measurement);
+                        context.SaveChanges();
+                    }
                 }
             }
         }

@@ -34,9 +34,13 @@ namespace TemperatureViewer.Controllers
 
         public IActionResult History(int? id)
         {
-            var groupJoin = _context.Sensors.GroupJoin(_context.Measurements, s => s.Id, s => s.SensorId, (s, m) => Tuple.Create(s, m));
-            List<SensorHistoryViewModel> model = groupJoin.Select(
-                g => new SensorHistoryViewModel() { SensorName = g.Item1.Name, Measurements = g.Item2.Select(
+            //var groupJoin = _context.Sensors.GroupJoin(_context.Measurements, s => s.Id, s => s.SensorId, (s, m) => Tuple.Create(s, m)).AsEnumerable();
+            //var groupJoin = from s in _context.Sensors
+            //        join m in _context.Measurements on s.Id equals m.SensorId into sm
+            //        select new { s, sm };
+            var groups = _context.Measurements.Include(m => m.Sensor).AsEnumerable().GroupBy(m => m.SensorId);
+            List<SensorHistoryViewModel> model = groups.Select(
+                g => new SensorHistoryViewModel() { SensorName = g.First().Sensor.Name, Measurements = g.Select(
                     m => new MeasurementOfTime() { Value = m.Temperature, Time = m.MeasurementTime }) 
                 }
             ).ToList();
