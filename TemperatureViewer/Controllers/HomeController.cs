@@ -32,15 +32,51 @@ namespace TemperatureViewer.Controllers
             return View(viewModel);
         }
 
-        public IActionResult History(int? id)
+        public IActionResult History(int? id, string from, string to)       
         {
-            IEnumerable<IGrouping<int, Measurement>> grouping;
-            if (id != null)
-                grouping = _context.Measurements.Where(m => m.SensorId == id).Include(m => m.Sensor).AsEnumerable().GroupBy(m => m.SensorId);
+            DateTime fromDate, toDate;
+            if (from != null && DateTime.TryParse(from, out fromDate))
+                ;
             else
-                grouping = _context.Measurements.Include(m => m.Sensor).AsEnumerable().GroupBy(m => m.SensorId);
+            {
+                fromDate = DateTime.Now - TimeSpan.FromDays(1);
+            }
 
-            List<SensorHistoryViewModel> model = grouping.Select(
+            if (to != null && DateTime.TryParse(to, out toDate))
+                ;
+            else
+            {
+                toDate = DateTime.Now;
+            }
+
+            IEnumerable<IGrouping<int, Measurement>> groups;
+            if (id != null)
+                groups = _context.Measurements.Where(m => m.SensorId == id && m.MeasurementTime < toDate && m.MeasurementTime > fromDate).OrderBy(m => m.MeasurementTime).Include(m => m.Sensor).AsEnumerable().GroupBy(m => m.SensorId);
+            else
+                groups = _context.Measurements.Where(m => m.MeasurementTime < toDate && m.MeasurementTime > fromDate).OrderBy(m => m.MeasurementTime).Include(m => m.Sensor).AsEnumerable().GroupBy(m => m.SensorId);
+
+            var measurementsCount = groups.Aggregate(0, (c, n) => n.Count() > c ? n.Count() : c);
+            int[] offsets = new int[groups.Count()];
+            int j = 0;
+            foreach (var group in groups)
+            {
+                offsets[j] = measurementsCount - group.Count();
+                j++;
+            }
+
+            var maxMeasurementsNum = 50;
+            int divisor = (measurementsCount - 1) / maxMeasurementsNum + 1;
+
+            List<IEnumerable<Measurement>> list = new List<IEnumerable<Measurement>>();
+            j = 0;
+            foreach (var group in groups)
+            {
+                int k = j;
+                list.Add(group.Where((m, i) => (i + offsets[k]) % divisor == 0));
+                j++;
+            }
+
+            List<SensorHistoryViewModel> model = list.Select(
                 g => new SensorHistoryViewModel() { SensorName = g.First().Sensor.Name, Measurements = g.Select(
                     m => new MeasurementOfTime() { Value = m.Temperature, Time = m.MeasurementTime }) 
                 }
@@ -48,6 +84,14 @@ namespace TemperatureViewer.Controllers
             return View(model);
         }
 
+        private bool InPeriod(DateTime input, DateTime from, DateTime to)
+        {
+            if (input < to && input > from)
+                return true;
+            else
+                return false;
+        }
+        
         public IActionResult Privacy()
         {
             return View();

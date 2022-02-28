@@ -1,4 +1,4 @@
-﻿let context = document.getElementById("chart");
+﻿let context = document.getElementById("chart").getContext("2d");
 let colors = ["#ff0000", "#00ff00", "#0000ff", "#000000", "#ffff00", "#ff00ff", "#00ffff", "#a0a0a0"];
 let numberOfMeasurements = modelJson.map(m => m.measurements.length).reduce((acc, next) => {
     if (next > acc)
@@ -29,7 +29,8 @@ let options = {
             suggestedMin: 10,
             suggestedMax: 25
         }
-    }
+    },
+    responsive: true
 };
 let chart = new Chart(context, {
     type: 'line',
