@@ -36,14 +36,16 @@ namespace TemperatureViewer.Controllers
         {
             DateTime fromDate, toDate;
             if (from != null && DateTime.TryParse(from, out fromDate))
-                ;
+            { }
             else
             {
                 fromDate = DateTime.Now - TimeSpan.FromDays(1);
             }
 
             if (to != null && DateTime.TryParse(to, out toDate))
-                ;
+            {
+                toDate += new TimeSpan(23, 59, 59);
+            }
             else
             {
                 toDate = DateTime.Now;
@@ -81,6 +83,8 @@ namespace TemperatureViewer.Controllers
                     m => new MeasurementOfTime() { Value = m.Temperature, Time = m.MeasurementTime }) 
                 }
             ).ToList();
+            ViewBag.from = from;
+            ViewBag.to = to;
             return View(model);
         }
 

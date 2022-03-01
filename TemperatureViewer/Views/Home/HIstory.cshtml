@@ -3,12 +3,28 @@
     ViewData["Title"] = "История";
 }
 
-<h1>History</h1>
-<div class="chart-container">
+<h1 style="margin-bottom: 40px">История измерений</h1>
+<div class="row">
+    <div class="col-2">
+        Выбрать период
+    </div>
+    <div class="col-2">
+        <input id="date-from" class="form-control" type="date" />
+    </div>
+    <div class="col-2">
+        <input id="date-to" class="form-control" type="date" />
+    </div>
+    <div class="col-2">
+        <button id="apply-period" class="form-control btn-primary">Применить</button>
+    </div>
+</div>
+<div class="container">
     <canvas id="chart" height="630" width="1000"></canvas>
 </div>
 <script>
     var modelJson = @Json.Serialize(Model);
+    var bagValueFrom = @Json.Serialize(ViewBag.from);
+    var bagValueTo = @Json.Serialize(ViewBag.to);
 </script>
 
 @section Scripts {
