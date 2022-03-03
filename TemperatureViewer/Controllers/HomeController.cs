@@ -27,7 +27,7 @@ namespace TemperatureViewer.Controllers
 
         public IActionResult Index()
         {
-            var measurements = _sensorsAccessService.GetMeasurements();
+            var measurements = _sensorsAccessService.GetMeasurements().OrderBy(e => e.Sensor.Name);
             var viewModel = measurements?.Select(e => new MeasurementViewModel() { Temperature = e.Temperature, SensorName = e.Sensor.Name, SensorId = e.Sensor.Id });
             return View(viewModel);
         }

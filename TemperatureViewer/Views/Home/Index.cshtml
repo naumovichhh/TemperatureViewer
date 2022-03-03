@@ -3,17 +3,23 @@
     ViewData["Title"] = "Home Page";
 }
 
-@foreach (var measurement in Model)
-{
-    <div class="row">
-        <div class="col-4">
-            <div class="therm">@measurement.Temperature</div>
+<div class="list-group">
+    @foreach (var measurement in Model)
+    {
+        <div class="list-group-item list-group-item-custom">
+            <div class="therm">
+                <div class="row">
+                    <div class="col-2">
+                        <div><b><span class="temp-value">@measurement.Temperature</span>°</b></div>
+                    </div>
+                    <div class="col-10">
+                        <div class="therm-name"><a asp-controller="Home" asp-action="History" asp-route-id="@measurement.SensorId">@measurement.SensorName</a></div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="col-8">
-            <div class="therm-name"><a asp-controller="Home" asp-action="History" asp-route-id="@measurement.SensorId">@measurement.SensorName</a></div>
-        </div>
-    </div>
-}
+    }
+</div>
 
 @section Scripts {
     <script src="~/js/index.js" asp-append-version="true"></script>

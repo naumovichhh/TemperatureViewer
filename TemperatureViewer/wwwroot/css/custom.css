@@ -2,3 +2,15 @@
 .bg-logo {
     background-color: #155480;
 }
+
+.therm {
+    font-size: 2em;
+    color: white;
+}
+.therm a {
+    color: white;
+}
+
+.list-group-item-custom {
+    background-color: #a8a8a8;
+}
