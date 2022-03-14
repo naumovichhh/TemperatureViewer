@@ -1,10 +1,10 @@
-﻿let perfectTemperature = 18;
-let minPossibleTemperature = 9;
-let maxPossibleTemperature = 27;
+﻿let perfectTemperature = 19;
+let minPossibleTemperature = 10;
+let maxPossibleTemperature = 28;
 let brightness = 100;
 
 $(document).ready(function () {
-    $(".therm").each((i, e) => {
+    $(".therm-li").each((i, e) => {
         let str = $(e).find(".temp-value").contents().text();
         let value = Number(str.replace(",", "."));
         let r = 0, g = 0, b = 0;
@@ -27,6 +27,11 @@ $(document).ready(function () {
             g = g > brightness ? brightness : g;
         }
 
-        e.style.backgroundColor = `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
+        let thermColor = `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
+        let liColor = `rgb(${Math.round(r + 90)}, ${Math.round(g + 90)}, ${Math.round(b + 90)})`
+        $(e).find(".therm").each((i, t) => {
+            t.style.backgroundColor = thermColor;
+        })
+        e.style.backgroundColor = liColor;
     });
 });
