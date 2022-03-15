@@ -28,6 +28,12 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="History" asp-route-id="">История</a>
                         </li>
+                        @if(User.Identity.IsAuthenticated)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Sensors" asp-action="Index" asp-route-id="">Администрирование</a>
+                            </li>
+                        }
                     </ul>
                     @if (User.Identity.IsAuthenticated)
                     {

@@ -31,22 +31,6 @@ namespace TemperatureViewer.BackgroundServices
             this.serviceProvider = serviceProvider;
         }
 
-        public void AddSensor(Sensor sensor)
-        {
-            lock (lockObject)
-            {
-                sensors?.Add(sensor);
-            }
-        }
-
-        public void RemoveSensor(Sensor sensor)
-        {
-            lock (lockObject)
-            {
-                sensors?.Remove(sensor);
-            }
-        }
-
         public async Task DoWork(CancellationToken stoppingToken)
         {
             nextMeasurementTime = DateTime.Now + TimeSpan.FromSeconds(10);
@@ -54,16 +38,13 @@ namespace TemperatureViewer.BackgroundServices
             using (var scope = serviceProvider.CreateScope())
             {
                 context = scope.ServiceProvider.GetRequiredService<DefaultContext>();
-                lock (lockObject)
-                {
-                    sensors = context.Sensors.ToList();
-                }
 
                 while (!stoppingToken.IsCancellationRequested)
                 {
                     Sensor[] sensorsArray;
                     lock (lockObject)
                     {
+                        sensors = context.Set<Sensor>().ToList();
                         sensorsArray = sensors.ToArray();
                     }
 
