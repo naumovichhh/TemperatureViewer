@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using TemperatureViewer.Data;
 using TemperatureViewer.Models;
@@ -44,7 +45,7 @@ namespace TemperatureViewer.BackgroundServices
                     Sensor[] sensorsArray;
                     lock (lockObject)
                     {
-                        sensors = context.Set<Sensor>().ToList();
+                        sensors = context.Sensors.AsNoTracking().ToList();
                         sensorsArray = sensors.ToArray();
                     }
 
@@ -62,7 +63,7 @@ namespace TemperatureViewer.BackgroundServices
             Sensor[] sensorsArray;
             lock (lockObject)
             {
-                sensorsArray = sensors.ToArray();
+                sensorsArray = context.Sensors.AsNoTracking().ToArray();
             }
             List<Measurement> list = new List<Measurement>();
 
@@ -74,6 +75,7 @@ namespace TemperatureViewer.BackgroundServices
                     decimal measured;
                     if (decimal.TryParse(str, out measured) || decimal.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out measured))
                     {
+                        measured /= 1.000000000000000000000000000000000m;
                         list.Add(new Measurement() { Temperature = measured, Sensor = sensorsArray[i] });
                     }
                 }
@@ -90,10 +92,10 @@ namespace TemperatureViewer.BackgroundServices
                 decimal measured;
                 if (decimal.TryParse(str, out measured) || decimal.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out measured))
                 {
+                    measured /= 1.000000000000000000000000000000000m;
                     Measurement measurement = new Measurement()
                     {
                         MeasurementTime = now,
-                        Sensor = sensor,
                         SensorId = sensor.Id,
                         Temperature = measured
                     };
@@ -121,7 +123,6 @@ namespace TemperatureViewer.BackgroundServices
                             Measurement measurement = new Measurement()
                             {
                                 MeasurementTime = DateTime.Now,
-                                Sensor = sensor,
                                 SensorId = sensor.Id,
                                 Temperature = measured
                             };
