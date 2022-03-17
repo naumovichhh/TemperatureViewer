@@ -35,21 +35,8 @@ namespace TemperatureViewer.Controllers
         public IActionResult History(int? id, string from, string to)       
         {
             DateTime fromDate, toDate;
-            if (from != null && DateTime.TryParse(from, out fromDate))
-            { }
-            else
-            {
-                fromDate = DateTime.Now - TimeSpan.FromDays(1);
-            }
-
-            if (to != null && DateTime.TryParse(to, out toDate))
-            {
-                toDate += new TimeSpan(23, 59, 59);
-            }
-            else
-            {
-                toDate = DateTime.Now;
-            }
+            fromDate = GetFromDateTime(from);
+            toDate = GetToDateTime(to);
 
             IEnumerable<IGrouping<int, Measurement>> groups;
             if (id != null)
@@ -58,25 +45,12 @@ namespace TemperatureViewer.Controllers
                 groups = _context.Measurements.Where(m => m.MeasurementTime < toDate && m.MeasurementTime > fromDate).OrderBy(m => m.MeasurementTime).Include(m => m.Sensor).AsEnumerable().GroupBy(m => m.SensorId);
 
             var measurementsCount = groups.Aggregate(0, (c, n) => n.Count() > c ? n.Count() : c);
-            int[] offsets = new int[groups.Count()];
-            int j = 0;
-            foreach (var group in groups)
-            {
-                offsets[j] = measurementsCount - group.Count();
-                j++;
-            }
+            int[] offsets = GetOffsets(groups, measurementsCount);
 
             var maxMeasurementsNum = 50;
             int divisor = (measurementsCount - 1) / maxMeasurementsNum + 1;
 
-            List<IEnumerable<Measurement>> list = new List<IEnumerable<Measurement>>();
-            j = 0;
-            foreach (var group in groups)
-            {
-                int k = j;
-                list.Add(group.Where((m, i) => (i + offsets[k]) % divisor == 0));
-                j++;
-            }
+            List<IEnumerable<Measurement>> list = GetMeasurementsEnumerableList(groups, offsets, divisor);
 
             List<SensorHistoryViewModel> model = list.Select(
                 g => new SensorHistoryViewModel() { SensorName = g.First().Sensor.Name, Measurements = g.Select(
@@ -86,6 +60,117 @@ namespace TemperatureViewer.Controllers
             ViewBag.from = from;
             ViewBag.to = to;
             return View(model);
+        }
+
+        public IActionResult Download(int? id, string from, string to)
+        {
+            DateTime fromDate, toDate;
+            fromDate = GetFromDateTime(from);
+            toDate = GetToDateTime(to);
+
+            if (id == null)
+            {
+                Dictionary<int, IEnumerable<Measurement>> data = GetData(fromDate, toDate);
+
+            }
+            else
+            {
+                IEnumerable<Measurement> enumerable = GetData(id.Value, fromDate, toDate);
+                Dictionary<Sensor, IEnumerable<Measurement>> data = new Dictionary<Sensor, IEnumerable<Measurement>>() { { _context.Sensors.First(s => s.Id == id), enumerable } };
+            }
+        }
+
+        private IEnumerable<Measurement> GetData(int id, DateTime fromDate, DateTime toDate)
+        {
+            return _context.Measurements.Where(m => m.SensorId == id && m.MeasurementTime < toDate && m.MeasurementTime > fromDate).OrderBy(m => m.MeasurementTime).AsEnumerable();
+        }
+
+        private Dictionary<int, IEnumerable<Measurement>> GetData(DateTime fromDate, DateTime toDate)
+        {
+            Dictionary<int, List<Measurement>> lists = new Dictionary<int, List<Measurement>>();
+            var groupedByTime = _context.Measurements.Where(m => m.MeasurementTime < toDate && m.MeasurementTime > fromDate).OrderBy(m => m.MeasurementTime).AsEnumerable().GroupBy(m => m.MeasurementTime);
+            var sensorIds = _context.Measurements.Where(m => m.MeasurementTime < toDate && m.MeasurementTime > fromDate).Select(m => m.SensorId).Distinct();
+            foreach (var sensorId in sensorIds)
+            {
+                lists.Add(sensorId, null);
+            }
+
+            foreach (var measurementsInTime in groupedByTime)
+            {
+                foreach (var list in lists)
+                {
+                    if (measurementsInTime.Where(m => m.SensorId == list.Key).Count() > 0)
+                    {
+                        list.Value.Add(measurementsInTime.First(m => m.SensorId == list.Key));
+                    }
+                    else
+                    {
+                        list.Value.Add(null);
+                    }
+                }
+            }
+
+            Dictionary<int, IEnumerable<Measurement>> result = new Dictionary<int, IEnumerable<Measurement>>();
+            foreach (var list in lists)
+            {
+                result.Add(list.Key, list.Value);
+            }
+            return result;
+        }
+
+        private static int[] GetOffsets(IEnumerable<IGrouping<int, Measurement>> groups, int measurementsCount)
+        {
+            int[] offsets = new int[groups.Count()];
+            int j = 0;
+            foreach (var group in groups)
+            {
+                offsets[j] = measurementsCount - group.Count();
+                j++;
+            }
+
+            return offsets;
+        }
+
+        private static List<IEnumerable<Measurement>> GetMeasurementsEnumerableList(IEnumerable<IGrouping<int, Measurement>> groups, int[] offsets, int divisor)
+        {
+            List<IEnumerable<Measurement>> list = new List<IEnumerable<Measurement>>();
+            j = 0;
+            foreach (var group in groups)
+            {
+                int k = j;
+                list.Add(group.Where((m, i) => (i + offsets[k]) % divisor == 0));
+                j++;
+            }
+
+            return list;
+        }
+
+        private static DateTime GetFromDateTime(string from)
+        {
+            DateTime result;
+            if (from != null && DateTime.TryParse(from, out result))
+            { }
+            else
+            {
+                result = DateTime.Now - TimeSpan.FromDays(1);
+            }
+
+            return result;
+        }
+
+        private static DateTime GetToDateTime(string to)
+        {
+            DateTime result;
+            if (to != null && DateTime.TryParse(to, out result))
+            {
+                result += new TimeSpan(23, 59, 59);
+            }
+            else
+            {
+                result = DateTime.Now;
+            }
+
+            return result;
         }
 
         private bool InPeriod(DateTime input, DateTime from, DateTime to)

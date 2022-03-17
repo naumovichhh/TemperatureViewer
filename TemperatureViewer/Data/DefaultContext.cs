@@ -15,11 +15,13 @@ namespace TemperatureViewer.Data
 
         public DbSet<Measurement> Measurements { get; set; }
         public DbSet<Sensor> Sensors { get; set; }
+        public DbSet<User> Users { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
             builder.Entity<Measurement>().ToTable("Measurements");
             builder.Entity<Sensor>().ToTable("Sensors");
+            builder.Entity<User>().ToTable("Users");
         }
     }
 }

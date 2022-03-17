@@ -46,5 +46,7 @@ $(document).ready(function () {
             t.style.backgroundColor = thermColor;
         })
         e.style.backgroundColor = liColor;
+
+        setTimeout(() => location.reload(), 120000);
     });
 });

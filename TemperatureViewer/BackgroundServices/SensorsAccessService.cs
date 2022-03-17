@@ -71,7 +71,7 @@ namespace TemperatureViewer.BackgroundServices
             {
                 using (var httpClient = new HttpClient())
                 {
-                    var str = httpClient.GetStringAsync(sensors[i].Uri).Result;
+                    var str = httpClient.GetStringAsync(sensorsArray[i].Uri).Result;
                     decimal measured;
                     if (decimal.TryParse(str, out measured) || decimal.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out measured))
                     {
