@@ -100,7 +100,7 @@ namespace TemperatureViewer.BackgroundServices
                         Temperature = measured
                     };
 
-                    lock (contextLock)
+                    lock (lockObject)
                     {
                         context.Measurements.Add(measurement);
                         context.SaveChanges();

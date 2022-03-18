@@ -21,8 +21,14 @@ $("#date-to").val(bagValueTo);
 $("#apply-period").click(function () {
     let valueFrom = $("#date-from").val();
     let valueTo = $("#date-to").val();
-    if (!valueFrom || !valueTo)
-        return;
+    if (!valueFrom || !valueTo) {
+        if (!valueFrom && !valueTo) {
+            location.href = location.protocol + "//" + location.host + location.pathname;
+        }
+        else {
+            return;
+        }
+    }
 
     if (valueFrom > valueTo) {
         alert("Некорректный ввод");
@@ -30,6 +36,26 @@ $("#apply-period").click(function () {
     }
 
     location.href = location.protocol + "//" + location.host + location.pathname + `?from=${valueFrom}&to=${valueTo}`;
+});
+
+$("#download-data").click(function () {
+    let valueFrom = $("#date-from").val();
+    let valueTo = $("#date-to").val();
+    if (!valueFrom || !valueTo) {
+        if (!valueFrom && !valueTo) {
+            location.href = location.protocol + "//" + location.host + location.pathname.replace(/history/i, "Download");
+        }
+        else {
+            return;
+        }
+    }
+
+    if (valueFrom > valueTo) {
+        alert("Некорректный ввод");
+        return;
+    }
+
+    location.href = location.protocol + "//" + location.host + location.pathname.replace(/history/i, "Download") + `?from=${valueFrom}&to=${valueTo}`;
 });
 
 let context = document.getElementById("chart").getContext("2d");

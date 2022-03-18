@@ -4,10 +4,12 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using TemperatureViewer.BackgroundServices;
 using TemperatureViewer.Data;
+using TemperatureViewer.Helpers;
 using TemperatureViewer.Models;
 
 namespace TemperatureViewer.Controllers
@@ -67,17 +69,28 @@ namespace TemperatureViewer.Controllers
             DateTime fromDate, toDate;
             fromDate = GetFromDateTime(from);
             toDate = GetToDateTime(to);
+            MemoryStream resultStream;
 
             if (id == null)
             {
                 Dictionary<int, IEnumerable<Measurement>> data = GetData(fromDate, toDate);
+                Dictionary<Sensor, IEnumerable<Measurement>> output = new Dictionary<Sensor, IEnumerable<Measurement>>();
+                foreach (var kvp in data)
+                {
+                    output.Add(_context.Sensors.First(s => s.Id == kvp.Key), kvp.Value);
+                }
 
+                resultStream = ExcelHelper.Create(output);
             }
             else
             {
                 IEnumerable<Measurement> enumerable = GetData(id.Value, fromDate, toDate);
-                Dictionary<Sensor, IEnumerable<Measurement>> data = new Dictionary<Sensor, IEnumerable<Measurement>>() { { _context.Sensors.First(s => s.Id == id), enumerable } };
+                Dictionary<Sensor, IEnumerable<Measurement>> output = new Dictionary<Sensor, IEnumerable<Measurement>>() { { _context.Sensors.First(s => s.Id == id), enumerable } };
+                resultStream = ExcelHelper.Create(output);
             }
+
+            byte[] array = resultStream.ToArray();
+            return File(array, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         }
 
         private IEnumerable<Measurement> GetData(int id, DateTime fromDate, DateTime toDate)
@@ -92,7 +105,7 @@ namespace TemperatureViewer.Controllers
             var sensorIds = _context.Measurements.Where(m => m.MeasurementTime < toDate && m.MeasurementTime > fromDate).Select(m => m.SensorId).Distinct();
             foreach (var sensorId in sensorIds)
             {
-                lists.Add(sensorId, null);
+                lists.Add(sensorId, new List<Measurement>());
             }
 
             foreach (var measurementsInTime in groupedByTime)
@@ -134,7 +147,7 @@ namespace TemperatureViewer.Controllers
         private static List<IEnumerable<Measurement>> GetMeasurementsEnumerableList(IEnumerable<IGrouping<int, Measurement>> groups, int[] offsets, int divisor)
         {
             List<IEnumerable<Measurement>> list = new List<IEnumerable<Measurement>>();
-            j = 0;
+            int j = 0;
             foreach (var group in groups)
             {
                 int k = j;
