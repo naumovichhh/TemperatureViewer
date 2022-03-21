@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using TemperatureViewer.BackgroundServices;
@@ -42,9 +43,9 @@ namespace TemperatureViewer.Controllers
 
             IEnumerable<IGrouping<int, Measurement>> groups;
             if (id != null)
-                groups = _context.Measurements.Where(m => m.SensorId == id && m.MeasurementTime < toDate && m.MeasurementTime > fromDate).OrderBy(m => m.MeasurementTime).Include(m => m.Sensor).AsEnumerable().GroupBy(m => m.SensorId);
+                groups = _context.Measurements.Where(m => m.SensorId == id && m.MeasurementTime < toDate && m.MeasurementTime > fromDate).Include(m => m.Sensor).AsEnumerable().GroupBy(m => m.SensorId);
             else
-                groups = _context.Measurements.Where(m => m.MeasurementTime < toDate && m.MeasurementTime > fromDate).OrderBy(m => m.MeasurementTime).Include(m => m.Sensor).AsEnumerable().GroupBy(m => m.SensorId);
+                groups = _context.Measurements.Where(m => m.MeasurementTime < toDate && m.MeasurementTime > fromDate).Include(m => m.Sensor).AsEnumerable().GroupBy(m => m.SensorId);
 
             var measurementsCount = groups.Aggregate(0, (c, n) => n.Count() > c ? n.Count() : c);
             int[] offsets = GetOffsets(groups, measurementsCount);
@@ -54,11 +55,11 @@ namespace TemperatureViewer.Controllers
 
             List<IEnumerable<Measurement>> list = GetMeasurementsEnumerableList(groups, offsets, divisor);
 
-            List<SensorHistoryViewModel> model = list.Select(
+            List<SensorHistoryViewModel> model = list.Where(g => g.Count() > 0).Select(
                 g => new SensorHistoryViewModel() { SensorName = g.First().Sensor.Name, Measurements = g.Select(
                     m => new MeasurementOfTime() { Value = m.Temperature, Time = m.MeasurementTime }) 
                 }
-            ).ToList();
+            ).OrderBy(vm => vm.SensorName).ToList();
             ViewBag.from = from;
             ViewBag.to = to;
             return View(model);
@@ -90,7 +91,7 @@ namespace TemperatureViewer.Controllers
             }
 
             byte[] array = resultStream.ToArray();
-            return File(array, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            return File(array, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fromDate.ToString("g", CultureInfo.GetCultureInfo("de-DE")) + " - " + toDate.ToString("g", CultureInfo.GetCultureInfo("de-DE")) + ".xlsx");
         }
 
         private IEnumerable<Measurement> GetData(int id, DateTime fromDate, DateTime toDate)
@@ -101,7 +102,7 @@ namespace TemperatureViewer.Controllers
         private Dictionary<int, IEnumerable<Measurement>> GetData(DateTime fromDate, DateTime toDate)
         {
             Dictionary<int, List<Measurement>> lists = new Dictionary<int, List<Measurement>>();
-            var groupedByTime = _context.Measurements.Where(m => m.MeasurementTime < toDate && m.MeasurementTime > fromDate).OrderBy(m => m.MeasurementTime).AsEnumerable().GroupBy(m => m.MeasurementTime);
+            var groupedByTime = _context.Measurements.Where(m => m.MeasurementTime < toDate && m.MeasurementTime > fromDate).AsEnumerable().GroupBy(m => m.MeasurementTime).OrderBy(g => g.Key);
             var sensorIds = _context.Measurements.Where(m => m.MeasurementTime < toDate && m.MeasurementTime > fromDate).Select(m => m.SensorId).Distinct();
             foreach (var sensorId in sensorIds)
             {
@@ -151,7 +152,7 @@ namespace TemperatureViewer.Controllers
             foreach (var group in groups)
             {
                 int k = j;
-                list.Add(group.Where((m, i) => (i + offsets[k]) % divisor == 0));
+                list.Add(group.OrderBy(m => m.MeasurementTime).Where((m, i) => (i + offsets[k]) % divisor == 0));
                 j++;
             }
 
