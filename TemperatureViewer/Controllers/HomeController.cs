@@ -65,6 +65,7 @@ namespace TemperatureViewer.Controllers
             var maxMeasurementsNum = 50;
             var measurementsCount = dictionary.First().Value.Count();
             int divisor = (measurementsCount - 1) / maxMeasurementsNum + 1;
+            measurementTimes = measurementTimes.Where((m, i) => i % divisor == 0);
 
             List<IEnumerable<Measurement>> list = GetMeasurementsEnumerableList(dictionary, divisor);
 
@@ -81,7 +82,7 @@ namespace TemperatureViewer.Controllers
                             return null;
                     })
                 }
-            ).ToList();
+            ).OrderBy(vm => vm.SensorName).ToList();
             ViewBag.measurementTimes = measurementTimes;
             ViewBag.from = from;
             ViewBag.to = to;
@@ -168,7 +169,7 @@ namespace TemperatureViewer.Controllers
         private Dictionary<int, IEnumerable<Measurement>> GetData(DateTime fromDate, DateTime toDate, out IEnumerable<DateTime> measurementTimes)
         {
             Dictionary<int, List<Measurement>> dictionary = new Dictionary<int, List<Measurement>>();
-            var groupedByTime = _context.Measurements.AsNoTracking().Where(m => m.MeasurementTime < toDate && m.MeasurementTime > fromDate).OrderBy(m => m.MeasurementTime).AsEnumerable().GroupBy(m => m.MeasurementTime);
+            var groupedByTime = _context.Measurements.AsNoTracking().Where(m => m.MeasurementTime < toDate && m.MeasurementTime > fromDate).AsEnumerable().GroupBy(m => m.MeasurementTime).OrderBy(g => g.Key);
             var sensorIds = _context.Measurements.AsNoTracking().Where(m => m.MeasurementTime < toDate && m.MeasurementTime > fromDate).Select(m => m.SensorId).Distinct();
             foreach (var sensorId in sensorIds)
             {
