@@ -81,7 +81,7 @@ if (modelJson.length > 0) {
                 backgroundColor: colors[i],
                 borderColor: colors[i],
                 data: a,
-                tension: 0.4
+                tension: 0.1
             };
         })
     };

@@ -25,7 +25,6 @@ namespace TemperatureViewer.Helpers
             ISheet sheet = workbook.CreateSheet("Sheet1");
             WriteHeader(sheet, data.Keys.Select(s => s.Name).OrderBy(s => s));
             WriteCells(sheet, data);
-            CreateChart(sheet, data);
             MemoryStream result = new MemoryStream();
             workbook.Write(result);
             return result;
@@ -58,35 +57,69 @@ namespace TemperatureViewer.Helpers
         //    app.Quit();
         //}
 
-        private static void CreateChart(ISheet sheet, Dictionary<Sensor, IEnumerable<Measurement>> data)
-        {
-            int categoriesNum = data.First().Value.Count();
-            int linesNum = data.Count;
+        //private static void CreateChart(ISheet sheet)
+        //{
+        //    int columnQtt = 8;
+        //    int startDataRow = 3;
+        //    string currentTipo = "Bydlo";
+        //    int rowIndex = 3;
+        //    XSSFDrawing drawing = (XSSFDrawing)sheet.CreateDrawingPatriarch();
+        //    XSSFClientAnchor anchor = (XSSFClientAnchor)drawing.CreateAnchor(0, 0, 0, 0, 0, 5, 10, 15);
+        //    XSSFChart chart = (XSSFChart)drawing.CreateChart(anchor);
 
-            XSSFDrawing drawing = (XSSFDrawing)sheet.CreateDrawingPatriarch();
-            XSSFClientAnchor anchor = (XSSFClientAnchor)drawing.CreateAnchor(0, 0, 0, 0, 0, 5, 10, 15);
-            XSSFChart chart = (XSSFChart)drawing.CreateChart(anchor);
+        //    IBarChartData<string, double> barChartData = chart.ChartDataFactory.CreateBarChartData<string, double>();
+        //    IChartLegend legend = chart.GetOrCreateLegend();
+        //    legend.Position = LegendPosition.Bottom;
 
-            ILineChartData<string, double> lineChartData = chart.ChartDataFactory.CreateLineChartData<string, double>();
-            IChartLegend legend = chart.GetOrCreateLegend();
-            legend.Position = LegendPosition.Bottom;
+        //    IChartAxis bottomAxis = chart.ChartAxisFactory.CreateCategoryAxis(AxisPosition.Bottom);
+        //    IValueAxis leftAxis = chart.ChartAxisFactory.CreateValueAxis(AxisPosition.Left);
+        //    leftAxis.Crosses = AxisCrosses.AutoZero;
 
-            IChartAxis bottomAxis = chart.ChartAxisFactory.CreateCategoryAxis(AxisPosition.Bottom);
-            bottomAxis.MajorTickMark = AxisTickMark.None;
-            IValueAxis leftAxis = chart.ChartAxisFactory.CreateValueAxis(AxisPosition.Left);
-            leftAxis.Crosses = AxisCrosses.AutoZero;
-            leftAxis.SetCrossBetween(AxisCrossBetween.Between);
+        //    int endDataRow = rowIndex - 1;
+
+        //    //IChartDataSource<string> categoryAxis = DataSources.FromStringCellRange(sheet, new CellRangeAddress(startDataRow, endDataRow, 0, 0));
+        //    //IChartDataSource<double> valueAxis = DataSources.FromNumericCellRange(sheet, new CellRangeAddress(startDataRow, endDataRow, columnQtt - 1, columnQtt - 1));
+        //    IChartDataSource<string> categoryAxis = DataSources.FromArray(new string [] { "one", "two" });
+        //    IChartDataSource<double> valueAxis = DataSources.FromArray(new double [] { 15.6, 19.6 });
+        //    var serie = barChartData.AddSeries(categoryAxis, valueAxis);
+        //    serie.SetTitle(currentTipo);
+
+        //    chart.Plot(barChartData, bottomAxis, leftAxis);
+
+        //    chart.GetCTChart().plotArea.barChart[0].AddNewBarDir().val = 
+        //        //org.openxmlformats.schemas.drawingml.x2006.chart.STBarDir.COL);
+        //     NPOI.OpenXmlFormats.Dml.Chart.ST_BarDir.col;
+        //}
+
+        //private static void CreateChart(ISheet sheet, Dictionary<Sensor, IEnumerable<Measurement>> data)
+        //{
+        //    int categoriesNum = data.First().Value.Count();
+        //    int linesNum = data.Count;
+
+        //    XSSFDrawing drawing = (XSSFDrawing)sheet.CreateDrawingPatriarch();
+        //    XSSFClientAnchor anchor = (XSSFClientAnchor)drawing.CreateAnchor(0, 0, 0, 0, 0, 5, 10, 15);
+        //    XSSFChart chart = (XSSFChart)drawing.CreateChart(anchor);
+
+        //    ILineChartData<string, double> lineChartData = chart.ChartDataFactory.CreateLineChartData<string, double>();
+        //    IChartLegend legend = chart.GetOrCreateLegend();
+        //    legend.Position = LegendPosition.Bottom;
+
+        //    IChartAxis bottomAxis = chart.ChartAxisFactory.CreateCategoryAxis(AxisPosition.Bottom);
+        //    bottomAxis.MajorTickMark = AxisTickMark.None;
+        //    IValueAxis leftAxis = chart.ChartAxisFactory.CreateValueAxis(AxisPosition.Left);
+        //    leftAxis.Crosses = AxisCrosses.AutoZero;
+        //    leftAxis.SetCrossBetween(AxisCrossBetween.Between);
 
 
-            //IChartDataSource<string> categoryAxis = DataSources.FromStringCellRange(sheet, new CellRangeAddress(0, 0, 1, 1));
-            //IChartDataSource<double> valueAxis = DataSources.FromNumericCellRange(sheet, new CellRangeAddress(1, categoriesNum, 1, 1));
-            IChartDataSource<string> categoryAxis = DataSources.FromArray(new string[] { "bydlo" });
-            IChartDataSource<double> valueAxis = DataSources.FromArray<double>(new double[] { 5.5, 45.2, 23, 29 });
-            var serie = lineChartData.AddSeries(categoryAxis, valueAxis);
-            serie.SetTitle("Bydlo");
+        //    //IChartDataSource<string> categoryAxis = DataSources.FromStringCellRange(sheet, new CellRangeAddress(0, 0, 1, 1));
+        //    //IChartDataSource<double> valueAxis = DataSources.FromNumericCellRange(sheet, new CellRangeAddress(1, categoriesNum, 1, 1));
+        //    IChartDataSource<string> categoryAxis = DataSources.FromArray(new string[] { "bydlo" });
+        //    IChartDataSource<double> valueAxis = DataSources.FromArray<double>(new double[] { 5.5, 45.2, 23, 29 });
+        //    var serie = lineChartData.AddSeries(categoryAxis, valueAxis);
+        //    serie.SetTitle("Bydlo");
 
-            chart.Plot(lineChartData);
-        }
+        //    chart.Plot(lineChartData);
+        //}
 
         private static void CheckEnumerableLengthEqual(Dictionary<Sensor, IEnumerable<Measurement>> data)
         {
@@ -98,10 +131,12 @@ namespace TemperatureViewer.Helpers
         {
             IRow row = sheet.CreateRow(0);
             row.CreateCell(0).SetCellValue("Время");
+            sheet.SetColumnWidth(0, 7000);
             int i = 1;
             foreach (string name in names)
             {
                 row.CreateCell(i).SetCellValue(name);
+                sheet.SetColumnWidth(i, 7000);
                 ++i;
             }
         }
@@ -116,7 +151,7 @@ namespace TemperatureViewer.Helpers
             }
 
             int j = 1;
-            foreach (var keyValuePair in data)
+            foreach (var keyValuePair in data.OrderBy(s => s.Key.Name))
             {
                 int k = 1;
                 foreach (var measurement in keyValuePair.Value)

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using TemperatureViewer.BackgroundServices;
@@ -156,7 +157,7 @@ namespace TemperatureViewer.Controllers
             }
 
             byte[] array = resultStream.ToArray();
-            return File(array, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            return File(array, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fromDate.ToString("g", CultureInfo.GetCultureInfo("de-DE")) + " - " + toDate.ToString("g", CultureInfo.GetCultureInfo("de-DE")) + ".xlsx");
         }
 
         private IEnumerable<Measurement> GetData(int id, DateTime fromDate, DateTime toDate)
@@ -232,7 +233,7 @@ namespace TemperatureViewer.Controllers
             foreach (var group in groups)
             {
                 int k = j;
-                list.Add(group.Where((m, i) => (i + offsets[k]) % divisor == 0));
+                list.Add(group.OrderBy(m => m.MeasurementTime).Where((m, i) => (i + offsets[k]) % divisor == 0));
                 j++;
             }
 
