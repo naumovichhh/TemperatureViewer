@@ -71,13 +71,11 @@ if (modelJson.length > 0) {
             return acc;
     });
     data = {
-        labels: modelJson[0].measurements.map((e) => {
-            return e.time.slice(0, 16).replace("T", " ");
+        labels: measurementTimes.map(t => {
+            return t.slice(0, 16).replace("T", " ");
         }),
         datasets: modelJson.map((e, i) => {
-            let a = e.measurements.map(m => m.value);
-            let b = new Array(numberOfMeasurements - e.measurements.length).fill(null);
-            a.unshift(...b);
+            let a = e.measurements.map(m => m?.value);
             return {
                 label: e.sensorName,
                 backgroundColor: colors[i],
