@@ -54,15 +54,18 @@ namespace TemperatureViewer.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Image")] Location location)
+        public async Task<IActionResult> Create(LocationViewModel viewModel)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(location);
+                string fileName = UploadFile(viewModel.Image);
+                var entity = new Location() { Name = viewModel.Name, Image = fileName };
+                _context.Add(entity);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(location);
+
+            return View(viewModel);
         }
 
         // GET: Locations/Edit/5
@@ -73,12 +76,14 @@ namespace TemperatureViewer.Controllers
                 return NotFound();
             }
 
-            var location = await _context.Location.FindAsync(id);
-            if (location == null)
+            var entity = await _context.Location.FindAsync(id);
+            if (entity == null)
             {
                 return NotFound();
             }
-            return View(location);
+
+            var viewModel = new LocationViewModel() { Name = entity.Name };
+            return View(viewModel);
         }
 
         // POST: Locations/Edit/5
@@ -86,7 +91,7 @@ namespace TemperatureViewer.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Image")] Location location)
+        public async Task<IActionResult> Edit(int id, LocationViewModel viewModel)
         {
             if (id != location.Id)
             {
