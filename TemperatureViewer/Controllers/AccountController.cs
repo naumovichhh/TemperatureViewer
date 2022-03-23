@@ -13,7 +13,7 @@ namespace TemperatureViewer.Controllers
         public IActionResult Login()
         {
             if (User.Identity.IsAuthenticated)
-                return Redirect("/Admin");
+                return Redirect("/Admin/Sensors");
 
             return View();
         }

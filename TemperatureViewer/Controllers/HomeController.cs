@@ -158,7 +158,8 @@ namespace TemperatureViewer.Controllers
             }
 
             byte[] array = resultStream.ToArray();
-            return File(array, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fromDate.ToString("g", CultureInfo.GetCultureInfo("de-DE")) + " - " + toDate.ToString("g", CultureInfo.GetCultureInfo("de-DE")) + ".xlsx");
+            string fileName = fromDate.ToString("g", CultureInfo.GetCultureInfo("de-DE")) + " - " + toDate.ToString("g", CultureInfo.GetCultureInfo("de-DE")) + (id == null ? "" : $" Id{id.Value}") + ".xlsx";
+            return File(array, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
         }
 
         private IEnumerable<Measurement> GetData(int id, DateTime fromDate, DateTime toDate)

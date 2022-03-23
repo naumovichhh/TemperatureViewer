@@ -22,6 +22,9 @@ namespace TemperatureViewer.Data
             builder.Entity<Measurement>().ToTable("Measurements");
             builder.Entity<Sensor>().ToTable("Sensors");
             builder.Entity<User>().ToTable("Users");
+            base.OnModelCreating(builder);
         }
+
+        public DbSet<TemperatureViewer.Models.Location> Location { get; set; }
     }
 }
