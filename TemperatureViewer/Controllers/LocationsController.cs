@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -10,13 +14,17 @@ using TemperatureViewer.Models;
 
 namespace TemperatureViewer.Controllers
 {
+    [Route("Admin/{controller}/{action}/{id?}")]
+    [Authorize]
     public class LocationsController : Controller
     {
         private readonly DefaultContext _context;
+        private readonly IWebHostEnvironment _environment;
 
-        public LocationsController(DefaultContext context)
+        public LocationsController(DefaultContext context, IWebHostEnvironment environment)
         {
             _context = context;
+            _environment = environment;
         }
 
         // GET: Locations
@@ -82,7 +90,7 @@ namespace TemperatureViewer.Controllers
                 return NotFound();
             }
 
-            var viewModel = new LocationViewModel() { Name = entity.Name };
+            var viewModel = new LocationViewModel() { Id = entity.Id, Name = entity.Name };
             return View(viewModel);
         }
 
@@ -93,21 +101,24 @@ namespace TemperatureViewer.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, LocationViewModel viewModel)
         {
-            if (id != location.Id)
-            {
-                return NotFound();
-            }
+            Location entity = await _context.Location.FirstOrDefaultAsync(m => m.Id == id);
+            string oldFileName = entity.Image;
 
             if (ModelState.IsValid)
             {
+                string fileName = UploadFile(viewModel.Image);
+                entity.Name = viewModel.Name;
+                entity.Image = fileName;
                 try
                 {
-                    _context.Update(location);
+                    _context.Update(entity);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!LocationExists(location.Id))
+                    System.IO.File.Delete(fileName);
+
+                    if (!LocationExists(entity.Id))
                     {
                         return NotFound();
                     }
@@ -116,9 +127,12 @@ namespace TemperatureViewer.Controllers
                         throw;
                     }
                 }
+
+                System.IO.File.Delete(oldFileName);
                 return RedirectToAction(nameof(Index));
             }
-            return View(location);
+
+            return View(viewModel);
         }
 
         // GET: Locations/Delete/5
@@ -145,14 +159,29 @@ namespace TemperatureViewer.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var location = await _context.Location.FindAsync(id);
+            string fileName = location.Image;
             _context.Location.Remove(location);
             await _context.SaveChangesAsync();
+            System.IO.File.Delete(fileName);
             return RedirectToAction(nameof(Index));
         }
 
         private bool LocationExists(int id)
         {
             return _context.Location.Any(e => e.Id == id);
+        }
+
+        private string UploadFile(IFormFile file)
+        {
+            string fileName = _environment.WebRootPath + "\\" + Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+            using (Stream readStream = file.OpenReadStream(), writeStream = System.IO.File.Create(fileName))
+            {
+                byte[] buffer = new byte[readStream.Length];
+                readStream.Read(buffer, 0, buffer.Length);
+                writeStream.Write(buffer, 0, buffer.Length);
+            }
+
+            return fileName;
         }
     }
 }
