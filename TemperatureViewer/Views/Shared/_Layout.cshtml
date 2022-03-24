@@ -28,16 +28,19 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="History" asp-route-id="">История</a>
                         </li>
-                        @if(User.Identity.IsAuthenticated)
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Sensors" asp-action="Index" asp-route-id="">Датчики</a>
-                            </li>
-                        }
                     </ul>
                     @if (User.Identity.IsAuthenticated)
                     {
-                        <span class="navbar-text"><a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Logout">Выйти</a></span>
+                        <div class="dropdown">
+                            <button class="btn dropdown-toggle" id="dropdownMenuButton" data-toggle="dropdown">
+                                Администрирование
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Sensors" asp-action="Index">Датчики</a>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Locations" asp-action="Index">Локации</a>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Logout">Выйти</a>
+                            </div>
+                        </div>
                     }
                     else
                     {

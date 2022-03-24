@@ -269,14 +269,6 @@ namespace TemperatureViewer.Controllers
 
             return result;
         }
-
-        private bool InPeriod(DateTime input, DateTime from, DateTime to)
-        {
-            if (input < to && input > from)
-                return true;
-            else
-                return false;
-        }
         
         public IActionResult Privacy()
         {
