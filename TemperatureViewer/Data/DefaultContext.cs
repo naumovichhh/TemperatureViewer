@@ -16,6 +16,7 @@ namespace TemperatureViewer.Data
         public DbSet<Measurement> Measurements { get; set; }
         public DbSet<Sensor> Sensors { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<Location> Location { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -24,7 +25,5 @@ namespace TemperatureViewer.Data
             builder.Entity<User>().ToTable("Users");
             base.OnModelCreating(builder);
         }
-
-        public DbSet<TemperatureViewer.Models.Location> Location { get; set; }
     }
 }

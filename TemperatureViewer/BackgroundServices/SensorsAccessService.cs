@@ -71,7 +71,16 @@ namespace TemperatureViewer.BackgroundServices
             {
                 using (var httpClient = new HttpClient())
                 {
-                    var str = httpClient.GetStringAsync(sensorsArray[i].Uri).Result;
+                    string str;
+                    try
+                    {
+                        str = httpClient.GetStringAsync(sensorsArray[i].Uri).Result;
+                    }
+                    catch
+                    {
+                        return;
+                    }
+
                     decimal measured;
                     if (decimal.TryParse(str, out measured) || decimal.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out measured))
                     {
@@ -88,7 +97,16 @@ namespace TemperatureViewer.BackgroundServices
         {
             using (var httpClient = new HttpClient())
             {
-                var str = httpClient.GetStringAsync(sensor.Uri).Result;
+                string str;
+                try
+                {
+                    str = httpClient.GetStringAsync(sensor.Uri).Result;
+                }
+                catch
+                {
+                    return;
+                }
+
                 decimal measured;
                 if (decimal.TryParse(str, out measured) || decimal.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out measured))
                 {

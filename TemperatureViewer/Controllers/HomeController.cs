@@ -89,6 +89,12 @@ namespace TemperatureViewer.Controllers
             return View(model);
         }
 
+        public IActionResult Locations()
+        {
+            var locations = _context.Location.AsNoTracking().AsEnumerable();
+            return View(locations);
+        }
+
         //public IActionResult History(int? id, string from, string to, string loh)       
         //{
         //    DateTime fromDate, toDate;

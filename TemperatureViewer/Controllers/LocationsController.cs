@@ -14,7 +14,7 @@ using TemperatureViewer.Models;
 
 namespace TemperatureViewer.Controllers
 {
-    [Route("Admin/{controller}/{action}/{id?}")]
+    [Route("Admin/{controller}/{action=Index}/{id?}")]
     [Authorize]
     public class LocationsController : Controller
     {
@@ -173,7 +173,7 @@ namespace TemperatureViewer.Controllers
 
         private string UploadFile(IFormFile file)
         {
-            string fileName = _environment.WebRootPath + "\\" + Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+            string fileName = $"{_environment.WebRootPath}\\img\\{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
             using (Stream readStream = file.OpenReadStream(), writeStream = System.IO.File.Create(fileName))
             {
                 byte[] buffer = new byte[readStream.Length];
