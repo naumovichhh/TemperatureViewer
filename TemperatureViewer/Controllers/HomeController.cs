@@ -62,6 +62,9 @@ namespace TemperatureViewer.Controllers
             if (!dictionary.All(e => e.Value.Count() == dictionary.First().Value.Count()))
                 throw new ArgumentException("Data must contain enumerables of measurements of equal length.", nameof(dictionary));
 
+            if (dictionary.Count() == 0)
+                return View();
+
             var maxMeasurementsNum = 50;
             var measurementsCount = dictionary.First().Value.Count();
             int divisor = (measurementsCount - 1) / maxMeasurementsNum + 1;
