@@ -93,6 +93,41 @@ namespace TemperatureViewer.BackgroundServices
             return list.ToArray();
         }
 
+        public Measurement[] GetMeasurements(int locationId)
+        {
+            Sensor[] sensorsArray;
+            lock (lockObject)
+            {
+                sensorsArray = context.Sensors.Where(s => s.LocationId == locationId).AsNoTracking().ToArray();
+            }
+            List<Measurement> list = new List<Measurement>();
+
+            Parallel.For(0, sensorsArray.Length, (i) =>
+            {
+                using (var httpClient = new HttpClient())
+                {
+                    string str;
+                    try
+                    {
+                        str = httpClient.GetStringAsync(sensorsArray[i].Uri).Result;
+                    }
+                    catch
+                    {
+                        return;
+                    }
+
+                    decimal measured;
+                    if (decimal.TryParse(str, out measured) || decimal.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out measured))
+                    {
+                        measured /= 1.000000000000000000000000000000000m;
+                        list.Add(new Measurement() { Temperature = measured, Sensor = sensorsArray[i] });
+                    }
+                }
+            });
+
+            return list.ToArray();
+        }
+
         private void WriteMeasurementsFromTxt(Sensor sensor)
         {
             using (var httpClient = new HttpClient())

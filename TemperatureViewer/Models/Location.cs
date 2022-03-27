@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace TemperatureViewer.Models
 {
@@ -9,5 +10,7 @@ namespace TemperatureViewer.Models
         public string Name { get; set; }
         [Required]
         public string Image { get; set; }
+
+        public ICollection<Sensor> Sensors { get; set; }
     }
 }
