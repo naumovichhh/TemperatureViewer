@@ -45,7 +45,6 @@ namespace TemperatureViewer.BackgroundServices
                     Sensor[] sensorsArray;
                     lock (lockObject)
                     {
-                        var sensorss = context.Sensors.ToList();
                         sensors = context.Sensors.AsNoTracking().ToList();
                         sensorsArray = sensors.ToArray();
                     }
