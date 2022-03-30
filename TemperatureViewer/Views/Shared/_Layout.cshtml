@@ -16,7 +16,6 @@
         </nav>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Термометры</a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -42,6 +41,10 @@
                             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Sensors" asp-action="Index">Датчики</a>
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Locations" asp-action="Index">Локации</a>
+                                @if (User.IsInRole("admin"))
+                                {
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Users" asp-action="Index">Пользователи</a>
+                                }
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Logout">Выйти</a>
                             </div>
                         </div>

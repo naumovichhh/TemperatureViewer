@@ -128,7 +128,7 @@ namespace TemperatureViewer.Controllers
                     }
                 }
 
-                System.IO.File.Delete(oldFileName);
+                System.IO.File.Delete($"{_environment.WebRootPath}\\img\\{oldFileName}");
                 return RedirectToAction(nameof(Index));
             }
 
@@ -181,7 +181,7 @@ namespace TemperatureViewer.Controllers
                 writeStream.Write(buffer, 0, buffer.Length);
             }
 
-            return fileName;
+            return Path.GetFileName(fileName);
         }
     }
 }

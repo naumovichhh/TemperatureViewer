@@ -27,7 +27,7 @@ namespace TemperatureViewer.Controllers
         public IActionResult Login()
         {
             if (User.Identity.IsAuthenticated)
-                return RedirectToAction("Index", "Sensors");
+                return RedirectToAction("Index", "Admin");
 
             return View();
         }
@@ -71,7 +71,7 @@ namespace TemperatureViewer.Controllers
                 if (returnUrl != null)
                     return Redirect(returnUrl);
                 else
-                    return RedirectToAction("Index", "Sensors");
+                    return RedirectToAction("Index", "Admin");
             }
 
             return View(loginModel);
