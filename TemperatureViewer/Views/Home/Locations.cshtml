@@ -19,6 +19,9 @@
         <div class="col-md-7 mt-1"><img class="img-fluid img-responsive rounded product-image img-clickable" src="~/img/@(System.IO.Path.GetFileName(item.Image))"></div>
         <div class="col-md-5 mt-1">
             <h5>@item.Name</h5>
+            <div class="d-flex flex-row">
+                <a asp-controller="Home" asp-action="Index" asp-route-locationId="@item.Id">Текущие показатели</a>
+            </div>
         </div>
     </div>
 }

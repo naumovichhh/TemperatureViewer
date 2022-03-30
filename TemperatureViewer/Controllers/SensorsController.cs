@@ -12,7 +12,7 @@ using TemperatureViewer.Models;
 namespace TemperatureViewer.Controllers
 {
     [Authorize]
-    [Route("Admin/Sensors/{action=Index}/{id?}")]
+    [Route("Admin/{controller}/{action=Index}/{id?}")]
     public class SensorsController : Controller
     {
         private readonly DefaultContext _context;

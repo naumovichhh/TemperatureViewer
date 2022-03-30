@@ -28,9 +28,18 @@ namespace TemperatureViewer.Controllers
             _sensorsAccessService = temperatureService;
         }
 
-        public IActionResult Index()
+        public IActionResult Index(int locationId)
         {
-            var measurements = _sensorsAccessService.GetMeasurements().OrderBy(e => e.Sensor.Name);
+            IEnumerable<Measurement> measurements;
+            if (locationId != 0)
+            {
+                measurements = _sensorsAccessService.GetMeasurements(locationId).OrderBy(e => e.Sensor.Name);
+            }
+            else
+            {
+                measurements = _sensorsAccessService.GetMeasurements().OrderBy(e => e.Sensor.Name);
+            }
+
             var viewModel = measurements?.Select(e => new MeasurementViewModel() { Temperature = e.Temperature, SensorName = e.Sensor.Name, SensorId = e.Sensor.Id });
             return View(viewModel);
         }
