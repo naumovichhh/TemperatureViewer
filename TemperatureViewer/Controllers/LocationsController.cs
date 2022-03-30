@@ -30,7 +30,7 @@ namespace TemperatureViewer.Controllers
         // GET: Locations
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Location.ToListAsync());
+            return View(await _context.Locations.ToListAsync());
         }
 
         // GET: Locations/Details/5
@@ -41,7 +41,7 @@ namespace TemperatureViewer.Controllers
                 return NotFound();
             }
 
-            var location = await _context.Location
+            var location = await _context.Locations
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (location == null)
             {
@@ -84,7 +84,7 @@ namespace TemperatureViewer.Controllers
                 return NotFound();
             }
 
-            var entity = await _context.Location.FindAsync(id);
+            var entity = await _context.Locations.FindAsync(id);
             if (entity == null)
             {
                 return NotFound();
@@ -101,7 +101,7 @@ namespace TemperatureViewer.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, LocationViewModel viewModel)
         {
-            Location entity = await _context.Location.FirstOrDefaultAsync(m => m.Id == id);
+            Location entity = await _context.Locations.FirstOrDefaultAsync(m => m.Id == id);
             string oldFileName = entity.Image;
 
             if (ModelState.IsValid)
@@ -143,7 +143,7 @@ namespace TemperatureViewer.Controllers
                 return NotFound();
             }
 
-            var location = await _context.Location
+            var location = await _context.Locations
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (location == null)
             {
@@ -158,9 +158,9 @@ namespace TemperatureViewer.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var location = await _context.Location.FindAsync(id);
+            var location = await _context.Locations.FindAsync(id);
             string fileName = location.Image;
-            _context.Location.Remove(location);
+            _context.Locations.Remove(location);
             await _context.SaveChangesAsync();
             System.IO.File.Delete(fileName);
             return RedirectToAction(nameof(Index));
@@ -168,7 +168,7 @@ namespace TemperatureViewer.Controllers
 
         private bool LocationExists(int id)
         {
-            return _context.Location.Any(e => e.Id == id);
+            return _context.Locations.Any(e => e.Id == id);
         }
 
         private string UploadFile(IFormFile file)

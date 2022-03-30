@@ -18,13 +18,13 @@ namespace TemperatureViewer.Helpers
 {
     public static class ExcelHelper
     {
-        public static MemoryStream Create(Dictionary<Sensor, IEnumerable<Measurement>> data)
+        public static MemoryStream Create(Dictionary<Sensor, IEnumerable<Measurement>> data, IEnumerable<DateTime> measurementTimes)
         {
             CheckEnumerableLengthEqual(data);
             IWorkbook workbook = new XSSFWorkbook();
             ISheet sheet = workbook.CreateSheet("Sheet1");
             WriteHeader(sheet, data.Keys.Select(s => s.Name).OrderBy(s => s));
-            WriteCells(sheet, data);
+            WriteCells(sheet, data, measurementTimes);
             MemoryStream result = new MemoryStream();
             workbook.Write(result);
             return result;
@@ -141,12 +141,12 @@ namespace TemperatureViewer.Helpers
             }
         }
 
-        private static void WriteCells(ISheet sheet, Dictionary<Sensor, IEnumerable<Measurement>> data)
+        private static void WriteCells(ISheet sheet, Dictionary<Sensor, IEnumerable<Measurement>> data, IEnumerable<DateTime> measurementTimes)
         {
             int i = 1;
-            foreach (var measurement in data.First().Value)
+            foreach (var dateTime in measurementTimes)
             {
-                sheet.CreateRow(i).CreateCell(0).SetCellValue(measurement.MeasurementTime.ToString("g", CultureInfo.GetCultureInfo("de-DE")));
+                sheet.CreateRow(i).CreateCell(0).SetCellValue(dateTime.ToString("g", CultureInfo.GetCultureInfo("de-DE")));
                 ++i;
             }
 

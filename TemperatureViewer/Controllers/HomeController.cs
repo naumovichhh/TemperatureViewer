@@ -100,7 +100,7 @@ namespace TemperatureViewer.Controllers
 
         public IActionResult Locations()
         {
-            var locations = _context.Location.AsNoTracking().AsEnumerable();
+            var locations = _context.Locations.AsNoTracking().AsEnumerable();
             return View(locations);
         }
 
@@ -150,15 +150,15 @@ namespace TemperatureViewer.Controllers
 
             if (id == null)
             {
-                IEnumerable<DateTime> useless;
-                Dictionary<int, IEnumerable<Measurement>> data = GetData(fromDate, toDate, out useless);
+                IEnumerable<DateTime> measurementTimes;
+                Dictionary<int, IEnumerable<Measurement>> data = GetData(fromDate, toDate, out measurementTimes);
                 Dictionary<Sensor, IEnumerable<Measurement>> output = new Dictionary<Sensor, IEnumerable<Measurement>>();
                 foreach (var kvp in data)
                 {
                     output.Add(_context.Sensors.First(s => s.Id == kvp.Key), kvp.Value);
                 }
 
-                resultStream = ExcelHelper.Create(output);
+                resultStream = ExcelHelper.Create(output, measurementTimes);
             }
             else
             {
@@ -169,7 +169,7 @@ namespace TemperatureViewer.Controllers
 
                 IEnumerable<Measurement> enumerable = GetData(id.Value, fromDate, toDate);
                 Dictionary<Sensor, IEnumerable<Measurement>> output = new Dictionary<Sensor, IEnumerable<Measurement>>() { { _context.Sensors.First(s => s.Id == id), enumerable } };
-                resultStream = ExcelHelper.Create(output);
+                resultStream = ExcelHelper.Create(output, output.Values.First().Select(m => m.MeasurementTime));
             }
 
             byte[] array = resultStream.ToArray();
