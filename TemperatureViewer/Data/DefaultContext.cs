@@ -24,6 +24,7 @@ namespace TemperatureViewer.Data
             builder.Entity<Sensor>().ToTable("Sensors");
             builder.Entity<User>().ToTable("Users");
             builder.Entity<Location>().ToTable("Locations");
+            builder.Entity<Sensor>().HasOne(s => s.Location).WithMany(l => l.Sensors).OnDelete(DeleteBehavior.SetNull);
             base.OnModelCreating(builder);
         }
     }

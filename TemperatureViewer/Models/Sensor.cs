@@ -13,7 +13,7 @@ namespace TemperatureViewer.Models
         public string Name { get; set; }
         [Required]
         public string Uri { get; set; }
-        public int LocationId { get; set; }
+        public int? LocationId { get; set; }
 
         public ICollection<Measurement> Measurements { get; set; }
         public Location Location { get; set; }

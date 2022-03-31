@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.IO;
-using Microsoft.Office.Interop.Excel;
 using NPOI.XSSF.UserModel;
 using TemperatureViewer.Models;
 using NPOI.HSSF.UserModel;
@@ -179,63 +178,63 @@ namespace TemperatureViewer.Helpers
         //    (worksheet.Columns[1] as dynamic).ColumnWidth = 20;
         //}
 
-        private static void WriteCells(Worksheet worksheet, Dictionary<Sensor, IEnumerable<Measurement>> data)
-        {
-            object[,] objects = new object[data.First().Value.Count(), data.Count];
-            int i = 0;
-            foreach (var measurement in data.First().Value)
-            {
-                objects[i, 0] = measurement.MeasurementTime.ToString();
-                ++i;
-            }
+        //private static void WriteCells(Worksheet worksheet, Dictionary<Sensor, IEnumerable<Measurement>> data)
+        //{
+        //    object[,] objects = new object[data.First().Value.Count(), data.Count];
+        //    int i = 0;
+        //    foreach (var measurement in data.First().Value)
+        //    {
+        //        objects[i, 0] = measurement.MeasurementTime.ToString();
+        //        ++i;
+        //    }
 
-            int j = 1;
-            foreach (var keyValuePair in data)
-            {
-                int k = 0;
-                foreach (var measurement in keyValuePair.Value)
-                {
-                    objects[k, j] = measurement.Temperature;
-                    k++;
-                }
+        //    int j = 1;
+        //    foreach (var keyValuePair in data)
+        //    {
+        //        int k = 0;
+        //        foreach (var measurement in keyValuePair.Value)
+        //        {
+        //            objects[k, j] = measurement.Temperature;
+        //            k++;
+        //        }
 
-                j++;
-            }
+        //        j++;
+        //    }
 
-            var range = worksheet.Range[worksheet.Cells[2, 1], worksheet.Cells[data.First().Value.Count() + 1, data.Count]];
-            range.Value2 = objects;
-        }
+        //    var range = worksheet.Range[worksheet.Cells[2, 1], worksheet.Cells[data.First().Value.Count() + 1, data.Count]];
+        //    range.Value2 = objects;
+        //}
         
-        private static void WriteCells(Worksheet worksheet, Dictionary<string, string> records)
-        {
-            object[,] data = new object[records.Count - 1, 2];
-            int i = 0;
-            foreach (KeyValuePair<string, string> pair in records)
-            {
-                if (pair.Key == "Termometer")
-                    continue;
+        //private static void WriteCells(Worksheet worksheet, Dictionary<string, string> records)
+        //{
+        //    object[,] data = new object[records.Count - 1, 2];
+        //    int i = 0;
+        //    foreach (KeyValuePair<string, string> pair in records)
+        //    {
+        //        if (pair.Key == "Termometer")
+        //            continue;
 
-                data[i, 0] = pair.Key;
-                data[i, 1] = double.Parse(pair.Value, CultureInfo.InvariantCulture.NumberFormat);
-                ++i;
-            }
+        //        data[i, 0] = pair.Key;
+        //        data[i, 1] = double.Parse(pair.Value, CultureInfo.InvariantCulture.NumberFormat);
+        //        ++i;
+        //    }
 
-            var range = worksheet.Range[$"A2:B{records.Count}"];
-            range.Value2 = data;
-        }
+        //    var range = worksheet.Range[$"A2:B{records.Count}"];
+        //    range.Value2 = data;
+        //}
 
-        private static void CreateChart(Worksheet worksheet, int length, string title)
-        {
-            ChartObjects charts = worksheet.ChartObjects() as ChartObjects;
-            ChartObject chartObject = charts.Add(160, 40, 600, 300) as ChartObject;
-            Chart chart = chartObject.Chart;
-            Microsoft.Office.Interop.Excel.Range range = worksheet.Range[$"A2:B{length + 1}"];
-            chart.SetSourceData(range);
-            (chart.Axes(XlAxisType.xlCategory) as Axis).CategoryType = XlCategoryType.xlCategoryScale;
-            chart.ChartType = XlChartType.xlLine;
-            chart.ChartWizard(CategoryTitle: "Время", ValueTitle: "Температура");
-            chart.HasLegend = false;
-            chart.ChartWizard(Title: title);
-        }
+        //private static void CreateChart(Worksheet worksheet, int length, string title)
+        //{
+        //    ChartObjects charts = worksheet.ChartObjects() as ChartObjects;
+        //    ChartObject chartObject = charts.Add(160, 40, 600, 300) as ChartObject;
+        //    Chart chart = chartObject.Chart;
+        //    Microsoft.Office.Interop.Excel.Range range = worksheet.Range[$"A2:B{length + 1}"];
+        //    chart.SetSourceData(range);
+        //    (chart.Axes(XlAxisType.xlCategory) as Axis).CategoryType = XlCategoryType.xlCategoryScale;
+        //    chart.ChartType = XlChartType.xlLine;
+        //    chart.ChartWizard(CategoryTitle: "Время", ValueTitle: "Температура");
+        //    chart.HasLegend = false;
+        //    chart.ChartWizard(Title: title);
+        //}
     }
 }

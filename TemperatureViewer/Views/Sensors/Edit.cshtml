@@ -23,6 +23,17 @@
                 <span asp-validation-for="Uri" class="text-danger"></span>
             </div>
             <div class="form-group">
+                <label>Location</label>
+                <select class="form-control selectpicker" asp-for="LocationId">
+                    <option selected value=""></option>
+                    @foreach (Location option in ViewBag.Locations)
+                    {
+                        <option value="@option.Id">@option.Name</option>
+                    }
+                </select>
+                <span asp-validation-for="LocationId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
                 <input type="submit" value="Сохранить" class="btn btn-primary" />
             </div>
         </form>

@@ -49,6 +49,7 @@ namespace TemperatureViewer.Controllers
         // GET: Sensors/Create
         public IActionResult Create()
         {
+            ViewBag.Locations = _context.Locations.AsNoTracking().AsEnumerable();
             return View();
         }
 
@@ -57,7 +58,7 @@ namespace TemperatureViewer.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Uri")] Sensor sensor)
+        public async Task<IActionResult> Create(Sensor sensor)
         {
             if (ModelState.IsValid)
             {
@@ -81,6 +82,8 @@ namespace TemperatureViewer.Controllers
             {
                 return NotFound();
             }
+
+            ViewBag.Locations = _context.Locations.AsNoTracking().AsEnumerable();
             return View(sensor);
         }
 
@@ -89,7 +92,7 @@ namespace TemperatureViewer.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Uri")] Sensor sensor)
+        public async Task<IActionResult> Edit(int id, Sensor sensor)
         {
             if (id != sensor.Id)
             {
