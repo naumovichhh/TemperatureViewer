@@ -5,26 +5,21 @@
 }
 
 <div class="row">
-@foreach (var item in Model) {
-@*<div class="col-12 col-md-6">
-    <div class="thumbnail">
-    <img width="300" class="group list-group-image" src="~/img/@(System.IO.Path.GetFileName(item.Image))">
-    <div class="caption">
-        <h4 class="group list-group-item inner">@item.Name</h4>
-    </div>
-    </div>
-</div>*@
-
-    <div class="row p-2 bg-white border rounded">
-        <div class="col-md-7 mt-1"><img class="img-fluid img-responsive rounded product-image img-clickable" src="~/img/@(item.Image)"></div>
-        <div class="col-md-5 mt-1">
-            <h5>@item.Name</h5>
-            <div class="d-flex flex-row">
-                <a asp-controller="Home" asp-action="Index" asp-route-locationId="@item.Id">Текущие показатели</a>
+    @foreach (var item in Model)
+    {
+        <div class="row p-2 bg-white border rounded">
+            <div class="col-md-7 mt-1"><img class="img-fluid img-responsive rounded product-image img-clickable" src="~/img/@(item.Image)"></div>
+            <div class="col-md-5 mt-1">
+                <h5>@item.Name</h5>
+                <div class="d-flex flex-row">
+                    <a asp-controller="Home" asp-action="Index" asp-route-locationId="@item.Id">Показатели</a>
+                </div>
+                <div class="d-flex flex-row">
+                    <a asp-controller="Home" asp-action="History" asp-route-locationId="@item.Id">История</a>
+                </div>
             </div>
         </div>
-    </div>
-}
+    }
 </div>
 <div id="modal" class="modal">
     <span class="close">&times;</span>

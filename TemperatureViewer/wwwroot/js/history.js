@@ -21,9 +21,10 @@ $("#date-to").val(bagValueTo);
 $("#apply-period").click(function () {
     let valueFrom = $("#date-from").val();
     let valueTo = $("#date-to").val();
+    let params = new URLSearchParams(location.search);
     if (!valueFrom || !valueTo) {
         if (!valueFrom && !valueTo) {
-            location.href = location.protocol + "//" + location.host + location.pathname;
+            location.href = location.protocol + "//" + location.host + location.pathname + (params.get("locationId") ? `?locationId=${params.get("locationId")}` : "");
         }
         else {
             return;
@@ -35,15 +36,18 @@ $("#apply-period").click(function () {
         return;
     }
 
-    location.href = location.protocol + "//" + location.host + location.pathname + `?from=${valueFrom}&to=${valueTo}`;
+    location.href = location.protocol + "//" + location.host + location.pathname + `?from=${valueFrom}&to=${valueTo}`
+        + (params.get("locationId") ? `&locationId=${params.get("locationId")}` : "");
 });
 
 $("#download-data").click(function () {
     let valueFrom = $("#date-from").val();
     let valueTo = $("#date-to").val();
+    let params = new URLSearchParams(location.search);
     if (!valueFrom || !valueTo) {
         if (!valueFrom && !valueTo) {
-            location.href = location.protocol + "//" + location.host + location.pathname.replace(/history/i, "Download");
+            location.href = location.protocol + "//" + location.host + location.pathname.replace(/history/i, "Download")
+                + (params.get("locationId") ? `?locationId=${params.get("locationId")}` : "");
         }
         else {
             return;
@@ -55,7 +59,8 @@ $("#download-data").click(function () {
         return;
     }
 
-    location.href = location.protocol + "//" + location.host + location.pathname.replace(/history/i, "Download") + `?from=${valueFrom}&to=${valueTo}`;
+    location.href = location.protocol + "//" + location.host + location.pathname.replace(/history/i, "Download") + `?from=${valueFrom}&to=${valueTo}`
+        + (params.get("locationId") ? `&locationId=${params.get("locationId")}` : "");
 });
 
 let context = document.getElementById("chart").getContext("2d");

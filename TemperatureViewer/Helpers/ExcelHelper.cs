@@ -17,7 +17,7 @@ namespace TemperatureViewer.Helpers
 {
     public static class ExcelHelper
     {
-        public static MemoryStream Create(Dictionary<Sensor, IEnumerable<Measurement>> data, IEnumerable<DateTime> measurementTimes)
+        public static MemoryStream Create(IDictionary<Sensor, IEnumerable<Measurement>> data, IEnumerable<DateTime> measurementTimes)
         {
             CheckEnumerableLengthEqual(data);
             IWorkbook workbook = new XSSFWorkbook();
@@ -120,7 +120,7 @@ namespace TemperatureViewer.Helpers
         //    chart.Plot(lineChartData);
         //}
 
-        private static void CheckEnumerableLengthEqual(Dictionary<Sensor, IEnumerable<Measurement>> data)
+        private static void CheckEnumerableLengthEqual(IDictionary<Sensor, IEnumerable<Measurement>> data)
         {
             if (!data.All(e => e.Value.Count() == data.First().Value.Count()))
                 throw new ArgumentException("Data must contain enumerables of measurements of equal length.", nameof(data));
@@ -140,7 +140,7 @@ namespace TemperatureViewer.Helpers
             }
         }
 
-        private static void WriteCells(ISheet sheet, Dictionary<Sensor, IEnumerable<Measurement>> data, IEnumerable<DateTime> measurementTimes)
+        private static void WriteCells(ISheet sheet, IDictionary<Sensor, IEnumerable<Measurement>> data, IEnumerable<DateTime> measurementTimes)
         {
             int i = 1;
             foreach (var dateTime in measurementTimes)
