@@ -143,7 +143,32 @@ namespace TemperatureViewer.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var sensor = await _context.Sensors.FindAsync(id);
-            _context.Sensors.Remove(sensor);
+            sensor.WasDeleted = true;
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
+        public async Task<IActionResult> Restore(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var sensor = await _context.Sensors.FirstOrDefaultAsync(s => s.Id == id);
+            if (sensor == null)
+            {
+                return NotFound();
+            }
+
+            return View(sensor);
+        }
+
+        [HttpPost, ActionName("Restore")]
+        public async Task<IActionResult> RestoreConfirmed(int id)
+        {
+            var sensor = await _context.Sensors.FindAsync(id);
+            sensor.WasDeleted = false;
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }

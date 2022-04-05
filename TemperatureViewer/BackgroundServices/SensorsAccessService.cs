@@ -45,7 +45,7 @@ namespace TemperatureViewer.BackgroundServices
                     Sensor[] sensorsArray;
                     lock (lockObject)
                     {
-                        sensors = context.Sensors.AsNoTracking().ToList();
+                        sensors = context.Sensors.Where(s => !s.WasDeleted).AsNoTracking().ToList();
                         sensorsArray = sensors.ToArray();
                     }
 
@@ -63,7 +63,7 @@ namespace TemperatureViewer.BackgroundServices
             Sensor[] sensorsArray;
             lock (lockObject)
             {
-                sensorsArray = context.Sensors.AsNoTracking().ToArray();
+                sensorsArray = context.Sensors.Where(s => !s.WasDeleted).AsNoTracking().ToArray();
             }
             List<Measurement> list = new List<Measurement>();
 
@@ -98,7 +98,7 @@ namespace TemperatureViewer.BackgroundServices
             Sensor[] sensorsArray;
             lock (lockObject)
             {
-                sensorsArray = context.Sensors.Where(s => s.LocationId == locationId).AsNoTracking().ToArray();
+                sensorsArray = context.Sensors.Where(s => !s.WasDeleted && s.LocationId == locationId).AsNoTracking().ToArray();
             }
             List<Measurement> list = new List<Measurement>();
 

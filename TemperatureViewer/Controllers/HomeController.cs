@@ -46,6 +46,23 @@ namespace TemperatureViewer.Controllers
             }
 
             var viewModel = measurements?.Select(e => new MeasurementViewModel() { Temperature = e.Temperature, SensorName = e.Sensor.Name, SensorId = e.Sensor.Id });
+            int bluePoint = 12, cyanPoint = 16, yellowPoint = 25, redPoint = 30;
+            if (System.IO.File.Exists("thresholds"))
+            {
+                IList<string> lines = System.IO.File.ReadAllLines("thresholds");
+                if (lines.Count == 4)
+                {
+                    int.TryParse(lines[0], out bluePoint);
+                    int.TryParse(lines[1], out cyanPoint);
+                    int.TryParse(lines[2], out yellowPoint);
+                    int.TryParse(lines[3], out redPoint);
+                }
+            }
+
+            ViewBag.bluePoint = bluePoint;
+            ViewBag.cyanPoint = cyanPoint;
+            ViewBag.yellowPoint = yellowPoint;
+            ViewBag.redPoint = redPoint;
             return View(viewModel);
         }
 

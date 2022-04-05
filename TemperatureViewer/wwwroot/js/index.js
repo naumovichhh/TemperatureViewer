@@ -1,7 +1,4 @@
-﻿let perfectTemperature = 20;
-let minPossibleTemperature = 12;
-let maxPossibleTemperature = 30;
-let brightness = 100;
+﻿let brightness = 100;
 
 $(document).ready(function () {
     $(".therm-li").each((i, e) => {
@@ -9,9 +6,7 @@ $(document).ready(function () {
         let value = Number(str.replace(",", "."));
         let r = 0, g = brightness, b = 0;
 
-        let yellowPoint = (maxPossibleTemperature + perfectTemperature) / 2;
-        let cyanPoint = (minPossibleTemperature + perfectTemperature) / 2;
-        if (value >= maxPossibleTemperature || value <= minPossibleTemperature) {
+        if (value >= redPoint || value <= bluePoint) {
             g = 0;
         }
         if (value > yellowPoint) {

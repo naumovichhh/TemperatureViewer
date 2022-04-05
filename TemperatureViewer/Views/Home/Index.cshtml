@@ -21,6 +21,13 @@
     }
 </div>
 
+<script>
+    var bluePoint = @Json.Serialize(ViewBag.bluePoint);
+    var cyanPoint = @Json.Serialize(ViewBag.cyanPoint);
+    var yellowPoint = @Json.Serialize(ViewBag.yellowPoint);
+    var redPoint = @Json.Serialize(ViewBag.redPoint);
+</script>
+
 @section Scripts {
     <script src="~/js/index.js" asp-append-version="true"></script>
 }

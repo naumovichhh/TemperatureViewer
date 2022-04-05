@@ -1,5 +1,6 @@
 ﻿<h4><a asp-controller="Sensors" asp-action="Index">Датчики</a></h4>
 <h4><a asp-controller="Locations" asp-action="Index">Локации</a></h4>
+<h4><a asp-action="Thresholds">Пороги температур</a></h4>
 @if (User.IsInRole("admin"))
 {
     <h4><a asp-controller="Users" asp-action="Index">Пользователи</a></h4>

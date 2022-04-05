@@ -21,27 +21,41 @@
             <th>
                 @Html.DisplayNameFor(model => model.LocationId)
             </th>
+            <th>
+                @Html.DisplayNameFor(model => model.WasDeleted)
+            </th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Uri)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.LocationId)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Изменить</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Детали</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Удалить</a>
-            </td>
-        </tr>
-}
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Uri)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.LocationId)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.WasDeleted)
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Изменить</a> |
+                    <a asp-action="Details" asp-route-id="@item.Id">Детали</a> |
+                    @if (item.WasDeleted)
+                    {
+                        <a asp-action="Restore" asp-route-id="@item.Id">Восстановить</a>
+                    }
+                    else
+                    {
+                        <a asp-action="Delete" asp-route-id="@item.Id">Удалить</a>
+                    }
+                </td>
+            </tr>
+        }
     </tbody>
 </table>
