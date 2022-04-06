@@ -90,6 +90,7 @@ namespace TemperatureViewer.BackgroundServices
                 }
             });
 
+            list.Add(new Measurement() { Temperature = GetTemperatureFromXml("http://10.194.1.14/val.xml", "term0") ?? -1, Sensor = sensorsArray[0] });
             return list.ToArray();
         }
 
@@ -126,6 +127,31 @@ namespace TemperatureViewer.BackgroundServices
             });
 
             return list.ToArray();
+        }
+
+        private decimal? GetTemperatureFromXml(string uri, string xPath)
+        {
+            var xmlDocument = new XmlDocument();
+            using (var httpClient = new HttpClient())
+            {
+                using (var stream = httpClient.GetStreamAsync(uri).Result)
+                {
+                    xmlDocument.Load(stream);
+                }
+            }
+
+            var root = xmlDocument.DocumentElement;
+            var node = root.SelectSingleNode(xPath);
+            string str = node.InnerText;
+            decimal result;
+            if (decimal.TryParse(str, out result) || decimal.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out result))
+            {
+                return result;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         private void WriteMeasurementsFromTxt(Sensor sensor)
