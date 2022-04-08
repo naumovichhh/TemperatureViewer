@@ -64,7 +64,7 @@ $("#download-data").click(function () {
 });
 
 let context = document.getElementById("chart").getContext("2d");
-let colors = ["#ff0000", "#00ff00", "#0000ff", "#000000", "#ffff00", "#ff00ff", "#00ffff", "#a0a0a0"];
+let colors = ["#ff0000", "#00ff00", "#0000ff", "#000000", "#ffff00", "#ff00ff", "#00ffff", "#a0a0a0", "ff8000", "ff0080", "80ff00", "00ff80", "8000ff", "0080ff", "808080"];
 let data;
 let options;
 
@@ -86,6 +86,7 @@ if (modelJson.length > 0) {
                 backgroundColor: colors[i],
                 borderColor: colors[i],
                 data: a,
+                spanGaps: true,
                 tension: 0.22
             };
         })

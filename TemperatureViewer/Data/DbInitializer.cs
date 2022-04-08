@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using TemperatureViewer.Models;
+﻿using System.Linq;
 
 namespace TemperatureViewer.Data
 {
@@ -16,17 +12,6 @@ namespace TemperatureViewer.Data
             {
                 return;
             }
-
-            //Sensor[] termometers = new Sensor[]
-            //{
-            //    //new Sensor() { Name = "ОАСУП", Uri = "http://10.195.6.59/temp1.txt" },
-            //    //new Sensor() { Name = "Корпус 3", Uri = "http://localhost:7151/temp1.txt" },
-            //    //new Sensor() { Name = "Корпус 14", Uri = "http://localhost:43210/temp2.txt" },
-            //    //new Sensor() { Name = "Корпус 8", Uri = "http://localhost:43210/temp3.txt" },
-            //    //new Sensor() { Name = "Корпус 9", Uri = "http://localhost:43210/temp4.txt" },
-            //};
-            //context.Sensors.AddRange(termometers);
-            //context.SaveChanges();
         }
     }
 }

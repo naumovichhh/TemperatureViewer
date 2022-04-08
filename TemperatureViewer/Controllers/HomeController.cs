@@ -71,11 +71,18 @@ namespace TemperatureViewer.Controllers
             DateTime fromDate, toDate;
             fromDate = GetFromDateTime(from);
             toDate = GetToDateTime(to);
+            ViewBag.from = from;
+            ViewBag.to = to;
             IEnumerable<DateTime> measurementTimes;
 
             IDictionary<int, IEnumerable<Measurement>> dictionary;
             if (locationId != null)
             {
+                if (_context.Locations.FirstOrDefault(l => l.Id == locationId) == null)
+                {
+                    return NotFound();
+                }
+
                 dictionary = GetData(fromDate, toDate, out measurementTimes, locationId.Value);
             }
             else if (id != null)
@@ -122,8 +129,6 @@ namespace TemperatureViewer.Controllers
                 }
             ).OrderBy(vm => vm.SensorName).ToList();
             ViewBag.measurementTimes = measurementTimes;
-            ViewBag.from = from;
-            ViewBag.to = to;
             return View(model);
         }
 
@@ -325,29 +330,11 @@ namespace TemperatureViewer.Controllers
 
             return result;
         }
-        
-        public IActionResult Privacy()
-        {
-            return View();
-        }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
-
-        public async Task<IActionResult> About()
-        {
-            IQueryable<MeasurementDateGroup> data =
-                from measurement in _context.Measurements
-                group measurement by measurement.MeasurementTime.Date into dateGroup
-                select new MeasurementDateGroup()
-                {
-                    MeasurementsCount = dateGroup.Count(),
-                    MeasurementDate = dateGroup.Key
-                };
-            return View(await data.AsNoTracking().ToListAsync());
         }
     }
 }
