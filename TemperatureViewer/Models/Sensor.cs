@@ -14,8 +14,10 @@ namespace TemperatureViewer.Models
         [Required]
         public bool WasDeleted { get; set; }
         public string XPath { get; set; }
+        public int? ThresholdId { get; set; }
 
         public ICollection<Measurement> Measurements { get; set; }
+        public Threshold Threshold { get; set; }
         public Location Location { get; set; }
     }
 }

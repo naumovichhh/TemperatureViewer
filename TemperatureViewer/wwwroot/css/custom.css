@@ -10,3 +10,13 @@
 .therm a {
     color: white;
 }
+
+.sensors-checkboxes-group {
+    margin-top: 40px;
+}
+
+.input-checkbox
+{
+    width: auto;
+    box-shadow: none;
+}

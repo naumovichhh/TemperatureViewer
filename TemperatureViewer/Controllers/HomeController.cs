@@ -39,10 +39,12 @@ namespace TemperatureViewer.Controllers
                 }
 
                 measurements = _sensorsAccessService.GetMeasurements(locationId.Value).OrderBy(e => e.Sensor.Name);
+                ViewBag.location = _context.Locations.FirstOrDefault(l => l.Id == locationId).Name;
             }
             else
             {
                 measurements = _sensorsAccessService.GetMeasurements().OrderBy(e => e.Sensor.Name);
+                ViewBag.location = null;
             }
 
             var viewModel = measurements?.Select(e => new MeasurementViewModel() { Temperature = e.Temperature, SensorName = e.Sensor.Name, SensorId = e.Sensor.Id });

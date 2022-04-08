@@ -12,7 +12,7 @@ namespace TemperatureViewer.Controllers
             return View();
         }
 
-        public async Task<IActionResult> Thresholds()
+        public async Task<IActionResult> Thresholdds()
         {
             if (System.IO.File.Exists("thresholds"))
             {
@@ -27,7 +27,7 @@ namespace TemperatureViewer.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Thresholds(IList<int> thresholds)
+        public IActionResult Thresholdds(IList<int> thresholds)
         {
             if (thresholds == null || thresholds.Count < 4)
             {

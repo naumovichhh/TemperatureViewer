@@ -3,6 +3,11 @@
     ViewData["Title"] = "Home Page";
 }
 
+@if (ViewBag.location != null)
+{
+    <h1>@ViewBag.location</h1>
+}
+
 <div class="list-group">
     @foreach (var measurement in Model)
     {
