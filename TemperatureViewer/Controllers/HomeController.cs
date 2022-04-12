@@ -47,24 +47,34 @@ namespace TemperatureViewer.Controllers
                 ViewBag.location = null;
             }
 
-            var viewModel = measurements?.Select(e => new MeasurementViewModel() { Temperature = e.Temperature, SensorName = e.Sensor.Name, SensorId = e.Sensor.Id });
-            int bluePoint = 12, cyanPoint = 16, yellowPoint = 25, redPoint = 30;
-            if (System.IO.File.Exists("thresholds"))
+            var viewModel = measurements?.Select(e =>
             {
-                IList<string> lines = System.IO.File.ReadAllLines("thresholds");
-                if (lines.Count == 4)
+                Threshold threshold = e.Sensor.Threshold ?? new Threshold() { P1 = 12, P2 = 16, P3 = 25, P4 = 30};
+                return new MeasurementViewModel()
                 {
-                    int.TryParse(lines[0], out bluePoint);
-                    int.TryParse(lines[1], out cyanPoint);
-                    int.TryParse(lines[2], out yellowPoint);
-                    int.TryParse(lines[3], out redPoint);
-                }
-            }
+                    Temperature = e.Temperature,
+                    SensorName = e.Sensor.Name,
+                    SensorId = e.Sensor.Id,
+                    Thresholds = new int[] { threshold.P1, threshold.P2, threshold.P3, threshold.P4 }
+                };
+            });
+            //int bluePoint = 12, cyanPoint = 16, yellowPoint = 25, redPoint = 30;
+            //if (System.IO.File.Exists("thresholds"))
+            //{
+            //    IList<string> lines = System.IO.File.ReadAllLines("thresholds");
+            //    if (lines.Count == 4)
+            //    {
+            //        int.TryParse(lines[0], out bluePoint);
+            //        int.TryParse(lines[1], out cyanPoint);
+            //        int.TryParse(lines[2], out yellowPoint);
+            //        int.TryParse(lines[3], out redPoint);
+            //    }
+            //}
 
-            ViewBag.bluePoint = bluePoint;
-            ViewBag.cyanPoint = cyanPoint;
-            ViewBag.yellowPoint = yellowPoint;
-            ViewBag.redPoint = redPoint;
+            //ViewBag.bluePoint = bluePoint;
+            //ViewBag.cyanPoint = cyanPoint;
+            //ViewBag.yellowPoint = yellowPoint;
+            //ViewBag.redPoint = redPoint;
             return View(viewModel);
         }
 

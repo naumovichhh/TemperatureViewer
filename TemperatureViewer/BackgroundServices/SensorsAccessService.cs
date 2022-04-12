@@ -17,7 +17,6 @@ namespace TemperatureViewer.BackgroundServices
 
     public class SensorsAccessService : ISingletonProcessingService, ISensorsAccessService
     {
-        private DefaultContext context;
         private object lockObject = new object();
         private object contextLock = new object();
         private DateTime nextMeasurementTime;
@@ -34,12 +33,12 @@ namespace TemperatureViewer.BackgroundServices
         {
             nextMeasurementTime = DateTime.Now + TimeSpan.FromSeconds(10);
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-            using (var scope = serviceProvider.CreateScope())
+            while (!stoppingToken.IsCancellationRequested)
             {
-                context = scope.ServiceProvider.GetRequiredService<DefaultContext>();
-
-                while (!stoppingToken.IsCancellationRequested)
+                using (var scope = serviceProvider.CreateScope())
                 {
+                    var context = scope.ServiceProvider.GetRequiredService<DefaultContext>();
+
                     Sensor[] sensorsArray;
                     lock (lockObject)
                     {
@@ -48,7 +47,7 @@ namespace TemperatureViewer.BackgroundServices
                     }
 
                     now = DateTime.Now;
-                    Parallel.ForEach(sensorsArray, WriteMeasurements);
+                    Parallel.ForEach(sensorsArray, s => WriteMeasurements(s, context));
 
                     await Task.Delay(nextMeasurementTime - DateTime.Now, stoppingToken);
                     nextMeasurementTime = nextMeasurementTime + TimeSpan.FromSeconds(60);
@@ -58,62 +57,70 @@ namespace TemperatureViewer.BackgroundServices
 
         public Measurement[] GetMeasurements()
         {
-            Sensor[] sensorsArray;
-            lock (lockObject)
+            using (var scope = serviceProvider.CreateScope())
             {
-                sensorsArray = context.Sensors.Where(s => !s.WasDeleted).AsNoTracking().ToArray();
+                var context = scope.ServiceProvider.GetRequiredService<DefaultContext>();
+                Sensor[] sensorsArray;
+                lock (lockObject)
+                {
+                    sensorsArray = context.Sensors.Where(s => !s.WasDeleted).Include(s => s.Threshold).ToArray();
+                }
+                List<Measurement> list = new List<Measurement>();
+
+                Parallel.For(0, sensorsArray.Length, (i) =>
+                {
+                    decimal? measured;
+                    if (string.IsNullOrEmpty(sensorsArray[i].XPath))
+                    {
+                        measured = GetTemperatureFromTxt(sensorsArray[i].Uri);
+                    }
+                    else
+                    {
+                        measured = GetTemperatureFromXml(sensorsArray[i].Uri, sensorsArray[i].XPath);
+                    }
+
+                    if (measured != null)
+                    {
+                        list.Add(new Measurement() { Temperature = measured.Value, Sensor = sensorsArray[i] });
+                    }
+                });
+
+                return list.ToArray();
             }
-            List<Measurement> list = new List<Measurement>();
-
-            Parallel.For(0, sensorsArray.Length, (i) =>
-            {
-                decimal? measured;
-                if (string.IsNullOrEmpty(sensorsArray[i].XPath))
-                {
-                    measured = GetTemperatureFromTxt(sensorsArray[i].Uri);
-                }
-                else
-                {
-                    measured = GetTemperatureFromXml(sensorsArray[i].Uri, sensorsArray[i].XPath);
-                }
-
-                if (measured != null)
-                {
-                    list.Add(new Measurement() { Temperature = measured.Value, Sensor = sensorsArray[i] });
-                }
-            });
-
-            return list.ToArray();
         }
 
         public Measurement[] GetMeasurements(int locationId)
         {
-            Sensor[] sensorsArray;
-            lock (lockObject)
+            using (var scope = serviceProvider.CreateScope())
             {
-                sensorsArray = context.Sensors.Where(s => !s.WasDeleted && s.LocationId == locationId).AsNoTracking().ToArray();
+                var context = scope.ServiceProvider.GetRequiredService<DefaultContext>();
+                Sensor[] sensorsArray;
+                lock (lockObject)
+                {
+                    sensorsArray = context.Sensors.Where(s => !s.WasDeleted && s.LocationId == locationId).Include(s => s.Threshold).ToArray();
+                }
+                List<Measurement> list = new List<Measurement>();
+
+                Parallel.For(0, sensorsArray.Length, (i) =>
+                {
+                    decimal? measured;
+                    if (string.IsNullOrEmpty(sensorsArray[i].XPath))
+                    {
+                        measured = GetTemperatureFromTxt(sensorsArray[i].Uri);
+                    }
+                    else
+                    {
+                        measured = GetTemperatureFromXml(sensorsArray[i].Uri, sensorsArray[i].XPath);
+                    }
+
+                    if (measured != null)
+                    {
+                        list.Add(new Measurement() { Temperature = measured.Value, Sensor = sensorsArray[i] });
+                    }
+                });
+
+                return list.ToArray();
             }
-            List<Measurement> list = new List<Measurement>();
-
-            Parallel.For(0, sensorsArray.Length, (i) =>
-            {
-                decimal? measured;
-                if (string.IsNullOrEmpty(sensorsArray[i].XPath))
-                {
-                    measured = GetTemperatureFromTxt(sensorsArray[i].Uri);
-                }
-                else
-                {
-                    measured = GetTemperatureFromXml(sensorsArray[i].Uri, sensorsArray[i].XPath);
-                }
-
-                if (measured != null)
-                {
-                    list.Add(new Measurement() { Temperature = measured.Value, Sensor = sensorsArray[i] });
-                }
-            });
-
-            return list.ToArray();
         }
 
         private decimal? GetTemperatureFromXml(string uri, string xPath)
@@ -176,7 +183,7 @@ namespace TemperatureViewer.BackgroundServices
             }
         }
 
-        private void WriteMeasurements(Sensor sensor)
+        private void WriteMeasurements(Sensor sensor, DefaultContext context)
         {
             decimal? measured;
             if (string.IsNullOrEmpty(sensor.XPath))
@@ -205,64 +212,64 @@ namespace TemperatureViewer.BackgroundServices
             }
         }
 
-        private void WriteMeasurementsFromTxt(Sensor sensor)
-        {
-            using (var httpClient = new HttpClient())
-            {
-                string str;
-                try
-                {
-                    str = httpClient.GetStringAsync(sensor.Uri).Result;
-                }
-                catch
-                {
-                    return;
-                }
+        //private void WriteMeasurementsFromTxt(Sensor sensor)
+        //{
+        //    using (var httpClient = new HttpClient())
+        //    {
+        //        string str;
+        //        try
+        //        {
+        //            str = httpClient.GetStringAsync(sensor.Uri).Result;
+        //        }
+        //        catch
+        //        {
+        //            return;
+        //        }
 
-                decimal measured;
-                if (decimal.TryParse(str, out measured) || decimal.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out measured))
-                {
-                    measured /= 1.000000000000000000000000000000000m;
-                    Measurement measurement = new Measurement()
-                    {
-                        MeasurementTime = now,
-                        SensorId = sensor.Id,
-                        Temperature = measured
-                    };
+        //        decimal measured;
+        //        if (decimal.TryParse(str, out measured) || decimal.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out measured))
+        //        {
+        //            measured /= 1.000000000000000000000000000000000m;
+        //            Measurement measurement = new Measurement()
+        //            {
+        //                MeasurementTime = now,
+        //                SensorId = sensor.Id,
+        //                Temperature = measured
+        //            };
 
-                    lock (lockObject)
-                    {
-                        context.Measurements.Add(measurement);
-                        context.SaveChanges();
-                    }
-                }
-            }
-        }
+        //            lock (lockObject)
+        //            {
+        //                context.Measurements.Add(measurement);
+        //                context.SaveChanges();
+        //            }
+        //        }
+        //    }
+        //}
 
-        private void WriteMeasurementsFromXml(Sensor sensor)
-        {
-            using (var reader = XmlReader.Create(sensor.Uri))
-            {
-                while (reader.Read())
-                {
-                    if (reader.Name == "term0" && reader.IsStartElement() && reader.Read())
-                    {
-                        decimal measured;
-                        if (decimal.TryParse(reader.Value, out measured) || decimal.TryParse(reader.Value, NumberStyles.Number, CultureInfo.InvariantCulture, out measured))
-                        {
-                            Measurement measurement = new Measurement()
-                            {
-                                MeasurementTime = DateTime.Now,
-                                SensorId = sensor.Id,
-                                Temperature = measured
-                            };
-                            context.Measurements.Add(measurement);
-                            context.SaveChanges();
-                            break;
-                        }
-                    }
-                }
-            }
-        }
+        //private void WriteMeasurementsFromXml(Sensor sensor)
+        //{
+        //    using (var reader = XmlReader.Create(sensor.Uri))
+        //    {
+        //        while (reader.Read())
+        //        {
+        //            if (reader.Name == "term0" && reader.IsStartElement() && reader.Read())
+        //            {
+        //                decimal measured;
+        //                if (decimal.TryParse(reader.Value, out measured) || decimal.TryParse(reader.Value, NumberStyles.Number, CultureInfo.InvariantCulture, out measured))
+        //                {
+        //                    Measurement measurement = new Measurement()
+        //                    {
+        //                        MeasurementTime = DateTime.Now,
+        //                        SensorId = sensor.Id,
+        //                        Temperature = measured
+        //                    };
+        //                    context.Measurements.Add(measurement);
+        //                    context.SaveChanges();
+        //                    break;
+        //                }
+        //            }
+        //        }
+        //    }
+        //}
     }
 }

@@ -6,13 +6,13 @@ $(document).ready(function () {
         let value = Number(str.replace(",", "."));
         let r = 0, g = brightness, b = 0;
 
-        if (value >= redPoint || value <= bluePoint) {
+        if (value >= thresholds[i][3] || value <= thresholds[i][0]) {
             g = 0;
         }
-        if (value > yellowPoint) {
+        if (value >= thresholds[i][2]) {
             r = brightness;
         }
-        if (value < cyanPoint) {
+        if (value <= thresholds[i][1]) {
             b = brightness
         }
 

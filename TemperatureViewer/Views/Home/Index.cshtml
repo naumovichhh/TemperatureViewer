@@ -31,6 +31,7 @@
     var cyanPoint = @Json.Serialize(ViewBag.cyanPoint);
     var yellowPoint = @Json.Serialize(ViewBag.yellowPoint);
     var redPoint = @Json.Serialize(ViewBag.redPoint);
+    var thresholds = @Json.Serialize(Model.Select(m => m.Thresholds));
 </script>
 
 @section Scripts {
