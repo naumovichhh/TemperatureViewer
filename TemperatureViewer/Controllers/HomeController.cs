@@ -49,7 +49,7 @@ namespace TemperatureViewer.Controllers
 
             var viewModel = measurements?.Select(e =>
             {
-                Threshold threshold = e.Sensor.Threshold ?? new Threshold() { P1 = 12, P2 = 16, P3 = 25, P4 = 30};
+                Threshold threshold = e.Sensor.Threshold ?? new Threshold() { P1 = 12, P2 = 16, P3 = 25, P4 = 30 };
                 return new MeasurementViewModel()
                 {
                     Temperature = e.Temperature,
@@ -58,23 +58,6 @@ namespace TemperatureViewer.Controllers
                     Thresholds = new int[] { threshold.P1, threshold.P2, threshold.P3, threshold.P4 }
                 };
             });
-            //int bluePoint = 12, cyanPoint = 16, yellowPoint = 25, redPoint = 30;
-            //if (System.IO.File.Exists("thresholds"))
-            //{
-            //    IList<string> lines = System.IO.File.ReadAllLines("thresholds");
-            //    if (lines.Count == 4)
-            //    {
-            //        int.TryParse(lines[0], out bluePoint);
-            //        int.TryParse(lines[1], out cyanPoint);
-            //        int.TryParse(lines[2], out yellowPoint);
-            //        int.TryParse(lines[3], out redPoint);
-            //    }
-            //}
-
-            //ViewBag.bluePoint = bluePoint;
-            //ViewBag.cyanPoint = cyanPoint;
-            //ViewBag.yellowPoint = yellowPoint;
-            //ViewBag.redPoint = redPoint;
             return View(viewModel);
         }
 
@@ -126,28 +109,102 @@ namespace TemperatureViewer.Controllers
 
             List<IEnumerable<Measurement>> list = GetMeasurementsEnumerableList(dictionary, divisor);
 
-            List<SensorHistoryViewModel> model = list.Select(
-                g => new SensorHistoryViewModel()
-                {
-                    SensorName = _context.Sensors.AsNoTracking().AsEnumerable().First(s => s.Id == g.First(m => m != null).SensorId).Name,
-                    Measurements = g.Select(
-                    m =>
-                    {
-                        if (m != null)
-                            return new MeasurementOfTime() { Value = m.Temperature, Time = m.MeasurementTime };
-                        else
-                            return null;
-                    })
-                }
-            ).OrderBy(vm => vm.SensorName).ToList();
+            List<SensorHistoryViewModel> model = list.Select(GetViewModelsFromEnumerable).OrderBy(vm => vm.SensorName).ToList();
             ViewBag.measurementTimes = measurementTimes;
             return View(model);
+        }
+
+        private SensorHistoryViewModel GetViewModelsFromEnumerable(IEnumerable<Measurement> enumerable)
+        {
+            return new SensorHistoryViewModel()
+            {
+                SensorName = _context.Sensors.AsNoTracking().AsEnumerable().First(s => s.Id == enumerable.First(m => m != null).SensorId).Name,
+                Measurements = enumerable.Select(
+                m =>
+                {
+                    if (m != null)
+                        return new MeasurementOfTime() { Value = m.Temperature, Time = m.MeasurementTime };
+                    else
+                        return null;
+                })
+            };
         }
 
         public IActionResult Locations()
         {
             var locations = _context.Locations.AsNoTracking().AsEnumerable();
             return View(locations);
+        }
+
+        public IActionResult ExtendedLocation(int? id, string from, string to)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            Location entity;
+            if ((entity = _context.Locations.AsNoTracking().FirstOrDefault(l => l.Id == id)) == null)
+            {
+                return NotFound();
+            }
+
+            DateTime fromDate, toDate;
+            fromDate = GetFromDateTime(from);
+            toDate = GetToDateTime(to);
+            ViewBag.from = from;
+            ViewBag.to = to;
+            IEnumerable<DateTime> checkpoints;
+
+            var historyDictionary = GetData(fromDate, toDate, out checkpoints, id.Value);
+            IList<SensorHistoryViewModel> history = GetHistoryViewModel(historyDictionary, checkpoints, out checkpoints);
+
+            var measurements = _sensorsAccessService.GetMeasurements(entity.Id).OrderBy(e => e.Sensor.Name);
+            var measurementsViewModels = measurements?.Select(e =>
+            {
+                Threshold threshold = e.Sensor.Threshold ?? new Threshold() { P1 = 12, P2 = 16, P3 = 25, P4 = 30 };
+                return new MeasurementViewModel()
+                {
+                    Temperature = e.Temperature,
+                    SensorName = e.Sensor.Name,
+                    SensorId = e.Sensor.Id,
+                    Thresholds = new int[] { threshold.P1, threshold.P2, threshold.P3, threshold.P4 }
+                };
+            });
+
+            ExtendedLocationViewModel viewModel = new ExtendedLocationViewModel()
+            {
+                Name = entity.Name,
+                Image = entity.Image,
+                History = history,
+                HistoryCheckpoints = checkpoints,
+                Measurements = measurementsViewModels
+            };
+
+            return View(viewModel);
+        }
+
+        private IList<SensorHistoryViewModel> GetHistoryViewModel(IDictionary<int, IEnumerable<Measurement>> dictionary, IEnumerable<DateTime> checkpointsIn, out IEnumerable<DateTime> checkpointsOut)
+        {
+            if (!dictionary.All(e => e.Value.Count() == dictionary.First().Value.Count()))
+                throw new ArgumentException("Data must contain enumerables of measurements of equal length.", nameof(dictionary));
+
+            if (dictionary.Count() == 0)
+            {
+                checkpointsOut = null;
+                return null;
+            }
+
+            var maxMeasurementsNum = 50;
+            var measurementsCount = dictionary.First().Value.Count();
+            int divisor = (measurementsCount - 1) / maxMeasurementsNum + 1;
+            var measurementTimes = checkpointsIn.Where((m, i) => i % divisor == 0);
+
+            IList<IEnumerable<Measurement>> list = GetMeasurementsEnumerableList(dictionary, divisor);
+
+            IList<SensorHistoryViewModel> model = list.Select(GetViewModelsFromEnumerable).OrderBy(vm => vm.SensorName).ToList();
+            checkpointsOut = measurementTimes;
+            return model;
         }
 
         public IActionResult Download(int? id, string from, string to, int? locationId)

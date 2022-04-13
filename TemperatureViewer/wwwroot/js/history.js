@@ -1,21 +1,4 @@
-﻿////Chart.register({
-////    afterDraw: function (chart) {
-////        if (chart.data.datasets.length === 0) {
-////            var ctx = chart.chart.ctx;
-////            var width = chart.chart.width;
-////            var height = chart.chart.height
-////            chart.clear();
-
-////            ctx.save();
-////            ctx.textAlign = 'center';
-////            ctx.textBaseline = 'middle';
-////            ctx.fillText('Нет данных', width / 2, height / 2);
-////            ctx.restore();
-////        }
-////    }
-////});
-
-$("#date-from").val(bagValueFrom);
+﻿$("#date-from").val(bagValueFrom);
 $("#date-to").val(bagValueTo);
 
 $("#apply-period").click(function () {

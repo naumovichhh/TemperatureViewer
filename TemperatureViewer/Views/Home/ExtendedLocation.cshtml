@@ -1,0 +1,83 @@
+﻿@model ExtendedLocationViewModel
+
+<h1>@Html.DisplayFor(m => m.Name)</h1>
+<hr />
+
+<div class="row">
+    <div class="mt-1 col-md-7">
+        <img class="img-fluid img-responsive rounded product-image img-clickable" src="~/img/@Model.Image" />
+    </div>
+</div>
+
+<hr />
+
+<div class="mb-1 mt-2">
+    <h3>Текущие температуры</h3>
+</div>
+
+<div class="list-group mt-1">
+    @foreach (var measurement in Model.Measurements)
+    {
+        <div class="list-group-item therm-li">
+            <div class="therm">
+                <div class="row">
+                    <div class="col-2">
+                        <div><b><span class="temp-value">@measurement.Temperature</span>°</b></div>
+                    </div>
+                    <div class="col-10">
+                        <div class="therm-name"><a asp-controller="Home" asp-action="History" asp-route-id="@measurement.SensorId">@measurement.SensorName</a></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<hr />
+
+<div class="mb-1 mt-1">
+    <h3>История измерений</h3>
+</div>
+
+<div class="row">
+    <div class="col-2">
+        Выбрать период
+    </div>
+    <div class="col-2">
+        <input id="date-from" class="form-control" type="date" />
+    </div>
+    <div class="col-2">
+        <input id="date-to" class="form-control" type="date" />
+    </div>
+    <div class="col-2">
+        <button id="apply-period" class="form-control btn-primary">Применить</button>
+    </div>
+    <div class="col-2">
+        <button id="download-data" class="form-control btn-primary">Скачать</button>
+    </div>
+</div>
+<div class="container">
+    <canvas id="chart" height="630" width="1000"></canvas>
+</div>
+
+<div id="modal" class="modal">
+    <span class="close">&times;</span>
+    <img class="modal-content" id="modalImg" />
+</div>
+
+@section Scripts {
+<script>
+    var thresholds = @Json.Serialize(Model.Measurements.Select(m => m.Thresholds));
+</script>
+
+<script>
+    var modelJson = @Json.Serialize(Model.HistoryCheckpoints);
+    var bagValueFrom = @Json.Serialize(ViewBag.from);
+    var bagValueTo = @Json.Serialize(ViewBag.to);
+    var measurementTimes = @Json.Serialize(Model.HistoryCheckpoints);
+</script>
+<script src="~/js/locations.js" asp-append-version="true"></script>
+<script src="~/js/index.js" asp-append-version="true"></script>
+<script src="~/lib/chart/dist/chart.min.js"></script>
+<script src="~/js/history.js" asp-append-version="true"></script>
+}

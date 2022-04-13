@@ -6,6 +6,7 @@
 @if (ViewBag.location != null)
 {
     <h1>@ViewBag.location</h1>
+    <hr />
 }
 
 <div class="list-group">
@@ -27,10 +28,6 @@
 </div>
 
 <script>
-    var bluePoint = @Json.Serialize(ViewBag.bluePoint);
-    var cyanPoint = @Json.Serialize(ViewBag.cyanPoint);
-    var yellowPoint = @Json.Serialize(ViewBag.yellowPoint);
-    var redPoint = @Json.Serialize(ViewBag.redPoint);
     var thresholds = @Json.Serialize(Model.Select(m => m.Thresholds));
 </script>
 
