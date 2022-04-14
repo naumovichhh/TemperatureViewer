@@ -3,10 +3,15 @@
     ViewData["Title"] = "История";
 }
 
-<div style="margin-bottom: 40px">
+<div class="mb-4">
     <h1>История измерений</h1>
     <hr />    
 </div>
+
+@if (ViewBag.location != null)
+{
+    <h3><a asp-action="ExtendedLocation" asp-route-id="@ViewBag.location.Id">@ViewBag.location.Name</a></h3>
+}
 
 <div class="row">
     <div class="col-2">

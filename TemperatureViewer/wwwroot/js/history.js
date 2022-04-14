@@ -47,7 +47,10 @@ $("#download-data").click(function () {
 });
 
 let context = document.getElementById("chart").getContext("2d");
-let colors = ["#ff0000", "#00ff00", "#0000ff", "#000000", "#ffff00", "#ff00ff", "#00ffff", "#a0a0a0", "ff8000", "ff0080", "80ff00", "00ff80", "8000ff", "0080ff", "808080"];
+let colors = ["#ff0000", "#00ff00", "#0000ff", "#000000", "#ffff00", "#ff00ff", "#00ffff",
+    "#a0a0a0", "#ff8000", "#ff0080", "#80ff00", "#00ff80", "#8000ff", "#0080ff", "#808080",
+    "#808000", "#800080", "#008080", "#800000", "#008000", "#000080", "#ffffff", "#ff8080",
+    "#80ff80", "#8080ff", "#c08000", "#c00080", "#80c000", "#00c080", "#8000c0", "#0080c0"];
 let data;
 let options;
 

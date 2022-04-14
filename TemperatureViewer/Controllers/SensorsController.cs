@@ -100,6 +100,7 @@ namespace TemperatureViewer.Controllers
             {
                 try
                 {
+                    sensor.ThresholdId = _context.Sensors.AsNoTracking().FirstOrDefault(s => s.Id == sensor.Id).ThresholdId;
                     _context.Update(sensor);
                     await _context.SaveChangesAsync();
                 }

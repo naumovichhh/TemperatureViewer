@@ -60,7 +60,7 @@ namespace TemperatureViewer.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(LocationViewModel viewModel)
+        public async Task<IActionResult> Create(LocationUploadModel viewModel)
         {
             if (ModelState.IsValid)
             {
@@ -88,7 +88,7 @@ namespace TemperatureViewer.Controllers
                 return NotFound();
             }
 
-            var viewModel = new LocationViewModel() { Id = entity.Id, Name = entity.Name };
+            var viewModel = new LocationUploadModel() { Id = entity.Id, Name = entity.Name };
             return View(viewModel);
         }
 
@@ -97,7 +97,7 @@ namespace TemperatureViewer.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, LocationViewModel viewModel)
+        public async Task<IActionResult> Edit(int id, LocationUploadModel viewModel)
         {
             Location entity = await _context.Locations.FirstOrDefaultAsync(m => m.Id == id);
             string oldFileName = entity.Image;

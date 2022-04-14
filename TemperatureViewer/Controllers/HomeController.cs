@@ -30,6 +30,7 @@ namespace TemperatureViewer.Controllers
 
         public IActionResult Index(int? locationId)
         {
+            throw new NotImplementedException("Implementation of download from extended location view");
             IEnumerable<Measurement> measurements;
             if (locationId != null)
             {
@@ -39,7 +40,7 @@ namespace TemperatureViewer.Controllers
                 }
 
                 measurements = _sensorsAccessService.GetMeasurements(locationId.Value).OrderBy(e => e.Sensor.Name);
-                ViewBag.location = _context.Locations.FirstOrDefault(l => l.Id == locationId).Name;
+                ViewBag.location = _context.Locations.FirstOrDefault(l => l.Id == locationId);
             }
             else
             {
@@ -49,7 +50,7 @@ namespace TemperatureViewer.Controllers
 
             var viewModel = measurements?.Select(e =>
             {
-                Threshold threshold = e.Sensor.Threshold ?? new Threshold() { P1 = 12, P2 = 16, P3 = 25, P4 = 30 };
+                Threshold threshold = e.Sensor.Threshold ?? GetDefaultThreshold();
                 return new MeasurementViewModel()
                 {
                     Temperature = e.Temperature,
@@ -111,6 +112,7 @@ namespace TemperatureViewer.Controllers
 
             List<SensorHistoryViewModel> model = list.Select(GetViewModelsFromEnumerable).OrderBy(vm => vm.SensorName).ToList();
             ViewBag.measurementTimes = measurementTimes;
+            ViewBag.location = _context.Locations.AsNoTracking().FirstOrDefault(l => l.Id == locationId);
             return View(model);
         }
 
@@ -133,8 +135,29 @@ namespace TemperatureViewer.Controllers
         public IActionResult Locations()
         {
             var locations = _context.Locations.AsNoTracking().AsEnumerable();
-            return View(locations);
+            var viewModel = new List<LocationViewModel>();
+            foreach (var location in locations)
+            {
+                var measurements = _sensorsAccessService.GetMeasurements(location.Id).OrderBy(e => e.Sensor.Name);
+                var measurementsViewModels = measurements?.Select(e =>
+                {
+                    Threshold threshold = e.Sensor.Threshold ?? GetDefaultThreshold();
+                    return new MeasurementViewModel()
+                    {
+                        Temperature = e.Temperature,
+                        SensorName = e.Sensor.Name,
+                        SensorId = e.Sensor.Id,
+                        Thresholds = new int[] { threshold.P1, threshold.P2, threshold.P3, threshold.P4 }
+                    };
+                });
+
+                viewModel.Add(new LocationViewModel() { Id = location.Id, Name = location.Name, Image = location.Image, Measurements = measurementsViewModels });
+            }
+
+            return View(viewModel);
         }
+
+        private Threshold GetDefaultThreshold() => new Threshold() { P1 = 12, P2 = 16, P3 = 25, P4 = 30 };
 
         public IActionResult ExtendedLocation(int? id, string from, string to)
         {

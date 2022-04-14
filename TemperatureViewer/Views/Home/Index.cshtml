@@ -5,7 +5,7 @@
 
 @if (ViewBag.location != null)
 {
-    <h1>@ViewBag.location</h1>
+    <h1><a asp-action="ExtendedLocation" asp-route-id="@ViewBag.location.Id">@ViewBag.location.Name</a></h1>
     <hr />
 }
 
