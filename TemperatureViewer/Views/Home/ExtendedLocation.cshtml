@@ -75,9 +75,11 @@
     var bagValueFrom = @Json.Serialize(ViewBag.from);
     var bagValueTo = @Json.Serialize(ViewBag.to);
     var measurementTimes = @Json.Serialize(Model.HistoryCheckpoints);
+    var locationId = @Json.Serialize(ViewBag.locationId);
+    var id = null;
 </script>
 <script src="~/js/locationsClickable.js" asp-append-version="true"></script>
 <script src="~/js/index.js" asp-append-version="true"></script>
 <script src="~/lib/chart/dist/chart.min.js"></script>
-<script src="~/js/history.js" asp-append-version="true"></script>
+<script src="~/js/extendedLocation.js" asp-append-version="true"></script>
 }

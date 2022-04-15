@@ -30,7 +30,6 @@ namespace TemperatureViewer.Controllers
 
         public IActionResult Index(int? locationId)
         {
-            throw new NotImplementedException("Implementation of download from extended location view");
             IEnumerable<Measurement> measurements;
             if (locationId != null)
             {
@@ -80,6 +79,7 @@ namespace TemperatureViewer.Controllers
                 }
 
                 dictionary = GetData(fromDate, toDate, out measurementTimes, locationId.Value);
+                ViewBag.locationId = locationId;
             }
             else if (id != null)
             {
@@ -91,6 +91,7 @@ namespace TemperatureViewer.Controllers
                 IEnumerable<Measurement> enumerable = GetData(id.Value, fromDate, toDate);
                 measurementTimes = enumerable.Select(m => m.MeasurementTime);
                 dictionary = new Dictionary<int, IEnumerable<Measurement>>() { { id.Value, enumerable } };
+                ViewBag.id = id;
             }
             else
             {
@@ -204,6 +205,7 @@ namespace TemperatureViewer.Controllers
                 Measurements = measurementsViewModels
             };
 
+            ViewBag.locationId = id;
             return View(viewModel);
         }
 

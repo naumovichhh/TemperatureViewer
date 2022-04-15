@@ -4,10 +4,10 @@ $("#date-to").val(bagValueTo);
 $("#apply-period").click(function () {
     let valueFrom = $("#date-from").val();
     let valueTo = $("#date-to").val();
-    let searchParams = [`from=${valueFrom ?? ""}`, `to=${valueTo ?? ""}`, `locationId=${locationId ?? ""}`];
+    let searchParams = [`from=${valueFrom ?? ""}`, `to=${valueTo ?? ""}`];
     if (!valueFrom || !valueTo) {
         if (!valueFrom && !valueTo) {
-            location.href = location.protocol + "//" + location.host + "/Home/History" + (id ? `/${id}` : "") + "?" + searchParams.join("&");
+            location.href = location.protocol + "//" + location.host + "/Home/ExtendedLocation" + (locationId ? `/${locationId}` : "") + "?" + searchParams.join("&");
         }
         else {
             return;
@@ -19,7 +19,7 @@ $("#apply-period").click(function () {
         return;
     }
 
-    location.href = location.href = location.protocol + "//" + location.host + "/Home/History" + (id ? `/${id}` : "") + "?" + searchParams.join("&");
+    location.href = location.href = location.protocol + "//" + location.host + "/Home/ExtendedLocation" + (locationId ? `/${locationId}` : "") + "?" + searchParams.join("&");
 });
 
 $("#download-data").click(function () {
