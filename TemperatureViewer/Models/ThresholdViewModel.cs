@@ -10,5 +10,6 @@ namespace TemperatureViewer.Models
         public int P4 { get; set; }
 
         public IDictionary<int, int> Sensors { get; set; }
+        public ICollection<string> SensorNames { get; set; }
     }
 }

@@ -1,0 +1,44 @@
+﻿@model IEnumerable<ThresholdViewModel>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Пороги температур</h1>
+<hr />
+
+<p>
+    <a asp-action="Create">Добавить пороги</a>
+</p>
+
+@foreach (ThresholdViewModel threshold in Model)
+{
+    <div class="mb-5">
+        <div class="row no-gutters">
+            <div class="therm col-2 col-lg-1 mx-1 d-flex justify-content-center">
+                <div><b><span class="temp-value p1">@threshold.P1</span>°</b></div>
+            </div>
+            <div class="therm col-2 col-lg-1 mx-1 d-flex justify-content-center">
+                <div><b><span class="temp-value p2">@threshold.P2</span>°</b></div>
+            </div>
+            <div class="therm col-2 col-lg-1 mx-1 d-flex justify-content-center">
+                <div><b><span class="temp-value p3">@threshold.P3</span>°</b></div>
+            </div>
+            <div class="therm col-2 col-lg-1 mx-1 d-flex justify-content-center">
+                <div><b><span class="temp-value p4">@threshold.P4</span>°</b></div>
+            </div>
+        </div>
+        <div>
+            @foreach (string sensorName in threshold.SensorNames)
+            {
+                <div class="m-2 p-2 h4 w-maxcontent label-background">@sensorName</div>
+            }
+        </div>
+    </div>
+}
+
+@section Scripts
+{
+<script src="~/js/brightness.js"></script>
+<script src="~/js/thresholds.js"></script>
+}

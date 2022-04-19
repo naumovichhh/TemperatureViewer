@@ -1,0 +1,1 @@
+﻿let brightness = 100;

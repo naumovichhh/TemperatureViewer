@@ -1,6 +1,4 @@
-﻿let brightness = 100;
-
-$(document).ready(function () {
+﻿$(document).ready(function () {
     $(".therm-li").each((i, e) => {
         let str = $(e).find(".temp-value").contents().text();
         let value = Number(str.replace(",", "."));
@@ -16,8 +14,8 @@ $(document).ready(function () {
             b = brightness
         }
 
-        let thermColor = `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
-        let liColor = `rgb(${Math.round(r + 90)}, ${Math.round(g + 90)}, ${Math.round(b + 90)})`
+        let thermColor = `rgb(${r}, ${g}, ${b})`;
+        let liColor = `rgb(${r + 90}, ${g + 90}, ${b + 90})`
         $(e).find(".therm").each((i, t) => {
             t.style.backgroundColor = thermColor;
         })

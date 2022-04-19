@@ -16,6 +16,7 @@
                     {
                         <div class="therm col-3 col-md-2 mx-1 d-flex justify-content-center">
                             <div><b><span class="temp-value">@measurement.Temperature</span>°</b></div>
+                            <!--Storing information about thresholds for measurement-->
                             <span class="p1" hidden>@measurement.Thresholds[0]</span>
                             <span class="p2" hidden>@measurement.Thresholds[1]</span>
                             <span class="p3" hidden>@measurement.Thresholds[2]</span>
@@ -45,5 +46,6 @@
 
 @section Scripts {
     <script src="~/js/locationsClickable.js" asp-append-version="true"></script>
+    <script src="~/js/brightness.js"></script>
     <script src="~/js/locations.js" asp-append-version="true"></script>
 }
