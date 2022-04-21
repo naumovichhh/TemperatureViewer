@@ -14,6 +14,7 @@ namespace TemperatureViewer.Data
         public DbSet<User> Users { get; set; }
         public DbSet<Location> Locations { get; set; }
         public DbSet<Threshold> Thresholds { get; set; }
+        public DbSet<Observer> Observers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

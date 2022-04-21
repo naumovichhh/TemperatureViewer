@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Net.Mail;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -37,17 +39,17 @@ namespace TemperatureViewer.BackgroundServices
             {
                 using (var scope = serviceProvider.CreateScope())
                 {
-                    var context = scope.ServiceProvider.GetRequiredService<DefaultContext>();
+                    using var context = scope.ServiceProvider.GetRequiredService<DefaultContext>();
 
                     Sensor[] sensorsArray;
                     lock (lockObject)
                     {
-                        sensors = context.Sensors.Where(s => !s.WasDeleted).AsNoTracking().ToList();
+                        sensors = context.Sensors.Where(s => !s.WasDeleted).Include(s => s.Threshold).AsNoTracking().ToList();
                         sensorsArray = sensors.ToArray();
                     }
 
                     now = DateTime.Now;
-                    Parallel.ForEach(sensorsArray, s => WriteMeasurements(s, context));
+                    Parallel.ForEach(sensorsArray, s => HandleMeasurement(s, context));
 
                     await Task.Delay(nextMeasurementTime - DateTime.Now, stoppingToken);
                     nextMeasurementTime = nextMeasurementTime + TimeSpan.FromSeconds(60);
@@ -59,7 +61,7 @@ namespace TemperatureViewer.BackgroundServices
         {
             using (var scope = serviceProvider.CreateScope())
             {
-                var context = scope.ServiceProvider.GetRequiredService<DefaultContext>();
+                using var context = scope.ServiceProvider.GetRequiredService<DefaultContext>();
                 Sensor[] sensorsArray;
                 lock (lockObject)
                 {
@@ -93,7 +95,7 @@ namespace TemperatureViewer.BackgroundServices
         {
             using (var scope = serviceProvider.CreateScope())
             {
-                var context = scope.ServiceProvider.GetRequiredService<DefaultContext>();
+                using var context = scope.ServiceProvider.GetRequiredService<DefaultContext>();
                 Sensor[] sensorsArray;
                 lock (lockObject)
                 {
@@ -183,7 +185,7 @@ namespace TemperatureViewer.BackgroundServices
             }
         }
 
-        private void WriteMeasurements(Sensor sensor, DefaultContext context)
+        private void HandleMeasurement(Sensor sensor, DefaultContext context)
         {
             decimal? measured;
             if (string.IsNullOrEmpty(sensor.XPath))
@@ -197,17 +199,55 @@ namespace TemperatureViewer.BackgroundServices
 
             if (measured != null)
             {
-                Measurement measurement = new Measurement()
-                {
-                    MeasurementTime = now,
-                    SensorId = sensor.Id,
-                    Temperature = measured.Value
-                };
+                WriteMeasurement(measured.Value, sensor, context);
+                SendNotifications(measured.Value, sensor, context);
+            }
+        }
 
-                lock (lockObject)
+        private void WriteMeasurement(decimal measured, Sensor sensor, DefaultContext context)
+        {
+            Measurement measurement = new Measurement()
+            {
+                MeasurementTime = now,
+                SensorId = sensor.Id,
+                Temperature = measured
+            };
+
+            lock (lockObject)
+            {
+                context.Measurements.Add(measurement);
+                context.SaveChanges();
+            }
+        }
+
+        private void SendNotifications(decimal measured, Sensor sensor, DefaultContext context)
+        {
+            var observers = context.Observers.AsNoTracking();
+            if (observers == null || observers.Count() == 0)
+                return;
+
+            if (measured >= sensor.Threshold.P4 || measured <= sensor.Threshold.P1)
+            {
+                SmtpClient client = new SmtpClient("10.194.1.89");
+                client.Credentials = new NetworkCredential("service.asup@volna.grodno.by", "serasu");
+                string body;
+                if (measured >= sensor.Threshold.P4)
                 {
-                    context.Measurements.Add(measurement);
-                    context.SaveChanges();
+                    body = $"Температура вышла за верхний предел: {sensor.Name} = {measured}°";
+                }
+                else
+                {
+                    body = $"Температура вышла за нижний предел: {sensor.Name} = {measured}°";
+                }
+
+                foreach (var observer in observers)
+                {
+                    MailAddress from = new MailAddress("service.asup@volna.grodno.by");
+                    MailAddress to = new MailAddress(observer.Email);
+                    MailMessage message = new MailMessage(from, to);
+                    message.Subject = "Термометры АСУП";
+                    message.Body = body;
+                    client.Send(message);
                 }
             }
         }
