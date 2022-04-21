@@ -43,6 +43,8 @@
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Sensors" asp-action="Index">Датчики</a>
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Locations" asp-action="Index">Локации</a>
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Thresholds" asp-action="Index">Пороги температур</a>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Observers" asp-action="Index">Наблюдатели</a>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="SmtpSettings">Настройки SMTP</a>
                                 @if (User.IsInRole("admin"))
                                 {
                                     <a class="nav-link text-dark" asp-area="" asp-controller="Users" asp-action="Index">Пользователи</a>

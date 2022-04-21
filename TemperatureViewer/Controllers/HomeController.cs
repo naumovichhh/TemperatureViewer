@@ -158,7 +158,7 @@ namespace TemperatureViewer.Controllers
             return View(viewModel);
         }
 
-        private Threshold GetDefaultThreshold() => new Threshold() { P1 = 12, P2 = 16, P3 = 25, P4 = 30 };
+        public static Threshold GetDefaultThreshold() => new Threshold() { P1 = 12, P2 = 16, P3 = 25, P4 = 30 };
 
         public IActionResult ExtendedLocation(int? id, string from, string to)
         {

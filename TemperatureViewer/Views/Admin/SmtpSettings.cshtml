@@ -1,0 +1,44 @@
+﻿@model TemperatureViewer.Models.SmtpSettings
+
+@{
+    ViewData["Title"] = "View";
+}
+
+<h1>Настройки SMTP</h1>
+
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="SmtpSettings">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Server" class="control-label"></label>
+                <input asp-for="Server" class="form-control" />
+                <span asp-validation-for="Server" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Sender" class="control-label"></label>
+                <input asp-for="Sender" class="form-control" />
+                <span asp-validation-for="Sender" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Login" class="control-label"></label>
+                <input asp-for="Login" class="form-control" />
+                <span asp-validation-for="Login" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Password" class="control-label"></label>
+                <input asp-for="Password" class="form-control" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Сохранить" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Назад к списку</a>
+</div>
+

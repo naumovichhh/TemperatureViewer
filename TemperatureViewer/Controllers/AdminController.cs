@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Net;
+using System.Net.Mail;
 using Microsoft.AspNetCore.Mvc;
+using TemperatureViewer.Models;
 
 namespace TemperatureViewer.Controllers
 {
@@ -12,43 +13,74 @@ namespace TemperatureViewer.Controllers
             return View();
         }
 
-        public async Task<IActionResult> Thresholdds()
+        public IActionResult SmtpSettings()
         {
-            if (System.IO.File.Exists("thresholds"))
-            {
-                string[] lines = await System.IO.File.ReadAllLinesAsync("thresholds");
-                return View(lines.Select(int.Parse).ToList());
-            }
-            else
-            {
-                return View();
-            }
+            var smtpSettings = GetSmtpSettings();
+            return View(smtpSettings);
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult Thresholdds(IList<int> thresholds)
+        public IActionResult SmtpSettings(SmtpSettings smtpSettings)
         {
-            if (thresholds == null || thresholds.Count < 4)
+            if (ModelState.IsValid)
             {
-                ModelState.AddModelError("", "Не все значения введены.");
-                return View();
-            }
+                if (!VerifySmtpSettings(smtpSettings))
+                {
+                    ModelState.AddModelError("", "Неправильная конфигурация SMTP");
+                    return View(smtpSettings);
+                }
 
-            bool rightOrder = true;
-            thresholds.Aggregate((c, n) => {
-                if (c >= n)
-                    rightOrder = false;
-                return n;
-            });
-            if (!rightOrder)
+                var list = new List<string>() { smtpSettings.Server, smtpSettings.Sender, smtpSettings.Login, smtpSettings.Password };
+                System.IO.File.WriteAllLines("smtp", list.ToArray());
+                return RedirectToAction("Index");
+            }
+            else
             {
-                ModelState.AddModelError("", "Значения более высоких порогов должны быть больше.");
-                return View(thresholds);
+                return View(smtpSettings);
             }
+        }
 
-            System.IO.File.WriteAllLines("thresholds", thresholds.Select(i => i.ToString()));
-            return RedirectToAction("Index", "Home");
+        private bool VerifySmtpSettings(SmtpSettings settings)
+        {
+            SmtpClient client = new SmtpClient(settings.Server);
+            client.Credentials = new NetworkCredential(settings.Login, settings.Password);
+            string body = "Тест";
+
+            try
+            {
+                MailAddress from = new MailAddress(settings.Sender);
+                MailAddress to = new MailAddress("naumovichhh@gmail.com");
+                MailMessage message = new MailMessage(from, to);
+                message.Subject = "Термометры АСУП";
+                message.Body = body;
+                client.Send(message);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public static SmtpSettings GetSmtpSettings()
+        {
+            if (System.IO.File.Exists("smtp"))
+            {
+                var strings = System.IO.File.ReadAllLines("smtp");
+                try
+                {
+                    string server = strings[0], sender = strings[1], login = strings[2], password = strings[3];
+                    return new SmtpSettings() { Server = server, Sender = sender, Login = login, Password = password };
+                }
+                catch
+                {
+                    return new SmtpSettings() { Server = "10.194.1.89", Sender = "service.asup@volna.grodno.by", Login = "service.asup@volna.grodno.by", Password = "serasu" };
+                }
+            }
+            else
+            {
+                return new SmtpSettings() { Server = "10.194.1.89", Sender = "service.asup@volna.grodno.by", Login = "service.asup@volna.grodno.by", Password = "serasu" };
+            }
         }
     }
 }

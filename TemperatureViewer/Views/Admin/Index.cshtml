@@ -2,6 +2,8 @@
     <a class="list-group-item list-group-item-action" asp-controller="Sensors" asp-action="Index">Датчики</a>
     <a class="list-group-item list-group-item-action" asp-controller="Locations" asp-action="Index">Локации</a>
     <a class="list-group-item list-group-item-action" asp-controller="Thresholds" asp-action="Index">Пороги температур</a>
+    <a class="list-group-item list-group-item-action" asp-controller="Observers" asp-action="Index">Наблюдатели</a>
+    <a class="list-group-item list-group-item-action" asp-controller="Admin" asp-action="SmtpSettings">Настройки SMTP</a>
     @if (User.IsInRole("admin"))
     {
         <a class="list-group-item list-group-item-action" asp-controller="Users" asp-action="Index">Пользователи</a>

@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using TemperatureViewer.Controllers;
 using TemperatureViewer.Data;
 using TemperatureViewer.Models;
 
@@ -20,7 +21,6 @@ namespace TemperatureViewer.BackgroundServices
     public class SensorsAccessService : ISingletonProcessingService, ISensorsAccessService
     {
         private object lockObject = new object();
-        private object contextLock = new object();
         private DateTime nextMeasurementTime;
         private List<Sensor> sensors;
         private IServiceProvider serviceProvider;
@@ -52,7 +52,7 @@ namespace TemperatureViewer.BackgroundServices
                     Parallel.ForEach(sensorsArray, s => HandleMeasurement(s, context));
 
                     await Task.Delay(nextMeasurementTime - DateTime.Now, stoppingToken);
-                    nextMeasurementTime = nextMeasurementTime + TimeSpan.FromSeconds(60);
+                    nextMeasurementTime = nextMeasurementTime + TimeSpan.FromSeconds(120);
                 }
             }
         }
@@ -222,14 +222,23 @@ namespace TemperatureViewer.BackgroundServices
 
         private void SendNotifications(decimal measured, Sensor sensor, DefaultContext context)
         {
-            var observers = context.Observers.AsNoTracking();
+            IList<Observer> observers;
+            lock (lockObject)
+            {
+                observers = context.Observers.AsNoTracking().ToList();
+            }
+
             if (observers == null || observers.Count() == 0)
                 return;
 
+            if (sensor.Threshold == null)
+                sensor.Threshold = HomeController.GetDefaultThreshold();
+
             if (measured >= sensor.Threshold.P4 || measured <= sensor.Threshold.P1)
             {
-                SmtpClient client = new SmtpClient("10.194.1.89");
-                client.Credentials = new NetworkCredential("service.asup@volna.grodno.by", "serasu");
+                SmtpSettings smtpSettings = AdminController.GetSmtpSettings();
+                SmtpClient client = new SmtpClient(smtpSettings.Server);
+                client.Credentials = new NetworkCredential(smtpSettings.Login, smtpSettings.Password);
                 string body;
                 if (measured >= sensor.Threshold.P4)
                 {
@@ -240,76 +249,22 @@ namespace TemperatureViewer.BackgroundServices
                     body = $"Температура вышла за нижний предел: {sensor.Name} = {measured}°";
                 }
 
-                foreach (var observer in observers)
+                try
                 {
-                    MailAddress from = new MailAddress("service.asup@volna.grodno.by");
-                    MailAddress to = new MailAddress(observer.Email);
-                    MailMessage message = new MailMessage(from, to);
-                    message.Subject = "Термометры АСУП";
-                    message.Body = body;
-                    client.Send(message);
+                    foreach (var observer in observers)
+                    {
+                        MailAddress from = new MailAddress(smtpSettings.Sender);
+                        MailAddress to = new MailAddress(observer.Email);
+                        MailMessage message = new MailMessage(from, to);
+                        message.Subject = "Термометры АСУП";
+                        message.Body = body;
+                        client.Send(message);
+                    }
+                }
+                catch
+                {
                 }
             }
         }
-
-        //private void WriteMeasurementsFromTxt(Sensor sensor)
-        //{
-        //    using (var httpClient = new HttpClient())
-        //    {
-        //        string str;
-        //        try
-        //        {
-        //            str = httpClient.GetStringAsync(sensor.Uri).Result;
-        //        }
-        //        catch
-        //        {
-        //            return;
-        //        }
-
-        //        decimal measured;
-        //        if (decimal.TryParse(str, out measured) || decimal.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out measured))
-        //        {
-        //            measured /= 1.000000000000000000000000000000000m;
-        //            Measurement measurement = new Measurement()
-        //            {
-        //                MeasurementTime = now,
-        //                SensorId = sensor.Id,
-        //                Temperature = measured
-        //            };
-
-        //            lock (lockObject)
-        //            {
-        //                context.Measurements.Add(measurement);
-        //                context.SaveChanges();
-        //            }
-        //        }
-        //    }
-        //}
-
-        //private void WriteMeasurementsFromXml(Sensor sensor)
-        //{
-        //    using (var reader = XmlReader.Create(sensor.Uri))
-        //    {
-        //        while (reader.Read())
-        //        {
-        //            if (reader.Name == "term0" && reader.IsStartElement() && reader.Read())
-        //            {
-        //                decimal measured;
-        //                if (decimal.TryParse(reader.Value, out measured) || decimal.TryParse(reader.Value, NumberStyles.Number, CultureInfo.InvariantCulture, out measured))
-        //                {
-        //                    Measurement measurement = new Measurement()
-        //                    {
-        //                        MeasurementTime = DateTime.Now,
-        //                        SensorId = sensor.Id,
-        //                        Temperature = measured
-        //                    };
-        //                    context.Measurements.Add(measurement);
-        //                    context.SaveChanges();
-        //                    break;
-        //                }
-        //            }
-        //        }
-        //    }
-        //}
     }
 }

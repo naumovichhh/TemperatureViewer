@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +11,8 @@ using TemperatureViewer.Models;
 
 namespace TemperatureViewer.Controllers
 {
+    [Authorize]
+    [Route("Admin/{controller}/{action=Index}/{id?}")]
     public class ObserversController : Controller
     {
         private readonly DefaultContext _context;
