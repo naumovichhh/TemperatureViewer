@@ -22,7 +22,5 @@ namespace TemperatureViewer.Data
             builder.Entity<Sensor>().HasOne(s => s.Threshold).WithMany(t => t.Sensors).OnDelete(DeleteBehavior.NoAction);
             base.OnModelCreating(builder);
         }
-
-        public DbSet<TemperatureViewer.Models.SmtpSettings> SmtpSettings { get; set; }
     }
 }

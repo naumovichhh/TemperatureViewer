@@ -90,7 +90,10 @@ namespace TemperatureViewer.Controllers
 
                 IEnumerable<Measurement> enumerable = GetData(id.Value, fromDate, toDate);
                 measurementTimes = enumerable.Select(m => m.MeasurementTime);
-                dictionary = new Dictionary<int, IEnumerable<Measurement>>() { { id.Value, enumerable } };
+                if (enumerable.Count() == 0)
+                    dictionary = new Dictionary<int, IEnumerable<Measurement>>();
+                else
+                    dictionary = new Dictionary<int, IEnumerable<Measurement>>() { { id.Value, enumerable } };
                 ViewBag.id = id;
             }
             else

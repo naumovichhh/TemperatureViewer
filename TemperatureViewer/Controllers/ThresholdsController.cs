@@ -58,9 +58,14 @@ namespace TemperatureViewer
             }
 
 
-            Threshold entity = new Threshold() { P1 = viewModel.P1, P2 = viewModel.P2, P3 = viewModel.P3, P4 = viewModel.P4 };
-            _context.Thresholds.Add(entity);
-            await _context.SaveChangesAsync();
+            Threshold entity;
+            if ((entity = GetExistingThreshold(viewModel)) == null)
+            { 
+                entity = new Threshold() { P1 = viewModel.P1, P2 = viewModel.P2, P3 = viewModel.P3, P4 = viewModel.P4 };
+                _context.Thresholds.Add(entity);
+                await _context.SaveChangesAsync();
+            }
+                
             foreach (var sensor in viewModel.Sensors)
             {
                 int id = sensor.Value;
@@ -76,6 +81,11 @@ namespace TemperatureViewer
             await _context.SaveChangesAsync();
 
             return RedirectToAction("Index", "Home");
+        }
+
+        private Threshold GetExistingThreshold(ThresholdViewModel viewModel)
+        {
+            return _context.Thresholds.AsNoTracking().FirstOrDefault(t => t.P1 == viewModel.P1 && t.P2 == viewModel.P2 && t.P3 == viewModel.P3 && t.P4 == viewModel.P4);
         }
     }
 }

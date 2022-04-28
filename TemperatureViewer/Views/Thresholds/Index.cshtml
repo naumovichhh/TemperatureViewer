@@ -28,10 +28,12 @@
                 <div><b><span class="temp-value p4">@threshold.P4</span>°</b></div>
             </div>
         </div>
-        <div>
+        <div class="row">
             @foreach (string sensorName in threshold.SensorNames)
             {
-                <div class="m-2 p-2 h4 w-maxcontent label-background">@sensorName</div>
+                <div class="col-auto">
+                    <div class="my-2 p-2 h4 w-maxcontent label-background">@sensorName</div>
+                </div>
             }
         </div>
     </div>

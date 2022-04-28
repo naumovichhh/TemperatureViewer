@@ -33,7 +33,7 @@ namespace TemperatureViewer.BackgroundServices
 
         public async Task DoWork(CancellationToken stoppingToken)
         {
-            nextMeasurementTime = DateTime.Now + TimeSpan.FromSeconds(10);
+            nextMeasurementTime = DateTime.Now + TimeSpan.FromHours(1);
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             while (!stoppingToken.IsCancellationRequested)
             {
@@ -52,7 +52,7 @@ namespace TemperatureViewer.BackgroundServices
                     Parallel.ForEach(sensorsArray, s => HandleMeasurement(s, context));
 
                     await Task.Delay(nextMeasurementTime - DateTime.Now, stoppingToken);
-                    nextMeasurementTime = nextMeasurementTime + TimeSpan.FromSeconds(120);
+                    nextMeasurementTime = nextMeasurementTime + TimeSpan.FromHours(1);
                 }
             }
         }
@@ -128,6 +128,7 @@ namespace TemperatureViewer.BackgroundServices
         private decimal? GetTemperatureFromXml(string uri, string xPath)
         {
             var xmlDocument = new XmlDocument();
+            string str;
             try
             {
                 using (var httpClient = new HttpClient())
@@ -137,15 +138,16 @@ namespace TemperatureViewer.BackgroundServices
                         xmlDocument.Load(stream);
                     }
                 }
+
+                var root = xmlDocument.DocumentElement;
+                var node = root.SelectSingleNode(xPath);
+                str = node.InnerText;
             }
-            catch
+            catch (Exception ex)
             {
                 return null;
             }
 
-            var root = xmlDocument.DocumentElement;
-            var node = root.SelectSingleNode(xPath);
-            string str = node.InnerText;
             decimal result;
             if (decimal.TryParse(str, out result) || decimal.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out result))
             {

@@ -43,7 +43,6 @@ namespace TemperatureViewer
                 })
                 .ConfigureServices(services =>
                 {
-                    //var sensorsAccessService = new SensorsAccessService(services.BuildServiceProvider());
                     services.AddSingleton<ISingletonProcessingService, SensorsAccessService>();
                     services.AddSingleton<ISensorsAccessService>(p => (SensorsAccessService)p.GetService<ISingletonProcessingService>());
                     services.AddHostedService<DefaultBackgroundService>();
