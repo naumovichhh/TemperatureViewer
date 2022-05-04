@@ -30,7 +30,15 @@
         <button id="download-data" class="form-control btn-primary">Скачать</button>
     </div>
 </div>
-<div class="container">
+<div class="container mt-5">
+    @if (ViewBag.allSensors)
+    {
+        <div class="row">
+            <div class="col-2">
+                <button id="toggleAll" class="form-control btn-secondary">Скрыть все</button>
+            </div>
+        </div>
+    }
     <canvas id="chart" height="630" width="1000"></canvas>
 </div>
 <script>

@@ -68,6 +68,7 @@ namespace TemperatureViewer.Controllers
             toDate = GetToDateTime(to);
             ViewBag.from = from;
             ViewBag.to = to;
+            ViewBag.allSensors = false;
             IEnumerable<DateTime> measurementTimes;
 
             IDictionary<int, IEnumerable<Measurement>> dictionary;
@@ -99,6 +100,7 @@ namespace TemperatureViewer.Controllers
             else
             {
                 dictionary = GetData(fromDate, toDate, out measurementTimes);
+                ViewBag.allSensors = true;
             }
 
             if (!dictionary.All(e => e.Value.Count() == dictionary.First().Value.Count()))

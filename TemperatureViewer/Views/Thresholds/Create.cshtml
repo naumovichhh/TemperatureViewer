@@ -35,12 +35,18 @@
                 @{
                     int i = 0;
                 }
+                <div class="form-group">
+                    <div class="row">
+                        <label class="form-label col-11">Все</label>
+                        <input class="input-checkbox col-1" type="checkbox" id="checkAll"/>
+                    </div>
+                </div>
                 @foreach (var sensor in ViewBag.Sensors)
                 {
                     <div class="form-group">
                         <div class="row">
                             <label class="form-label col-11">@sensor.Name</label>
-                            <input class="input-checkbox col-1" type="checkbox" name="Sensors[@i]" value="@sensor.Id"/>
+                            <input class="input-checkbox col-1 sensor-checkbox" type="checkbox" name="Sensors[@i]" value="@sensor.Id"/>
                         </div>
                     </div>
                     {
@@ -54,3 +60,8 @@
         </div>
     </div>
 </form>
+
+@section Scripts
+{
+    <script src="~/js/create.js" asp-append-version="true"></script>
+}
