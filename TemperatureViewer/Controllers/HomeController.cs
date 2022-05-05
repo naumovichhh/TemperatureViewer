@@ -28,6 +28,12 @@ namespace TemperatureViewer.Controllers
             _sensorsAccessService = temperatureService;
         }
 
+        public IActionResult LocationDropdown()
+        {
+            var locations = _context.Locations.AsNoTracking().OrderBy(l => l.Name).AsEnumerable();
+            return PartialView(locations);
+        }
+
         public IActionResult Index(int? locationId)
         {
             IEnumerable<Measurement> measurements;
@@ -38,12 +44,12 @@ namespace TemperatureViewer.Controllers
                     return NotFound();
                 }
 
-                measurements = _sensorsAccessService.GetMeasurements(locationId.Value).OrderBy(e => e.Sensor.Name);
+                measurements = _sensorsAccessService.GetMeasurements(locationId.Value);
                 ViewBag.location = _context.Locations.FirstOrDefault(l => l.Id == locationId);
             }
             else
             {
-                measurements = _sensorsAccessService.GetMeasurements().OrderBy(e => e.Sensor.Name);
+                measurements = _sensorsAccessService.GetMeasurements();
                 ViewBag.location = null;
             }
 
@@ -140,7 +146,7 @@ namespace TemperatureViewer.Controllers
 
         public IActionResult Locations()
         {
-            var locations = _context.Locations.AsNoTracking().AsEnumerable();
+            var locations = _context.Locations.OrderBy(l => l.Name).AsNoTracking().AsEnumerable();
             var viewModel = new List<LocationViewModel>();
             foreach (var location in locations)
             {

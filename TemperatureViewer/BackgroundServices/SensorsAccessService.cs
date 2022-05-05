@@ -65,9 +65,9 @@ namespace TemperatureViewer.BackgroundServices
                 Sensor[] sensorsArray;
                 lock (lockObject)
                 {
-                    sensorsArray = context.Sensors.Where(s => !s.WasDeleted).Include(s => s.Threshold).ToArray();
+                    sensorsArray = context.Sensors.AsNoTracking().Where(s => !s.WasDeleted).OrderBy(s => s.Name).Include(s => s.Threshold).ToArray();
                 }
-                List<Measurement> list = new List<Measurement>();
+                Measurement[] result = new Measurement[sensorsArray.Length];
 
                 Parallel.For(0, sensorsArray.Length, (i) =>
                 {
@@ -83,11 +83,11 @@ namespace TemperatureViewer.BackgroundServices
 
                     if (measured != null)
                     {
-                        list.Add(new Measurement() { Temperature = measured.Value, Sensor = sensorsArray[i] });
+                        result[i] = new Measurement() { Temperature = measured.Value, Sensor = sensorsArray[i] };
                     }
                 });
 
-                return list.ToArray();
+                return result;
             }
         }
 
@@ -99,9 +99,9 @@ namespace TemperatureViewer.BackgroundServices
                 Sensor[] sensorsArray;
                 lock (lockObject)
                 {
-                    sensorsArray = context.Sensors.Where(s => !s.WasDeleted && s.LocationId == locationId).Include(s => s.Threshold).ToArray();
+                    sensorsArray = context.Sensors.AsNoTracking().Where(s => !s.WasDeleted && s.LocationId == locationId).OrderBy(s => s.Name).Include(s => s.Threshold).ToArray();
                 }
-                List<Measurement> list = new List<Measurement>();
+                Measurement[] result = new Measurement[sensorsArray.Length];
 
                 Parallel.For(0, sensorsArray.Length, (i) =>
                 {
@@ -117,11 +117,11 @@ namespace TemperatureViewer.BackgroundServices
 
                     if (measured != null)
                     {
-                        list.Add(new Measurement() { Temperature = measured.Value, Sensor = sensorsArray[i] });
+                        result[i] = new Measurement() { Temperature = measured.Value, Sensor = sensorsArray[i] };
                     }
                 });
 
-                return list.ToArray();
+                return result;
             }
         }
 

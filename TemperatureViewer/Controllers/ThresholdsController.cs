@@ -22,13 +22,13 @@ namespace TemperatureViewer
         public IActionResult Index()
         {
             var entities = _context.Thresholds.AsNoTracking().Include(t => t.Sensors);
-            var viewModels = entities.Select(e => new ThresholdViewModel() { P1 = e.P1, P2 = e.P2, P3 = e.P3, P4 = e.P4, SensorNames = e.Sensors.Select(s => s.Name).ToList() });
+            var viewModels = entities.Select(e => new ThresholdViewModel() { P1 = e.P1, P2 = e.P2, P3 = e.P3, P4 = e.P4, SensorNames = e.Sensors.OrderBy(s => s.Name).Select(s => s.Name).ToList() });
             return View(viewModels);
         }
 
         public IActionResult Create()
         {
-            var sensors = _context.Sensors;
+            var sensors = _context.Sensors.AsNoTracking().OrderBy(s => s.Name);
             ViewBag.Sensors = sensors;
             return View();
         }

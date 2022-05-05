@@ -29,9 +29,7 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="History" asp-route-id="">История</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Locations">Локации</a>
-                        </li>
+                        <vc:locations-dropdown />
                     </ul>
                     @if (User.Identity.IsAuthenticated)
                     {
