@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TemperatureViewer.Data;
 using TemperatureViewer.Helpers;
-using TemperatureViewer.Models;
+using TemperatureViewer.Models.Entities;
 
 namespace TemperatureViewer.Controllers
 {

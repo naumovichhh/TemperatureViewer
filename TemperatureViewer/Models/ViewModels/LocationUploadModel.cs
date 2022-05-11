@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
 
-namespace TemperatureViewer.Models
+namespace TemperatureViewer.Models.ViewModels
 {
     public class LocationUploadModel
     {

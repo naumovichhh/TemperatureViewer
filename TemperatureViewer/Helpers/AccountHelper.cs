@@ -2,7 +2,7 @@
 using System.Linq;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.EntityFrameworkCore;
-using TemperatureViewer.Models;
+using TemperatureViewer.Models.Entities;
 
 namespace TemperatureViewer.Helpers
 {

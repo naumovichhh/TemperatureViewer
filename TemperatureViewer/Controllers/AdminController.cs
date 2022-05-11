@@ -3,7 +3,7 @@ using System.Net;
 using System.Net.Mail;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using TemperatureViewer.Models;
+using TemperatureViewer.Models.ViewModels;
 
 namespace TemperatureViewer.Controllers
 {

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace TemperatureViewer.Models
+namespace TemperatureViewer.Models.Entities
 {
     public class Sensor
     {
@@ -17,6 +17,7 @@ namespace TemperatureViewer.Models
         public int? ThresholdId { get; set; }
 
         public ICollection<Measurement> Measurements { get; set; }
+        public ICollection<Observer> Observers { get; set; }
         public Threshold Threshold { get; set; }
         public Location Location { get; set; }
     }

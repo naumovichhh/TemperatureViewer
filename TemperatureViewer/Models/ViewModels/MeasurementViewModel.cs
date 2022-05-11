@@ -1,4 +1,4 @@
-﻿namespace TemperatureViewer.Models
+﻿namespace TemperatureViewer.Models.ViewModels
 {
     public class MeasurementViewModel
     {

@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 
-namespace TemperatureViewer.Models
+namespace TemperatureViewer.Models.ViewModels
 {
     [Keyless]
     public class SmtpSettings

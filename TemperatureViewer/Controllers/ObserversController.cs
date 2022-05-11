@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using TemperatureViewer.Data;
-using TemperatureViewer.Models;
+using TemperatureViewer.Models.Entities;
+using TemperatureViewer.Models.ViewModels;
 
 namespace TemperatureViewer.Controllers
 {
@@ -24,25 +22,37 @@ namespace TemperatureViewer.Controllers
 
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Observers.ToListAsync());
+            return View(await _context.Observers.AsNoTracking().OrderBy(o => o.Email).ToListAsync());
         }
 
         public IActionResult Create()
         {
+            var sensors = _context.Sensors.AsNoTracking().OrderBy(s => s.Name);
+            ViewBag.Sensors = sensors;
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Email")] Observer observer)
+        public async Task<IActionResult> Create(ObserverViewModel viewModel)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                _context.Add(observer);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                ViewBag.Sensors = _context.Sensors;
+                return View(viewModel);
             }
-            return View(observer);
+
+            if (viewModel.Sensors == null || viewModel.Sensors.Count == 0)
+            {
+                ModelState.AddModelError("", "Необходимо выбрать датчики для наблюдения.");
+                ViewBag.Sensors = _context.Sensors;
+                return View(viewModel);
+            }
+
+            var entity = new Observer() { Email = viewModel.Email, Sensors = viewModel.Sensors.Select(kv => _context.Sensors.FirstOrDefault(s => s.Id == kv.Value)).ToList() };
+            _context.Add(entity);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
 
         public async Task<IActionResult> Delete(string id)

@@ -13,7 +13,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using TemperatureViewer.Controllers;
 using TemperatureViewer.Data;
-using TemperatureViewer.Models;
+using TemperatureViewer.Models.Entities;
+using TemperatureViewer.Models.ViewModels;
 
 namespace TemperatureViewer.BackgroundServices
 {
@@ -227,7 +228,7 @@ namespace TemperatureViewer.BackgroundServices
             IList<Observer> observers;
             lock (lockObject)
             {
-                observers = context.Observers.AsNoTracking().ToList();
+                observers = context.Observers.AsNoTracking().Where(o => o.Sensors.Any(s => s.Id == sensor.Id)).ToList();
             }
 
             if (observers == null || observers.Count() == 0)

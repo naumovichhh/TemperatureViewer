@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace TemperatureViewer.Models
+namespace TemperatureViewer.Models.Entities
 {
     public class User
     {

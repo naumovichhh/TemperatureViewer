@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.IO;
 using NPOI.XSSF.UserModel;
-using TemperatureViewer.Models;
+using TemperatureViewer.Models.Entities;
 using NPOI.SS.UserModel;
 
 namespace TemperatureViewer.Helpers

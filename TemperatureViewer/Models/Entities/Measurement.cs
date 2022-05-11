@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TemperatureViewer.Models
+namespace TemperatureViewer.Models.Entities
 {
     public class Measurement
     {

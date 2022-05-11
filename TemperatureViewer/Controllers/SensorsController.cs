@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TemperatureViewer.Data;
-using TemperatureViewer.Models;
+using TemperatureViewer.Models.Entities;
 
 namespace TemperatureViewer.Controllers
 {
@@ -22,7 +22,7 @@ namespace TemperatureViewer.Controllers
         // GET: Sensors
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Sensors.ToListAsync());
+            return View(await _context.Sensors.AsNoTracking().OrderBy(s => s.Name).ToListAsync());
         }
 
         // GET: Sensors/Details/5

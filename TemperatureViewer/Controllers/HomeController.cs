@@ -11,7 +11,8 @@ using System.Threading.Tasks;
 using TemperatureViewer.BackgroundServices;
 using TemperatureViewer.Data;
 using TemperatureViewer.Helpers;
-using TemperatureViewer.Models;
+using TemperatureViewer.Models.Entities;
+using TemperatureViewer.Models.ViewModels;
 
 namespace TemperatureViewer.Controllers
 {

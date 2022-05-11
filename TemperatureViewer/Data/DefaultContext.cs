@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TemperatureViewer.Models;
+using TemperatureViewer.Models.Entities;
 
 namespace TemperatureViewer.Data
 {
