@@ -9,5 +9,6 @@ namespace TemperatureViewer.Models.ViewModels
         [EmailAddress]
         public string Email { get; set; }
         public IDictionary<int, int> Sensors { get; set; }
+        public IDictionary<int, bool> SensorsFlags { get; set; }
     }
 }

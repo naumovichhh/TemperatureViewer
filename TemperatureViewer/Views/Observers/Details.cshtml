@@ -1,0 +1,33 @@
+﻿@model TemperatureViewer.Models.Entities.Observer
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Детали</h1>
+
+<div>
+    <h4>Наблюдатель</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Email)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Email)
+        </dd>
+    </dl>
+
+    <div class="row">
+        @foreach (Sensor sensor in Model.Sensors.OrderBy(s => s.Name))
+        {
+            <div class="col-auto">
+                <div class="my-2 p-2 h4 w-maxcontent label-background">@sensor.Name</div>
+            </div>
+        }
+    </div>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.Email">Изменить</a> |
+    <a asp-action="Index">Назад к списку</a>
+</div>

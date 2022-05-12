@@ -26,6 +26,8 @@
                 @Html.DisplayFor(modelItem => item.Email)
             </td>
             <td>
+                <a asp-action="Edit" asp-route-id="@item.Email">Изменить</a> |
+                <a asp-action="Details" asp-route-id="@item.Email">Детали</a> |
                 <a asp-action="Delete" asp-route-id="@item.Email">Удалить</a>
             </td>
         </tr>

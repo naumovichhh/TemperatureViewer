@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace TemperatureViewer.Data
 {
@@ -6,7 +7,7 @@ namespace TemperatureViewer.Data
     {
         public static void Initialize(DefaultContext context)
         {
-            context.Database.EnsureCreated();
+            context.Database.Migrate();
 
             if (context.Measurements.Any())
             {

@@ -38,21 +38,105 @@ namespace TemperatureViewer.Controllers
         {
             if (!ModelState.IsValid)
             {
-                ViewBag.Sensors = _context.Sensors;
+                ViewBag.Sensors = _context.Sensors.AsNoTracking().OrderBy(s => s.Name);
                 return View(viewModel);
             }
 
             if (viewModel.Sensors == null || viewModel.Sensors.Count == 0)
             {
                 ModelState.AddModelError("", "Необходимо выбрать датчики для наблюдения.");
-                ViewBag.Sensors = _context.Sensors;
+                ViewBag.Sensors = _context.Sensors.AsNoTracking().OrderBy(s => s.Name);
                 return View(viewModel);
             }
 
-            var entity = new Observer() { Email = viewModel.Email, Sensors = viewModel.Sensors.Select(kv => _context.Sensors.FirstOrDefault(s => s.Id == kv.Value)).ToList() };
+            var entity = new Observer() { Email = viewModel.Email, Sensors = viewModel.Sensors?.Select(kv => _context.Sensors.FirstOrDefault(s => s.Id == kv.Value)).ToList() };
             _context.Add(entity);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
+        }
+
+        public async Task<IActionResult> Details(string id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            Observer observer = await _context.Observers
+                .FirstOrDefaultAsync(o => o.Email == id);
+            if (observer == null)
+            {
+                return NotFound();
+            }
+
+            _context.Entry(observer).Collection(s => s.Sensors).Load();
+
+            return View(observer);
+        }
+
+        public async Task<IActionResult> Edit(string id)
+        {
+            if (id == null)
+                return NotFound();
+
+            Observer observer = await _context.Observers.FindAsync(id);
+            if (observer == null)
+                return NotFound();
+
+            _context.Entry(observer).Collection(o => o.Sensors).Load();
+            ObserverViewModel viewModel = new ObserverViewModel() { Email = observer.Email, SensorsFlags = _context.Sensors.AsNoTracking().ToDictionary(s => s.Id, s => observer.Sensors.Any(os => os.Id == s.Id)) };
+            ViewBag.Sensors = _context.Sensors.AsNoTracking().OrderBy(s => s.Name);
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(string id, ObserverViewModel viewModel)
+        {
+            if (id != viewModel.Email)
+            {
+                return NotFound();
+            }
+
+            if (viewModel.Sensors == null || viewModel.Sensors.Count == 0)
+            {
+                ModelState.AddModelError("", "Необходимо выбрать датчики для наблюдения.");
+                Observer observer = await _context.Observers.FindAsync(id);
+                if (observer == null)
+                    return NotFound();
+                _context.Entry(observer).Collection(o => o.Sensors).Load();
+                viewModel.SensorsFlags = _context.Sensors.AsNoTracking().ToDictionary(s => s.Id, s => observer.Sensors.Any(os => os.Id == s.Id));
+                ViewBag.Sensors = _context.Sensors.AsNoTracking().OrderBy(s => s.Name);
+                return View(viewModel);
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var entity = await _context.Observers.FindAsync(id);
+                    _context.Entry(entity).Collection(o => o.Sensors).Load();
+                    entity.Sensors.Clear();
+                    _context.Update(entity);
+                    await _context.SaveChangesAsync();
+                    entity.Sensors = viewModel.Sensors?.Select(kv => _context.Sensors.FirstOrDefault(s => s.Id == kv.Value)).ToList();
+                    _context.Update(entity);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!ObserverExists(viewModel.Email))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            return View(viewModel);
         }
 
         public async Task<IActionResult> Delete(string id)
