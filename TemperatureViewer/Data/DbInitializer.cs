@@ -7,7 +7,7 @@ namespace TemperatureViewer.Data
     {
         public static void Initialize(DefaultContext context)
         {
-            context.Database.Migrate();
+            context.Database.EnsureCreated();
 
             if (context.Measurements.Any())
             {

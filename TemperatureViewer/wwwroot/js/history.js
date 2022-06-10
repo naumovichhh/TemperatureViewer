@@ -22,12 +22,15 @@ $(function () {
                 location.href = location.protocol + "//" + location.host + "/Home/History" + (id ? `/${id}` : "") + "?" + searchParams.join("&");
             }
             else {
+                alert("Некорректный период");
                 return;
             }
         }
 
-        if (valueFrom > valueTo) {
-            alert("Некорректный ввод");
+        let dateFrom = new Date(valueFrom);
+        let dateTo = new Date(valueTo);
+        if (dateFrom > dateTo || dateTo - dateFrom > 366 * 24 * 3600 * 1000) {
+            alert("Некорректный период");
             return;
         }
 
@@ -43,12 +46,16 @@ $(function () {
                 location.href = location.protocol + "//" + location.host + "/Home/Download" + (id ? `/${id}` : "") + "?" + searchParams.join("&");
             }
             else {
+                alert("Некорректный период");
                 return;
             }
         }
 
-        if (valueFrom > valueTo) {
-            alert("Некорректный ввод");
+
+        let dateFrom = new Date(valueFrom);
+        let dateTo = new Date(valueTo);
+        if (dateFrom > dateTo || dateTo - dateFrom > 366 * 24 * 3600 * 1000) {
+            alert("Некорректный период");
             return;
         }
 
