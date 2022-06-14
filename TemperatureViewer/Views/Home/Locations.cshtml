@@ -4,7 +4,7 @@
     ViewData["Title"] = "View";
 }
 
-<div class="row">
+<div class="container">
     @foreach (var item in Model)
     {
         <div class="row p-2 bg-white border rounded">
@@ -14,7 +14,7 @@
                 <div class="row no-gutters">
                     @foreach (var measurement in item.Measurements)
                     {
-                        <div class="therm col-3 col-md-2 mx-1 d-flex justify-content-center">
+                        <div class="therm col-3 col-md-2 m-1 d-flex justify-content-center">
                             <div><b><span class="temp-value">@measurement.Temperature</span>°</b></div>
                             <!--Storing information about thresholds for measurement-->
                             <span class="p1" hidden>@measurement.Thresholds[0]</span>
