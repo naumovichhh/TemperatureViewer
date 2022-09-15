@@ -54,7 +54,7 @@ namespace TemperatureViewer.Controllers
                 ViewBag.location = null;
             }
 
-            var viewModel = measurements?.Select(e =>
+            var viewModel = measurements?.Where(e => e != null).Select(e =>
             {
                 Threshold threshold = e.Sensor.Threshold ?? GetDefaultThreshold();
                 return new MeasurementViewModel()

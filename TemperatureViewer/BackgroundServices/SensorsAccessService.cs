@@ -134,6 +134,7 @@ namespace TemperatureViewer.BackgroundServices
             {
                 using (var httpClient = new HttpClient())
                 {
+                    httpClient.Timeout = TimeSpan.FromSeconds(2);
                     using (var stream = httpClient.GetStreamAsync(uri).Result)
                     {
                         xmlDocument.Load(stream);
@@ -169,6 +170,7 @@ namespace TemperatureViewer.BackgroundServices
             {
                 try
                 {
+                    httpClient.Timeout = TimeSpan.FromSeconds(2);
                     str = httpClient.GetStringAsync(uri).Result;
                 }
                 catch
