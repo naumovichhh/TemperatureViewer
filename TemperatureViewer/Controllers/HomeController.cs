@@ -151,7 +151,7 @@ namespace TemperatureViewer.Controllers
             var viewModel = new List<LocationViewModel>();
             foreach (var location in locations)
             {
-                var measurements = _sensorsAccessService.GetMeasurements(location.Id).OrderBy(e => e.Sensor.Name);
+                var measurements = _sensorsAccessService.GetMeasurements(location.Id).Where(e => e != null).OrderBy(e => e.Sensor.Name).ToList();
                 var measurementsViewModels = measurements?.Select(e =>
                 {
                     Threshold threshold = e.Sensor.Threshold ?? GetDefaultThreshold();
@@ -195,7 +195,7 @@ namespace TemperatureViewer.Controllers
             var historyDictionary = GetData(fromDate, toDate, out checkpoints, id.Value);
             IList<SensorHistoryViewModel> history = GetHistoryViewModel(historyDictionary, checkpoints, out checkpoints);
 
-            var measurements = _sensorsAccessService.GetMeasurements(entity.Id).OrderBy(e => e.Sensor.Name);
+            var measurements = _sensorsAccessService.GetMeasurements(entity.Id).Where(e => e != null).OrderBy(e => e.Sensor.Name);
             var measurementsViewModels = measurements?.Select(e =>
             {
                 Threshold threshold = e.Sensor.Threshold ?? new Threshold() { P1 = 12, P2 = 16, P3 = 25, P4 = 30 };
