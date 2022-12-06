@@ -1,7 +1,7 @@
 ﻿@model IEnumerable<Location>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Локации";
 }
 
 <h1>Локации</h1>
@@ -33,7 +33,7 @@
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Изменить</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Детали</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Подробно</a> |
                 <a asp-action="Delete" asp-route-id="@item.Id">Удалить</a>
             </td>
         </tr>

@@ -1,4 +1,8 @@
-﻿<div class="list-group w-50">
+﻿@{
+    ViewData["Title"] = "Администрирование";
+}
+
+<div class="list-group w-50">
     <a class="list-group-item list-group-item-action" asp-controller="Sensors" asp-action="Index">Датчики</a>
     <a class="list-group-item list-group-item-action" asp-controller="Locations" asp-action="Index">Локации</a>
     <a class="list-group-item list-group-item-action" asp-controller="Thresholds" asp-action="Index">Пороги температур</a>
