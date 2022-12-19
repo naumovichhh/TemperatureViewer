@@ -29,7 +29,7 @@ namespace TemperatureViewer
             services.AddDatabaseDeveloperPageExceptionFilter();
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options =>
             {
-                options.ExpireTimeSpan = TimeSpan.FromDays(7);
+                options.ExpireTimeSpan = TimeSpan.FromDays(14);
                 options.SlidingExpiration = true;
                 options.LoginPath = new Microsoft.AspNetCore.Http.PathString("/Account/Login");
             });

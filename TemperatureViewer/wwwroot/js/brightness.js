@@ -1,1 +1,1 @@
-﻿let brightness = 100;
+﻿let brightness = 70;

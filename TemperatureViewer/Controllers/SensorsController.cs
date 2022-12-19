@@ -8,7 +8,7 @@ using TemperatureViewer.Models.Entities;
 
 namespace TemperatureViewer.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "admin")]
     [Route("Admin/{controller}/{action=Index}/{id?}")]
     public class SensorsController : Controller
     {

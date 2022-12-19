@@ -2,10 +2,9 @@
 
 <li class="nav-item dropdown">
     <a class="nav-link text-dark dropdown-toggle" href="#" id="locationsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-        Локации
+        Локация
     </a>
     <div class="dropdown-menu" aria-labelledby="locationsDropdown">
-        <a class="dropdown-item" asp-controller="Home" asp-action="Locations">Список</a>
         @foreach (Location location in Model)
         {
             <a class="dropdown-item" asp-route-id="@location.Id" asp-controller="Home" asp-action="ExtendedLocation">@location.Name</a>

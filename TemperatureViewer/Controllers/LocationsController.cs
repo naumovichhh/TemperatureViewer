@@ -14,7 +14,7 @@ using TemperatureViewer.Models.ViewModels;
 namespace TemperatureViewer.Controllers
 {
     [Route("Admin/{controller}/{action=Index}/{id?}")]
-    [Authorize]
+    [Authorize(Roles = "admin")]
     public class LocationsController : Controller
     {
         private readonly DefaultContext _context;

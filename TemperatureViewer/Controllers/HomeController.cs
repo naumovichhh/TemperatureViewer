@@ -31,30 +31,11 @@ namespace TemperatureViewer.Controllers
             _sensorsAccessService = temperatureService;
         }
 
-        public IActionResult LocationDropdown()
-        {
-            var locations = _context.Locations.AsNoTracking().OrderBy(l => l.Name).AsEnumerable();
-            return PartialView(locations);
-        }
-
-        public IActionResult Index(int? locationId)
+        public IActionResult Index()
         {
             IEnumerable<Measurement> measurements;
-            if (locationId != null)
-            {
-                if (_context.Locations.FirstOrDefault(l => l.Id == locationId) == null)
-                {
-                    return NotFound();
-                }
-
-                measurements = _sensorsAccessService.GetMeasurements(locationId.Value);
-                ViewBag.location = _context.Locations.FirstOrDefault(l => l.Id == locationId);
-            }
-            else
-            {
-                measurements = _sensorsAccessService.GetMeasurements();
-                ViewBag.location = null;
-            }
+            measurements = _sensorsAccessService.GetMeasurements();
+            ViewBag.location = null;
 
             var viewModel = measurements?.Where(e => e != null).Select(e =>
             {
@@ -70,7 +51,7 @@ namespace TemperatureViewer.Controllers
             return View(viewModel);
         }
 
-        public IActionResult History(int? id, string from, string to, int? locationId)
+        public IActionResult History(int? id, string from, string to)
         {
             DateTime fromDate, toDate;
             fromDate = GetFromDateTime(from);
@@ -81,17 +62,7 @@ namespace TemperatureViewer.Controllers
             IEnumerable<DateTime> measurementTimes;
 
             IDictionary<int, IEnumerable<Measurement>> dictionary;
-            if (locationId != null)
-            {
-                if (_context.Locations.FirstOrDefault(l => l.Id == locationId) == null)
-                {
-                    return NotFound();
-                }
-
-                dictionary = GetData(fromDate, toDate, out measurementTimes, locationId.Value);
-                ViewBag.locationId = locationId;
-            }
-            else if (id != null)
+            if (id != null)
             {
                 if (_context.Sensors.FirstOrDefault(s => s.Id == id) == null)
                 {
@@ -127,7 +98,6 @@ namespace TemperatureViewer.Controllers
 
             List<SensorHistoryViewModel> model = list.Select(GetViewModelsFromEnumerable).OrderBy(vm => vm.SensorName).ToList();
             ViewBag.measurementTimes = measurementTimes;
-            ViewBag.location = _context.Locations.AsNoTracking().FirstOrDefault(l => l.Id == locationId);
             return View(model);
         }
 

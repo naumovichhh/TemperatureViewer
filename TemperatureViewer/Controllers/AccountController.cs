@@ -28,7 +28,7 @@ namespace TemperatureViewer.Controllers
         public IActionResult Login()
         {
             if (User.Identity.IsAuthenticated)
-                return RedirectToAction("Index", "Admin");
+                return RedirectToAction("Index", "Home");
 
             return View();
         }
@@ -72,7 +72,7 @@ namespace TemperatureViewer.Controllers
                 if (returnUrl != null)
                     return Redirect(returnUrl);
                 else
-                    return RedirectToAction("Index", "Admin");
+                    return RedirectToAction("Index", "Home");
             }
 
             return View(loginModel);
@@ -81,7 +81,7 @@ namespace TemperatureViewer.Controllers
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Login");
         }
     }
 }

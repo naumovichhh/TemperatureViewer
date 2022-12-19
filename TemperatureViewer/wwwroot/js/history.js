@@ -77,8 +77,8 @@ $(function () {
                 let a = e.measurements.map(m => m?.value);
                 return {
                     label: e.sensorName,
-                    backgroundColor: colors[i],
-                    borderColor: colors[i],
+                    backgroundColor: colors[i % colors.length],
+                    borderColor: colors[i % colors.length],
                     data: a,
                     spanGaps: true,
                     tension: 0.22

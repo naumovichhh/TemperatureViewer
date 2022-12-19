@@ -10,7 +10,7 @@ using TemperatureViewer.Models.ViewModels;
 namespace TemperatureViewer
 {
     [Route("Admin/{Controller}/{action=Index}")]
-    [Authorize]
+    [Authorize(Roles = "admin")]
     public class ThresholdsController : Controller
     {
         private DefaultContext _context;
