@@ -37,3 +37,7 @@ msbuild.wrn
 .vs/
 
 img/
+
+#Publish properties
+
+TemperatureViewer/Properties/PublishProfiles
