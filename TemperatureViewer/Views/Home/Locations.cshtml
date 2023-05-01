@@ -12,15 +12,15 @@
             <div class="col-md-8 mt-1">
                 <h5>@item.Name</h5>
                 <div class="row no-gutters">
-                    @foreach (var measurement in item.Measurements)
+                    @foreach (var value in item.Values)
                     {
                         <div class="therm col-3 col-md-2 m-1 d-flex justify-content-center">
-                            <div><b><span class="temp-value">@measurement.Temperature</span>°</b></div>
-                            <!--Storing information about thresholds for measurement-->
-                            <span class="p1" hidden>@measurement.Thresholds[0]</span>
-                            <span class="p2" hidden>@measurement.Thresholds[1]</span>
-                            <span class="p3" hidden>@measurement.Thresholds[2]</span>
-                            <span class="p4" hidden>@measurement.Thresholds[3]</span>
+                            <div><b><span class="temp-value">@value.Temperature</span>°</b></div>
+                            <!--Storing information about thresholds for value-->
+                            <span class="p1" hidden>@value.Thresholds[0]</span>
+                            <span class="p2" hidden>@value.Thresholds[1]</span>
+                            <span class="p3" hidden>@value.Thresholds[2]</span>
+                            <span class="p4" hidden>@value.Thresholds[3]</span>
                         </div>
                     }
                 </div>

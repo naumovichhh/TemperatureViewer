@@ -9,7 +9,7 @@ namespace TemperatureViewer.Data
         {
         }
 
-        public DbSet<Measurement> Measurements { get; set; }
+        public DbSet<Value> Values { get; set; }
         public DbSet<Sensor> Sensors { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Location> Locations { get; set; }

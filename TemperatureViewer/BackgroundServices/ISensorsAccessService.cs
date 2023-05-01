@@ -4,7 +4,7 @@ namespace TemperatureViewer.BackgroundServices
 {
     public interface ISensorsAccessService
     {
-        Measurement[] GetMeasurements();
-        Measurement[] GetMeasurements(int locationId);
+        Value[] GetValues();
+        Value[] GetValues(int locationId);
     }
 }

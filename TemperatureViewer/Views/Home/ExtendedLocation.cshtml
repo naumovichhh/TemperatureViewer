@@ -19,16 +19,16 @@
 </div>
 
 <div class="list-group mt-2">
-    @foreach (var measurement in Model.Measurements)
+    @foreach (var value in Model.Values)
     {
         <div class="list-group-item therm-li">
             <div class="therm">
                 <div class="row">
                     <div class="col-2">
-                        <div><b><span class="temp-value">@measurement.Temperature</span>°</b></div>
+                        <div><b><span class="temp-value">@value.Temperature</span>°</b></div>
                     </div>
                     <div class="col-10">
-                        <div class="therm-name"><a asp-controller="Home" asp-action="History" asp-route-id="@measurement.SensorId">@measurement.SensorName</a></div>
+                        <div class="therm-name"><a asp-controller="Home" asp-action="History" asp-route-id="@value.SensorId">@value.SensorName</a></div>
                     </div>
                 </div>
             </div>
@@ -70,7 +70,7 @@
 
 @section Scripts {
 <script>
-    var thresholds = @Json.Serialize(Model.Measurements.Select(m => m.Thresholds));
+    var thresholds = @Json.Serialize(Model.Values.Select(m => m.Thresholds));
 </script>
 
 <script>

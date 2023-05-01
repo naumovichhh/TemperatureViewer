@@ -8,8 +8,7 @@ namespace TemperatureViewer.Data
         public static void Initialize(DefaultContext context)
         {
             context.Database.EnsureCreated();
-
-            if (context.Measurements.Any())
+            if (context.Values.Any())
             {
                 return;
             }

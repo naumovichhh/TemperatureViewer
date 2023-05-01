@@ -12,12 +12,13 @@ namespace TemperatureViewer.Models.Entities
         public string Uri { get; set; }
         public int? LocationId { get; set; }
         [Required]
-        public bool WasDeleted { get; set; }
+        public bool WasDisabled { get; set; }
         public string XPath { get; set; }
         public int? ThresholdId { get; set; }
 
-        public ICollection<Measurement> Measurements { get; set; }
+        public ICollection<Value> Values { get; set; }
         public ICollection<Observer> Observers { get; set; }
+        public ICollection<User> Users { get; set; }
         public Threshold Threshold { get; set; }
         public Location Location { get; set; }
     }

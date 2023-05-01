@@ -8,6 +8,6 @@ namespace TemperatureViewer.Models.ViewModels
         public string Name { get; set; }
         public string Image { get; set; }
 
-        public IEnumerable<MeasurementViewModel> Measurements { get; set; }
+        public IEnumerable<ValueViewModel> Values { get; set; }
     }
 }

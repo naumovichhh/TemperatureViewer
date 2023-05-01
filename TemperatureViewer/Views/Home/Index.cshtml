@@ -1,19 +1,19 @@
-﻿@model IEnumerable<MeasurementViewModel>
+﻿@model IEnumerable<ValueViewModel>
 @{
     ViewData["Title"] = "Домашняя страница";
 }
 
 <div class="list-group">
-    @foreach (var measurement in Model)
+    @foreach (var value in Model)
     {
         <div class="list-group-item therm-li">
             <div class="therm">
                 <div class="row">
                     <div class="col-2">
-                        <div><b><span class="temp-value">@measurement.Temperature</span>°</b></div>
+                        <div><b><span class="temp-value">@value.Temperature</span>°</b></div>
                     </div>
                     <div class="col-10">
-                        <div class="therm-name"><a asp-controller="Home" asp-action="History" asp-route-id="@measurement.SensorId">@measurement.SensorName</a></div>
+                        <div class="therm-name"><a asp-controller="Home" asp-action="History" asp-route-id="@value.SensorId">@value.SensorName</a></div>
                     </div>
                 </div>
             </div>

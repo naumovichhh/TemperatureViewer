@@ -52,7 +52,7 @@ let data;
 let options;
 
 if (modelJson.length > 0) {
-    let numberOfMeasurements = modelJson.map(m => m.measurements.length).reduce((acc, next) => {
+    let numberOfValues = modelJson.map(m => m.values.length).reduce((acc, next) => {
         if (next > acc)
             return next;
         else
@@ -63,7 +63,7 @@ if (modelJson.length > 0) {
             return t.slice(0, 16).replace("T", " ");
         }),
         datasets: modelJson.map((e, i) => {
-            let a = e.measurements.map(m => m?.value);
+            let a = e.values.map(m => m?.value);
             return {
                 label: e.sensorName,
                 backgroundColor: colors[i],

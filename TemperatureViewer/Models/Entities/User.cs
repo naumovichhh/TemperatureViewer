@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace TemperatureViewer.Models.Entities
 {
@@ -10,5 +11,6 @@ namespace TemperatureViewer.Models.Entities
         [Required]
         [DataType(DataType.Password)]
         public string Password { get; set; }
+        public ICollection<Sensor> Sensors { get; set; }
     }
 }

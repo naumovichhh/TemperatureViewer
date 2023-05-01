@@ -6,10 +6,10 @@ namespace TemperatureViewer.Models.ViewModels
     public class SensorHistoryViewModel
     {
         public string SensorName { get; set; }
-        public IEnumerable<MeasurementOfTime> Measurements { get; set; }
+        public IEnumerable<ValueOfTime> Values { get; set; }
     }
 
-    public class MeasurementOfTime
+    public class ValueOfTime
     {
         public DateTime Time { get; set; }
         public decimal Value { get; set; }

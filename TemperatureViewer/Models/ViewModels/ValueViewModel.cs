@@ -1,6 +1,6 @@
 ﻿namespace TemperatureViewer.Models.ViewModels
 {
-    public class MeasurementViewModel
+    public class ValueViewModel
     {
         public decimal Temperature { get; set; }
         public string SensorName { get; set; }

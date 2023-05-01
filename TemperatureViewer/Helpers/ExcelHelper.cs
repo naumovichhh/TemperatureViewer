@@ -11,7 +11,7 @@ namespace TemperatureViewer.Helpers
 {
     public static class ExcelHelper
     {
-        public static MemoryStream Create(IDictionary<Sensor, IEnumerable<Measurement>> data, IEnumerable<DateTime> measurementTimes)
+        public static MemoryStream Create(IDictionary<Sensor, IEnumerable<Value>> data, IEnumerable<DateTime> measurementTimes)
         {
             CheckEnumerableLengthEqual(data);
             IWorkbook workbook = new XSSFWorkbook();
@@ -23,10 +23,10 @@ namespace TemperatureViewer.Helpers
             return result;
         }
 
-        private static void CheckEnumerableLengthEqual(IDictionary<Sensor, IEnumerable<Measurement>> data)
+        private static void CheckEnumerableLengthEqual(IDictionary<Sensor, IEnumerable<Value>> data)
         {
             if (!data.All(e => e.Value.Count() == data.First().Value.Count()))
-                throw new ArgumentException("Data must contain enumerables of measurements of equal length.", nameof(data));
+                throw new ArgumentException("Data must contain enumerables of values of equal length.", nameof(data));
         }
 
         private static void WriteHeader(ISheet sheet, IEnumerable<string> names)
@@ -43,7 +43,7 @@ namespace TemperatureViewer.Helpers
             }
         }
 
-        private static void WriteCells(ISheet sheet, IDictionary<Sensor, IEnumerable<Measurement>> data, IEnumerable<DateTime> measurementTimes)
+        private static void WriteCells(ISheet sheet, IDictionary<Sensor, IEnumerable<Value>> data, IEnumerable<DateTime> measurementTimes)
         {
             int i = 1;
             foreach (var dateTime in measurementTimes)
@@ -56,10 +56,10 @@ namespace TemperatureViewer.Helpers
             foreach (var keyValuePair in data.OrderBy(s => s.Key.Name))
             {
                 int k = 1;
-                foreach (var measurement in keyValuePair.Value)
+                foreach (var value in keyValuePair.Value)
                 {
-                    if (measurement != null)
-                        sheet.GetRow(k).CreateCell(j).SetCellValue((double)measurement.Temperature);
+                    if (value != null)
+                        sheet.GetRow(k).CreateCell(j).SetCellValue((double)value.Temperature);
 
                     k++;
                 }

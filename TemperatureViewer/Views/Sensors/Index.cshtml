@@ -23,7 +23,7 @@
                 @Html.DisplayNameFor(model => model.LocationId)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.WasDeleted)
+                @Html.DisplayNameFor(model => model.WasDisabled)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.XPath)
@@ -45,7 +45,7 @@
                     @Html.DisplayFor(modelItem => item.LocationId)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.WasDeleted)
+                    @Html.DisplayFor(modelItem => item.WasDisabled)
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.XPath)
@@ -53,7 +53,7 @@
                 <td>
                     <a asp-action="Edit" asp-route-id="@item.Id">Изменить</a> |
                     <a asp-action="Details" asp-route-id="@item.Id">Подробно</a> |
-                    @if (item.WasDeleted)
+                    @if (item.WasDisabled)
                     {
                         <a asp-action="Restore" asp-route-id="@item.Id">Восстановить</a>
                     }

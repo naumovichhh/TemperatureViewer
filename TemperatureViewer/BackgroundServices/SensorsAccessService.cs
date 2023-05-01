@@ -45,7 +45,7 @@ namespace TemperatureViewer.BackgroundServices
                     Sensor[] sensorsArray;
                     lock (lockObject)
                     {
-                        sensors = context.Sensors.Where(s => !s.WasDeleted).Include(s => s.Threshold).AsNoTracking().ToList();
+                        sensors = context.Sensors.Where(s => !s.WasDisabled).Include(s => s.Threshold).AsNoTracking().ToList();
                         sensorsArray = sensors.ToArray();
                     }
 
@@ -58,7 +58,7 @@ namespace TemperatureViewer.BackgroundServices
             }
         }
 
-        public Measurement[] GetMeasurements()
+        public Value[] GetValues()
         {
             using (var scope = serviceProvider.CreateScope())
             {
@@ -66,9 +66,9 @@ namespace TemperatureViewer.BackgroundServices
                 Sensor[] sensorsArray;
                 lock (lockObject)
                 {
-                    sensorsArray = context.Sensors.AsNoTracking().Where(s => !s.WasDeleted).OrderBy(s => s.Name).Include(s => s.Threshold).ToArray();
+                    sensorsArray = context.Sensors.AsNoTracking().Where(s => !s.WasDisabled).OrderBy(s => s.Name).Include(s => s.Threshold).ToArray();
                 }
-                Measurement[] result = new Measurement[sensorsArray.Length];
+                Value[] result = new Value[sensorsArray.Length];
 
                 Parallel.For(0, sensorsArray.Length, (i) =>
                 {
@@ -84,7 +84,7 @@ namespace TemperatureViewer.BackgroundServices
 
                     if (measured != null)
                     {
-                        result[i] = new Measurement() { Temperature = measured.Value, Sensor = sensorsArray[i] };
+                        result[i] = new Value() { Temperature = measured.Value, Sensor = sensorsArray[i] };
                     }
                 });
 
@@ -92,7 +92,7 @@ namespace TemperatureViewer.BackgroundServices
             }
         }
 
-        public Measurement[] GetMeasurements(int locationId)
+        public Value[] GetValues(int locationId)
         {
             using (var scope = serviceProvider.CreateScope())
             {
@@ -100,9 +100,9 @@ namespace TemperatureViewer.BackgroundServices
                 Sensor[] sensorsArray;
                 lock (lockObject)
                 {
-                    sensorsArray = context.Sensors.AsNoTracking().Where(s => !s.WasDeleted && s.LocationId == locationId).OrderBy(s => s.Name).Include(s => s.Threshold).ToArray();
+                    sensorsArray = context.Sensors.AsNoTracking().Where(s => !s.WasDisabled && s.LocationId == locationId).OrderBy(s => s.Name).Include(s => s.Threshold).ToArray();
                 }
-                Measurement[] result = new Measurement[sensorsArray.Length];
+                Value[] result = new Value[sensorsArray.Length];
 
                 Parallel.For(0, sensorsArray.Length, (i) =>
                 {
@@ -118,7 +118,7 @@ namespace TemperatureViewer.BackgroundServices
 
                     if (measured != null)
                     {
-                        result[i] = new Measurement() { Temperature = measured.Value, Sensor = sensorsArray[i] };
+                        result[i] = new Value() { Temperature = measured.Value, Sensor = sensorsArray[i] };
                     }
                 });
 
@@ -204,14 +204,14 @@ namespace TemperatureViewer.BackgroundServices
 
             if (measured != null)
             {
-                WriteMeasurement(measured.Value, sensor, context);
+                WriteValue(measured.Value, sensor, context);
                 SendNotifications(measured.Value, sensor, context);
             }
         }
 
-        private void WriteMeasurement(decimal measured, Sensor sensor, DefaultContext context)
+        private void WriteValue(decimal measured, Sensor sensor, DefaultContext context)
         {
-            Measurement measurement = new Measurement()
+            Value value = new Value()
             {
                 MeasurementTime = now,
                 SensorId = sensor.Id,
@@ -220,7 +220,7 @@ namespace TemperatureViewer.BackgroundServices
 
             lock (lockObject)
             {
-                context.Measurements.Add(measurement);
+                context.Values.Add(value);
                 context.SaveChanges();
             }
         }

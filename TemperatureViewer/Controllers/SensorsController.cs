@@ -121,7 +121,7 @@ namespace TemperatureViewer.Controllers
         }
 
         // GET: Sensors/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> Disable(int? id)
         {
             if (id == null)
             {
@@ -139,17 +139,17 @@ namespace TemperatureViewer.Controllers
         }
 
         // POST: Sensors/Delete/5
-        [HttpPost, ActionName("Delete")]
+        [HttpPost, ActionName("Disable")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> DisableConfirmed(int id)
         {
             var sensor = await _context.Sensors.FindAsync(id);
-            sensor.WasDeleted = true;
+            sensor.WasDisabled = true;
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        public async Task<IActionResult> Restore(int? id)
+        public async Task<IActionResult> Enable(int? id)
         {
             if (id == null)
             {
@@ -165,11 +165,11 @@ namespace TemperatureViewer.Controllers
             return View(sensor);
         }
 
-        [HttpPost, ActionName("Restore")]
-        public async Task<IActionResult> RestoreConfirmed(int id)
+        [HttpPost, ActionName("Enable")]
+        public async Task<IActionResult> EnableConfirmed(int id)
         {
             var sensor = await _context.Sensors.FindAsync(id);
-            sensor.WasDeleted = false;
+            sensor.WasDisabled = false;
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }

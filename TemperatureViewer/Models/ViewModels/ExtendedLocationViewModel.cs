@@ -9,6 +9,6 @@ namespace TemperatureViewer.Models.ViewModels
         public string Image { get; set; }
         public IList<SensorHistoryViewModel> History { get; set; }
         public IEnumerable<DateTime> HistoryCheckpoints { get; set; }
-        public IEnumerable<MeasurementViewModel> Measurements { get; set; }
+        public IEnumerable<ValueViewModel> Values { get; set; }
     }
 }

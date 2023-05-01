@@ -2,7 +2,7 @@
 
 namespace TemperatureViewer.Models.Entities
 {
-    public class Measurement
+    public class Value
     {
         public int Id { get; set; }
         public int SensorId { get; set; }
