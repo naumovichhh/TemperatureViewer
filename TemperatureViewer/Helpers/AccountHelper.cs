@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
@@ -89,14 +90,18 @@ namespace TemperatureViewer.Helpers
                         32
                         ));
                 user.Password = hashed;
-
-                _context.Update(user);
+                var fromContext = _context.Find<User>(user.Id);
+                _context.Entry(fromContext).Collection(u => u.Sensors).Load();
+                fromContext.Name = user.Name;
+                fromContext.Password = user.Password;
+                fromContext.Role = user.Role;
+                fromContext.Sensors = user.Sensors;
+                _context.Update(fromContext);
                 await _context.SaveChangesAsync();
                 return true;
             }
             catch (Exception)
             {
-
                 return false;
             }
         }

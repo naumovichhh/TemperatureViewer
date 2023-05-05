@@ -25,7 +25,6 @@
             <div class="form-group">
                 <label asp-for="Role" class="control-label"></label>
                 <select class="form-control selectpicker" asp-for="Role">
-                    <option selected value=""></option>
                     <option value="@ViewBag.UserRole.Value">@ViewBag.UserRole.Title</option>
                     @foreach (var option in ViewBag.Roles)
                     {
@@ -34,7 +33,7 @@
                 </select>
                 <span asp-validation-for="Role" class="text-danger"></span>
             </div>
-            <div class="form-group collapse show" id="collapse">
+            <div class="form-group" style="display: none" id="collapse">
                 <label asp-for="Sensors" class="control-label"></label>
                 <div class="sensors-checkboxes-group">
                     @{
@@ -51,7 +50,7 @@
                         <div class="form-group">
                             <div class="row">
                                 <label class="form-label col-11">@sensor.Name</label>
-                                @if (Model.Sensors.Values.Contains(sensor.Id))
+                                @if (Model.Sensors?.Values.Contains(sensor.Id) ?? false)
                                 {
                                     <input class="input-checkbox col-1 sensor-checkbox" checked type="checkbox" name="Sensors[@i]" value="@sensor.Id" />
                                 }
@@ -80,4 +79,6 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script src="~/js/collapseSensors.js" asp-append-version="true"></script>
+    <script src="~/js/create.js" asp-append-version="true"></script>
 }

@@ -15,7 +15,7 @@ namespace TemperatureViewer.Models.Entities
         [DisplayName("Пароль")]
         public string Password { get; set; }
         [DisplayName("Роль")]
-        [DefaultValue("u")]
+        [Required]
         public string Role { get; set; }
         [DisplayName("Датчики")]
         public ICollection<Sensor> Sensors { get; set; }

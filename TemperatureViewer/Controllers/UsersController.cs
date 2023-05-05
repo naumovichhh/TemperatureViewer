@@ -58,7 +58,7 @@ namespace TemperatureViewer.Controllers
             if (ModelState.IsValid)
             {
                 var accountHelper = new AccountHelper(_context);
-                if (viewModel.Sensors == null)
+                if (viewModel.Sensors == null && viewModel.Role == "u")
                 {
                     ModelState.AddModelError(string.Empty, "Пользователю должны быть видимы датчики");
                     SetViewbag();
@@ -106,7 +106,7 @@ namespace TemperatureViewer.Controllers
             };
             if (user.Role == "u")
             {
-                viewModel.Sensors = user.Sensors.ToDictionary(s => s.Id, s => s.Id);
+                viewModel.Sensors = user.Sensors?.ToDictionary(s => s.Id, s => s.Id);
             }
 
             return viewModel;
@@ -124,6 +124,7 @@ namespace TemperatureViewer.Controllers
             {
                 return NotFound();
             }
+            _context.Entry(user).Collection(u => u.Sensors).Load();
             var viewModel = GetViewModelFromUser(user);
             SetViewbag();
             return View(viewModel);
@@ -140,6 +141,12 @@ namespace TemperatureViewer.Controllers
 
             if (ModelState.IsValid)
             {
+                if (viewModel.Sensors == null && viewModel.Role == "u")
+                {
+                    ModelState.AddModelError(string.Empty, "Пользователю должны быть видимы датчики");
+                    SetViewbag();
+                    return View(viewModel);
+                }
                 if (!UserExists(viewModel.Id))
                 {
                     return NotFound();
@@ -156,6 +163,7 @@ namespace TemperatureViewer.Controllers
                     ModelState.AddModelError(string.Empty, "Ошибка изменения пользователя");
                 }
             }
+            SetViewbag();
             return View(viewModel);
         }
 
