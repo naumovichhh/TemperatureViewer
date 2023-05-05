@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace TemperatureViewer.Models.Entities
@@ -7,11 +8,14 @@ namespace TemperatureViewer.Models.Entities
     {
         public int Id { get; set; }
         [Required]
+        [DisplayName("Название")]
         public string Name { get; set; }
         [Required]
         public string Uri { get; set; }
+        [DisplayName("Локация")]
         public int? LocationId { get; set; }
         [Required]
+        [DisplayName("Отключен")]
         public bool WasDisabled { get; set; }
         public string XPath { get; set; }
         public int? ThresholdId { get; set; }

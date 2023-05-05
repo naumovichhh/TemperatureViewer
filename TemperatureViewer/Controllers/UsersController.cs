@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Dynamic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -6,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using TemperatureViewer.Data;
 using TemperatureViewer.Helpers;
 using TemperatureViewer.Models.Entities;
+using TemperatureViewer.Models.ViewModels;
 
 namespace TemperatureViewer.Controllers
 {
@@ -20,13 +23,11 @@ namespace TemperatureViewer.Controllers
             _context = context;
         }
 
-        // GET: Users
         public async Task<IActionResult> Index()
         {
             return View(await _context.Users.ToListAsync());
         }
 
-        // GET: Users/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -44,31 +45,73 @@ namespace TemperatureViewer.Controllers
             return View(user);
         }
 
-        // GET: Users/Create
         public IActionResult Create()
         {
+            SetViewbag();
             return View();
         }
 
-        // POST: Users/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Password")] User user)
+        public async Task<IActionResult> Create(UserViewModel viewModel)
         {
             if (ModelState.IsValid)
             {
                 var accountHelper = new AccountHelper(_context);
-                var userHashed = accountHelper.CreateUser(user.Name, user.Password);
-                _context.Add(userHashed);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                if (viewModel.Sensors == null)
+                {
+                    ModelState.AddModelError(string.Empty, "Пользователю должны быть видимы датчики");
+                    SetViewbag();
+                    return View(viewModel);
+                }
+                User user = GetUserFromViewModel(viewModel);
+                bool successfull = await accountHelper.CreateUser(user);
+                if (successfull)
+                {
+                    return RedirectToAction(nameof(Index));
+                }
+                else
+                {
+                    ModelState.AddModelError(string.Empty, "Ошибка создания пользователя");
+                }
             }
-            return View(user);
+            SetViewbag();
+            return View(viewModel);
         }
 
-        // GET: Users/Edit/5
+        private User GetUserFromViewModel(UserViewModel viewModel)
+        {
+            User user = new User()
+            {
+                Id = viewModel.Id,
+                Name = viewModel.Name,
+                Password = viewModel.Password,
+                Role = viewModel.Role
+            };
+            if (viewModel.Role == "u")
+            {
+                user.Sensors = viewModel.Sensors?.Select(s => _context.Sensors.FirstOrDefault(e => e.Id == s.Value)).Where(e => e != null).ToList();
+            }
+
+            return user;
+        }
+
+        private UserViewModel GetViewModelFromUser(User user)
+        {
+            UserViewModel viewModel = new UserViewModel()
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Role = user.Role,
+            };
+            if (user.Role == "u")
+            {
+                viewModel.Sensors = user.Sensors.ToDictionary(s => s.Id, s => s.Id);
+            }
+
+            return viewModel;
+        }
+
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -81,44 +124,39 @@ namespace TemperatureViewer.Controllers
             {
                 return NotFound();
             }
-            return View(user);
+            var viewModel = GetViewModelFromUser(user);
+            SetViewbag();
+            return View(viewModel);
         }
 
-        // POST: Users/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Password")] User user)
+        public async Task<IActionResult> Edit(int id, UserViewModel viewModel)
         {
-            if (id != user.Id)
+            if (id != viewModel.Id)
             {
                 return NotFound();
             }
 
             if (ModelState.IsValid)
             {
-                try
+                if (!UserExists(viewModel.Id))
                 {
-                    var accountHelper = new AccountHelper(_context);
-                    var userHashed = accountHelper.UpdateUser(user);
-                    _context.Update(user);
-                    await _context.SaveChangesAsync();
+                    return NotFound();
                 }
-                catch (DbUpdateConcurrencyException)
+                var accountHelper = new AccountHelper(_context);
+                User user = GetUserFromViewModel(viewModel);
+                bool successfull = await accountHelper.UpdateUser(user);
+                if (successfull)
                 {
-                    if (!UserExists(user.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    return RedirectToAction(nameof(Index));
                 }
-                return RedirectToAction(nameof(Index));
+                else
+                {
+                    ModelState.AddModelError(string.Empty, "Ошибка изменения пользователя");
+                }
             }
-            return View(user);
+            return View(viewModel);
         }
 
         // GET: Users/Delete/5
@@ -148,6 +186,22 @@ namespace TemperatureViewer.Controllers
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
+        }
+
+        private void SetViewbag()
+        {
+            dynamic roleUser = new ExpandoObject();
+            roleUser.Title = "Пользователь";
+            roleUser.Value = "u";
+            ViewBag.UserRole = roleUser;
+            dynamic roleOperator = new ExpandoObject();
+            roleOperator.Title = "Оператор";
+            roleOperator.Value = "o";
+            dynamic roleAdministrator = new ExpandoObject();
+            roleAdministrator.Title = "Администратор";
+            roleAdministrator.Value = "a";
+            ViewBag.Roles = new[] { roleOperator, roleAdministrator };
+            ViewBag.Sensors = _context.Sensors.AsNoTracking().OrderBy(s => s.Name);
         }
 
         private bool UserExists(int id)

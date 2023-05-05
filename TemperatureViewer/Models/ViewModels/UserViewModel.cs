@@ -2,9 +2,9 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace TemperatureViewer.Models.Entities
+namespace TemperatureViewer.Models.ViewModels
 {
-    public class User
+    public class UserViewModel
     {
         public int Id { get; set; }
         [Required]
@@ -15,9 +15,8 @@ namespace TemperatureViewer.Models.Entities
         [DisplayName("Пароль")]
         public string Password { get; set; }
         [DisplayName("Роль")]
-        [DefaultValue("u")]
         public string Role { get; set; }
         [DisplayName("Датчики")]
-        public ICollection<Sensor> Sensors { get; set; }
+        public IDictionary<int, int> Sensors { get; set; }
     }
 }

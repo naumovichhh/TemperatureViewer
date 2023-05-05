@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.EntityFrameworkCore;
 using TemperatureViewer.Models.Entities;
@@ -53,30 +54,51 @@ namespace TemperatureViewer.Helpers
                 return null;
         }
 
-        public User CreateUser(string name, string password)
+        public async Task<bool> CreateUser(User user)
         {
-            string hashed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
-                    password,
-                    Salt,
-                    KeyDerivationPrf.HMACSHA256,
-                    10000,
-                    32
-                    ));
+            try
+            {
+                string hashed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
+                        user.Password,
+                        Salt,
+                        KeyDerivationPrf.HMACSHA256,
+                        10000,
+                        32
+                        ));
 
-            return new User() { Name = name, Password = hashed };
+                User userHashed = new User() { Name = user.Name, Password = hashed, Role = user.Role, Sensors = user.Sensors };
+                _context.Add(userHashed);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
-        public User UpdateUser(User user)
+        public async Task<bool> UpdateUser(User user)
         {
-            string hashed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
-                    user.Password,
-                    Salt,
-                    KeyDerivationPrf.HMACSHA256,
-                    10000,
-                    32
-                    ));
-            user.Password = hashed;
-            return user;
+            try
+            {
+                string hashed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
+                        user.Password,
+                        Salt,
+                        KeyDerivationPrf.HMACSHA256,
+                        10000,
+                        32
+                        ));
+                user.Password = hashed;
+
+                _context.Update(user);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception)
+            {
+
+                return false;
+            }
         }
     }
 }

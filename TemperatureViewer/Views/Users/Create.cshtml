@@ -1,4 +1,4 @@
-﻿@model User
+﻿@model UserViewModel
 
 @{
     ViewData["Title"] = "Добавить";
@@ -22,6 +22,43 @@
                 <span asp-validation-for="Password" class="text-danger"></span>
             </div>
             <div class="form-group">
+                <label asp-for="Role" class="control-label"></label>
+                <select class="form-control selectpicker" asp-for="Role">
+                    <option selected value="@ViewBag.UserRole.Value">@ViewBag.UserRole.Title</option>
+                    @foreach (var option in ViewBag.Roles)
+                    {
+                        <option value="@option.Value">@option.Title</option>
+                    }
+                </select>
+                <span asp-validation-for="Role" class="text-danger"></span>
+            </div>
+            <div class="form-group collapse show" id="collapse">
+                <label asp-for="Sensors" class="control-label"></label>
+                <div class="sensors-checkboxes-group">
+                    @{
+                        int i = 0;
+                    }
+                    <div class="form-group">
+                        <div class="row">
+                            <label class="form-label col-11">Все</label>
+                            <input class="input-checkbox col-1" type="checkbox" id="checkAll" />
+                        </div>
+                    </div>
+                    @foreach (var sensor in ViewBag.Sensors)
+                    {
+                        <div class="form-group">
+                            <div class="row">
+                                <label class="form-label col-11">@sensor.Name</label>
+                                <input class="input-checkbox col-1 sensor-checkbox" type="checkbox" name="Sensors[@i]" value="@sensor.Id" />
+                            </div>
+                        </div>
+                        {
+                            i++;
+                        }
+                    }
+                </div>
+            </div>
+            <div class="form-group">
                 <input type="submit" value="Создать" class="btn btn-primary" />
             </div>
         </form>
@@ -34,4 +71,6 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script src="~/js/collapseSensors.js"></script>
+    <script src="~/js/create.js" asp-append-version="true"></script>
 }

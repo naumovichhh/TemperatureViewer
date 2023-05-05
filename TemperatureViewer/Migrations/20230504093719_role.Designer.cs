@@ -10,8 +10,8 @@ using TemperatureViewer.Data;
 namespace TemperatureViewer.Migrations
 {
     [DbContext(typeof(DefaultContext))]
-    [Migration("20230501212015_2")]
-    partial class _2
+    [Migration("20230504093719_role")]
+    partial class role
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -154,6 +154,9 @@ namespace TemperatureViewer.Migrations
 
                     b.Property<string>("Password")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Role")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
