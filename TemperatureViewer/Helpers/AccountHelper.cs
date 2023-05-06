@@ -82,18 +82,20 @@ namespace TemperatureViewer.Helpers
         {
             try
             {
-                string hashed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
+                var fromContext = _context.Find<User>(user.Id);
+                _context.Entry(fromContext).Collection(u => u.Sensors).Load();
+                fromContext.Name = user.Name;
+                if (!string.IsNullOrEmpty(user.Password))
+                {
+                    string hashed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
                         user.Password,
                         Salt,
                         KeyDerivationPrf.HMACSHA256,
                         10000,
                         32
                         ));
-                user.Password = hashed;
-                var fromContext = _context.Find<User>(user.Id);
-                _context.Entry(fromContext).Collection(u => u.Sensors).Load();
-                fromContext.Name = user.Name;
-                fromContext.Password = user.Password;
+                    fromContext.Password = hashed;
+                }
                 fromContext.Role = user.Role;
                 fromContext.Sensors = user.Sensors;
                 _context.Update(fromContext);

@@ -1,9 +1,10 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 using TemperatureViewer.Data;
 using TemperatureViewer.Helpers;
@@ -139,6 +140,8 @@ namespace TemperatureViewer.Controllers
                 return NotFound();
             }
 
+            AllowEmptyPassword(viewModel);
+
             if (ModelState.IsValid)
             {
                 if (viewModel.Sensors == null && viewModel.Role == "u")
@@ -165,6 +168,16 @@ namespace TemperatureViewer.Controllers
             }
             SetViewbag();
             return View(viewModel);
+        }
+
+        private void AllowEmptyPassword(UserViewModel viewModel)
+        {
+            var value = ModelState[nameof(viewModel.Password)];
+            if (value.ValidationState == ModelValidationState.Invalid && (string)value.RawValue == string.Empty)
+            {
+                value.ValidationState = ModelValidationState.Valid;
+                value.Errors.Clear();
+            }
         }
 
         // GET: Users/Delete/5
