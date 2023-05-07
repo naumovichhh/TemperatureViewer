@@ -41,29 +41,31 @@
                     }
                     <div class="form-group">
                         <div class="row">
-                            <label class="form-label col-11">Все</label>
-                            <input class="input-checkbox col-1" type="checkbox" id="checkAll" />
+                            <label class="form-label col-10">Все</label>
+                            <input class="input-checkbox col-1" type="checkbox" checked id="checkAll" />
                         </div>
                     </div>
-                    @foreach (var sensor in ViewBag.Sensors)
-                    {
-                        <div class="form-group">
-                            <div class="row">
-                                <label class="form-label col-11">@sensor.Name</label>
-                                @if (Model.Sensors?.Values.Contains(sensor.Id) ?? false)
-                                {
-                                    <input class="input-checkbox col-1 sensor-checkbox" checked type="checkbox" name="Sensors[@i]" value="@sensor.Id" />
-                                }
-                                else
-                                {
-                                    <input class="input-checkbox col-1 sensor-checkbox" type="checkbox" name="Sensors[@i]" value="@sensor.Id" />
-                                }
-                            </div>
-                        </div>
+                    <div class="form-group collapse show" id="collapse-nested">
+                        @foreach (var sensor in ViewBag.Sensors)
                         {
-                            i++;
+                            <div class="form-group">
+                                <div class="row">
+                                    <label class="form-label col-10">@sensor.Name</label>
+                                    @if (Model.Sensors?.Values.Contains(sensor.Id) ?? false)
+                                    {
+                                        <input class="input-checkbox col-1 sensor-checkbox" checked type="checkbox" name="Sensors[@i]" value="@sensor.Id" />
+                                    }
+                                    else
+                                    {
+                                        <input class="input-checkbox col-1 sensor-checkbox" type="checkbox" name="Sensors[@i]" value="@sensor.Id" />
+                                    }
+                                </div>
+                            </div>
+                            {
+                                i++;
+                            }
                         }
-                    }
+                    </div>
                 </div>
             </div>
             <div class="form-group">
@@ -82,4 +84,5 @@
     <script src="~/js/collapseSensors.js" asp-append-version="true"></script>
     <script src="~/js/create.js" asp-append-version="true"></script>
     <script src="~/js/skipValidation.js" asp-append-version="true"></script>
+    <script src="~/js/switchToUser.js" asp-append-version="true"></script>
 }

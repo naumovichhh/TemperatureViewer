@@ -243,6 +243,8 @@ namespace TemperatureViewer.BackgroundServices
             {
                 SmtpSettings smtpSettings = AdminController.GetSmtpSettings();
                 SmtpClient client = new SmtpClient(smtpSettings.Server);
+                client.EnableSsl = smtpSettings.SSL;
+                client.Port = smtpSettings.Port;
                 client.Credentials = new NetworkCredential(smtpSettings.Login, smtpSettings.Password);
                 string body;
                 if (measured >= sensor.Threshold.P4)
@@ -261,7 +263,7 @@ namespace TemperatureViewer.BackgroundServices
                         MailAddress from = new MailAddress(smtpSettings.Sender);
                         MailAddress to = new MailAddress(observer.Email);
                         MailMessage message = new MailMessage(from, to);
-                        message.Subject = "Термометры АСУП";
+                        message.Subject = "Температуры Радиоволна";
                         message.Body = body;
                         client.Send(message);
                     }
