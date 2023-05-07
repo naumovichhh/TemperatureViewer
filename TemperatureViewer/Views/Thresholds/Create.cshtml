@@ -7,52 +7,55 @@
 <h1>Создать пороги для датчиков</h1>
 <hr />
 
-<form asp-action="Create" asp-anti-forgery="true">
-    <div class="validation" asp-validation-summary="ModelOnly"></div>
+<form asp-action="Create" id="validatable-int" asp-anti-forgery="true" novalidate="novalidate">
+    <div class="text-danger" asp-validation-summary="ModelOnly"></div>
     <div class="row">
         <div class="col-8 col-md-5 col-lg-4">
             <div class="form-group">
-                <label class="form-label">Критический минимум</label>
+                <label class="form-label font-weight-bold">Критический минимум</label>
                 <input class="form-control" asp-for="P1" type="number" />
                 <span asp-validation-for="P1" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label class="form-label">Минимум</label>
+                <label class="form-label font-weight-bold">Минимум</label>
                 <input class="form-control" asp-for="P2" type="number" />
                 <span asp-validation-for="P2" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label class="form-label">Максимум</label>
+                <label class="form-label font-weight-bold">Максимум</label>
                 <input class="form-control" asp-for="P3" type="number" />
                 <span asp-validation-for="P3" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label class="form-label">Критический максимум</label>
+                <label class="form-label font-weight-bold">Критический максимум</label>
                 <input class="form-control" asp-for="P4" type="number" />
                 <span asp-validation-for="P4" class="text-danger"></span>
             </div>
-            <div class="sensors-checkboxes-group">
-                @{
-                    int i = 0;
-                }
-                <div class="form-group">
-                    <div class="row">
-                        <label class="form-label col-11">Все</label>
-                        <input class="input-checkbox col-1" type="checkbox" id="checkAll"/>
-                    </div>
-                </div>
-                @foreach (var sensor in ViewBag.Sensors)
-                {
+            <div class="form-group">
+                <label asp-for="Sensors" class="control-label font-weight-bold"></label>
+                <div class="sensors-checkboxes-group">
+                    @{
+                        int i = 0;
+                    }
                     <div class="form-group">
                         <div class="row">
-                            <label class="form-label col-11">@sensor.Name</label>
-                            <input class="input-checkbox col-1 sensor-checkbox" type="checkbox" name="Sensors[@i]" value="@sensor.Id"/>
+                            <label class="form-label col-11">Все</label>
+                            <input class="input-checkbox col-1" type="checkbox" id="checkAll" />
                         </div>
                     </div>
+                    @foreach (var sensor in ViewBag.Sensors)
                     {
-                        i++;
+                        <div class="form-group">
+                            <div class="row">
+                                <label class="form-label col-11">@sensor.Name</label>
+                                <input class="input-checkbox col-1 sensor-checkbox" type="checkbox" name="Sensors[@i]" value="@sensor.Id" />
+                            </div>
+                        </div>
+                        {
+                            i++;
+                        }
                     }
-                }
+                </div>
             </div>
             <div class="form-group">
                 <input class="btn btn-primary" type="submit" value="Сохранить"/>
@@ -63,5 +66,7 @@
 
 @section Scripts
 {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script src="~/js/create.js" asp-append-version="true"></script>
+    <script src="~/js/createThresholds.js" asp-append-version="true"></script>
 }

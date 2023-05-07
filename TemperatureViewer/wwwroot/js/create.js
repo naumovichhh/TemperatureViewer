@@ -6,13 +6,18 @@
         });
     });
     $(".sensor-checkbox").on("change", function () {
-        let allChecked = true;
-        $(".sensor-checkbox").each(function () {
-            if (!this.checked) {
-                allChecked = false;
-                return false;
-            }
-        });
-        $("#checkAll").prop("checked", allChecked);
+        setCheckAll();
     });
+    setCheckAll();
 });
+
+function setCheckAll() {
+    let allChecked = true;
+    $(".sensor-checkbox").each(function () {
+        if (!this.checked) {
+            allChecked = false;
+            return false;
+        }
+    });
+    $("#checkAll").prop("checked", allChecked);
+}

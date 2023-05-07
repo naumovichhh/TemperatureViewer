@@ -8,21 +8,21 @@
 
 <hr />
 <div class="row">
-    <div class="col-md-4">
+    <div class="col-md-6">
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
+                <label asp-for="Name" class="control-label font-weight-bold"></label>
                 <input asp-for="Name" class="form-control" />
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Uri" class="control-label"></label>
+                <label asp-for="Uri" class="control-label font-weight-bold"></label>
                 <input asp-for="Uri" class="form-control" />
                 <span asp-validation-for="Uri" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="LocationId" class="control-label"></label>
+                <label asp-for="LocationId" class="control-label font-weight-bold"></label>
                 <select class="form-control selectpicker" asp-for="LocationId">
                     <option selected value=""></option>
                     @foreach (Location option in ViewBag.Locations)
@@ -33,7 +33,7 @@
                 <span asp-validation-for="LocationId" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="XPath" class="control-label"></label>
+                <label asp-for="XPath" class="control-label font-weight-bold"></label>
                 <input asp-for="XPath" class="form-control" />
                 <span asp-validation-for"XPath" class="text-danger"></span>
             </div>

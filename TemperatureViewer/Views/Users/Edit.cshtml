@@ -8,22 +8,22 @@
 
 <hr />
 <div class="row">
-    <div class="col-md-4">
+    <div class="col-md-6">
         <form id="validatable" asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
             <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
+                <label asp-for="Name" class="control-label font-weight-bold"></label>
                 <input asp-for="Name" class="form-control" />
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Password" class="control-label"></label>
-                <input asp-for="Password" class="form-control ignore-validation" />
+                <label asp-for="Password" class="control-label font-weight-bold"></label>
+                <input asp-for="Password" class="form-control ignore-validation" placeholder="Без изменений"/>
                 <span asp-validation-for="Password" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Role" class="control-label"></label>
+                <label asp-for="Role" class="control-label font-weight-bold"></label>
                 <select class="form-control selectpicker" asp-for="Role">
                     <option value="@ViewBag.UserRole.Value">@ViewBag.UserRole.Title</option>
                     @foreach (var option in ViewBag.Roles)
@@ -34,7 +34,7 @@
                 <span asp-validation-for="Role" class="text-danger"></span>
             </div>
             <div class="form-group" style="display: none" id="collapse">
-                <label asp-for="Sensors" class="control-label"></label>
+                <label asp-for="Sensors" class="control-label font-weight-bold"></label>
                 <div class="sensors-checkboxes-group">
                     @{
                         int i = 0;

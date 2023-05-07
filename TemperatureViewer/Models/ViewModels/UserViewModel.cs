@@ -7,10 +7,10 @@ namespace TemperatureViewer.Models.ViewModels
     public class UserViewModel
     {
         public int Id { get; set; }
-        [Required]
+        [Required(ErrorMessage = "Поле '{0}' обязательно.")]
         [DisplayName("Имя")]
         public string Name { get; set; }
-        [Required]
+        [Required(ErrorMessage = "Поле '{0}' обязательно.")]
         [DataType(DataType.Password)]
         [DisplayName("Пароль")]
         public string Password { get; set; }
