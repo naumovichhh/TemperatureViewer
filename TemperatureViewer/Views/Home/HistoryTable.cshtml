@@ -1,0 +1,74 @@
+﻿@model IList<SensorHistoryViewModel>
+
+@{
+    ViewData["Title"] = "TableHistory";
+}
+
+<div class="mb-4">
+    <h1>История измерений</h1>
+</div>
+
+<div class="row">
+    <div class="col-2">
+        Выбрать период
+    </div>
+    <div class="col-2">
+        <input id="date-from" class="form-control" type="date" />
+    </div>
+    <div class="col-2">
+        <input id="date-to" class="form-control" type="date" />
+    </div>
+    <div class="col-2">
+        <button id="apply-period" class="form-control btn-primary">Применить</button>
+    </div>
+    <div class="col-2">
+        <button id="download-data" class="form-control btn-primary">Скачать</button>
+    </div>
+</div>
+<div class="history-table-container">
+    <table class="table fixed-table sticky-header sticky-left white-back">
+        <thead class="white-back">
+            <th class="no-border" style="width: 12em;">Время</th>
+        </thead>
+        <tbody>
+            @for (int j = 0; j < ViewBag.measurementTimes.Count; ++j)
+            {
+                <tr>
+                    <th>@ViewBag.measurementTimes[j]</th>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <table style="overflow-x: auto;" class="table fixed-table sticky-header">
+        <thead class="white-back">
+            @for (int i = 0; i < Model.Count; ++i)
+            {
+            <th class="no-border" style="width: 10em;"><span class="text-truncate display-block">@Model[i].SensorName</span></th>
+            }
+        </thead>
+        <tbody>
+            @for (int j = 0; j < Model[0].Values.Count; ++j)
+            {
+                <tr>
+                    @for (int k = 0; k < Model.Count; ++k)
+                    {
+                        <td>@(Model[k].Values[j]?.Value / 1.000000m)</td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<script>
+    var bagValueFrom = @Json.Serialize(ViewBag.from);
+    var bagValueTo = @Json.Serialize(ViewBag.to);
+    var measurementTimes = @Json.Serialize(ViewBag.measurementTimes);
+    var locationId = @Json.Serialize(ViewBag.locationId);
+    var id = @Json.Serialize(ViewBag.id);
+    var action = "/Home/HistoryTable";
+</script>
+
+@section Scripts {
+    <script src="~/js/history.js" asp-append-version="true"></script>
+}

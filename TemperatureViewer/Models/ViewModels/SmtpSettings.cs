@@ -11,7 +11,7 @@ namespace TemperatureViewer.Models.ViewModels
         [DisplayName("Сервер")]
         public string Server { get; set; }
         [Required(ErrorMessage = "Поле {0} является обязательным.")]
-        [EmailAddress]
+        [EmailAddress(ErrorMessage = "Некорректный адрес электронной почты.")]
         [DisplayName("Отправитель")]
         public string Sender { get; set; }
 

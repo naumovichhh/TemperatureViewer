@@ -30,7 +30,7 @@
     {
         <div class="row">
             <div class="col-2">
-                <button id="toggleAll" class="form-control btn-secondary">Скрыть все</button>
+                <button id="toggleAll" class="form-control btn-secondary" style="min-width: 8em;">Скрыть все</button>
             </div>
         </div>
     }
@@ -43,9 +43,11 @@
     var measurementTimes = @Json.Serialize(ViewBag.measurementTimes);
     var locationId = @Json.Serialize(ViewBag.locationId);
     var id = @Json.Serialize(ViewBag.id);
+    var action = "/Home/History";
 </script>
 
 @section Scripts {
     <script src="~/lib/chart/dist/chart.min.js"></script>
     <script src="~/js/history.js" asp-append-version="true"></script>
+    <script src="~/js/chart.js" asp-append-version="true"></script>
 }

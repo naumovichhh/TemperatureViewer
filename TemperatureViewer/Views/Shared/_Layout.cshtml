@@ -28,8 +28,18 @@
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Показатели</a>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="History" asp-route-id="">История</a>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link text-dark dropdown-toggle" href="#" id="locationsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    История
+                                </a>
+                                <div class="dropdown-menu" aria-labelledby="locationsDropdown">
+                                    <a class="dropdown-item" asp-controller="Home" asp-action="History">
+                                        <span class="text-truncate display-block">Диаграмма</span>
+                                    </a>
+                                    <a class="dropdown-item" asp-controller="Home" asp-action="HistoryTable">
+                                        <span class="text-truncate display-block">Таблица</span>
+                                    </a>
+                                </div>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Locations">Список локаций</a>

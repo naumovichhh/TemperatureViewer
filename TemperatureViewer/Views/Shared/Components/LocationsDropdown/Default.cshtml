@@ -7,7 +7,9 @@
     <div class="dropdown-menu" aria-labelledby="locationsDropdown">
         @foreach (Location location in Model)
         {
-            <a class="dropdown-item" asp-route-id="@location.Id" asp-controller="Home" asp-action="ExtendedLocation">@location.Name</a>
+            <a class="dropdown-item" asp-route-id="@location.Id" asp-controller="Home" asp-action="ExtendedLocation">
+                <span class="text-truncate display-block">@location.Name</span>
+            </a>
         }
     </div>
 </li>

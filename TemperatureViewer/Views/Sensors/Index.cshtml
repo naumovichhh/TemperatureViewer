@@ -10,25 +10,25 @@
 <p>
     <a asp-action="Create">Добавить новый</a>
 </p>
-<table class="table">
+<table class="table fixed-table">
     <thead>
         <tr>
-            <th>
+            <th style="width: 25%;">
                 @Html.DisplayNameFor(model => model.Name)
             </th>
-            <th>
+            <th style="width: 20%;">
                 @Html.DisplayNameFor(model => model.Uri)
             </th>
-            <th>
+            <th style="width: 10%;">
                 @Html.DisplayNameFor(model => model.LocationId)
             </th>
-            <th>
+            <th style="width: 10%;">
                 @Html.DisplayNameFor(model => model.WasDisabled)
             </th>
-            <th>
+            <th style="width: 15%;">
                 @Html.DisplayNameFor(model => model.XPath)
             </th>
-            <th></th>
+            <th style="width: 20%;"></th>
         </tr>
     </thead>
     <tbody>
@@ -36,10 +36,10 @@
         {
             <tr>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Name)
+                    <span class="text-truncate display-block">@Html.DisplayFor(modelItem => item.Name)</span>
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Uri)
+                    <span class="text-truncate display-block">@Html.DisplayFor(modelItem => item.Uri)</span>
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.LocationId)
@@ -48,18 +48,18 @@
                     @Html.DisplayFor(modelItem => item.WasDisabled)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.XPath)
+                    <span class="text-truncate display-block">@Html.DisplayFor(modelItem => item.XPath)</span>
                 </td>
                 <td>
                     <a asp-action="Edit" asp-route-id="@item.Id">Изменить</a> |
                     <a asp-action="Details" asp-route-id="@item.Id">Подробно</a> |
                     @if (item.WasDisabled)
                     {
-                        <a asp-action="Restore" asp-route-id="@item.Id">Восстановить</a>
+                        <a asp-action="Enable" asp-route-id="@item.Id">Включить</a>
                     }
                     else
                     {
-                        <a asp-action="Delete" asp-route-id="@item.Id">Удалить</a>
+                        <a asp-action="Disable" asp-route-id="@item.Id">Отключить</a>
                     }
                 </td>
             </tr>

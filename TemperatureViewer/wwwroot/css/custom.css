@@ -7,26 +7,68 @@
     font-size: 2em;
     color: white;
 }
-.therm a {
-    color: white;
-}
+
+    .therm a {
+        color: white;
+    }
 
 .sensors-checkboxes-group {
     margin-top: 40px;
 }
 
-.input-checkbox
-{
+.input-checkbox {
     width: auto;
     box-shadow: none;
 }
 
-.label-background
-{
+.label-background {
     background-color: lightblue;
 }
 
-.w-maxcontent
-{
+.w-maxcontent {
     width: max-content;
+}
+
+.fixed-table {
+    table-layout: fixed;
+}
+
+.display-block {
+    display: block;
+}
+
+.display-inline-block {
+    display: inline-block;
+}
+
+.dropdown-menu {
+    max-width: 240px;
+}
+
+.history-table-container {
+    overflow-y: auto;
+    max-height: 50vh;
+    display: grid;
+    grid-template-columns: 1fr 5fr;
+}
+
+.sticky-header thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.sticky-left {
+    position: sticky;
+    left: 0;
+    z-index: 20;
+}
+
+.white-back {
+    background: white;
+}
+
+.no-border {
+    border-top: 0 !important;
+    border-bottom: 0 !important;
 }

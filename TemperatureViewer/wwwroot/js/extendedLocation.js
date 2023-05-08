@@ -63,6 +63,9 @@ if (modelJson.length > 0) {
             return t.slice(0, 16).replace("T", " ");
         }),
         datasets: modelJson.map((e, i) => {
+            if (e.sensorName.length > 25) {
+                e.sensorName = e.sensorName.substring(0, 24) + "...";
+            }
             let a = e.values.map(m => m?.value);
             return {
                 label: e.sensorName,

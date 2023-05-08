@@ -25,7 +25,7 @@
                     }
                     <div class="form-group">
                         <div class="row">
-                            <label class="form-label col-11">Все</label>
+                            <label class="form-label col-10">Все</label>
                             <input class="input-checkbox col-1" type="checkbox" id="checkAll" />
                         </div>
                     </div>
@@ -33,7 +33,7 @@
                     {
                         <div class="form-group">
                             <div class="row">
-                                <label class="form-label col-11">@sensor.Name</label>
+                                <label class="form-label col-10"><span class="text-truncate display-block">@sensor.Name</span></label>
                                 <input class="input-checkbox col-1 sensor-checkbox" checked="@Model.SensorsFlags[sensor.Id]" type="checkbox" name="Sensors[@i]" value="@sensor.Id" />
                             </div>
                         </div>

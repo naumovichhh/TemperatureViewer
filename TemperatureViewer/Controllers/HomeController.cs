@@ -51,6 +51,49 @@ namespace TemperatureViewer.Controllers
             return View(viewModel);
         }
 
+        public IActionResult HistoryTable(int? id, string from, string to)
+        {
+            DateTime fromDate, toDate;
+            fromDate = GetFromDateTime(from);
+            toDate = GetToDateTime(to);
+            ViewBag.from = from;
+            ViewBag.to = to;
+            IEnumerable<DateTime> measurementTimes;
+
+            IDictionary<int, IEnumerable<Value>> dictionary;
+            if (id != null)
+            {
+                if (_context.Sensors.FirstOrDefault(s => s.Id == id) == null)
+                {
+                    return NotFound();
+                }
+
+                IEnumerable<Value> enumerable = GetData(id.Value, fromDate, toDate);
+                measurementTimes = enumerable.Select(m => m.MeasurementTime);
+                if (enumerable.Count() == 0)
+                    dictionary = new Dictionary<int, IEnumerable<Value>>();
+                else
+                    dictionary = new Dictionary<int, IEnumerable<Value>>() { { id.Value, enumerable } };
+                ViewBag.id = id;
+            }
+            else
+            {
+                dictionary = GetData(fromDate, toDate, out measurementTimes);
+            }
+
+            if (!dictionary.All(e => e.Value.Count() == dictionary.First().Value.Count()))
+                throw new ArgumentException("Data must contain enumerables of values of equal length.", nameof(dictionary));
+
+            if (dictionary.Count() == 0)
+                return View();
+
+            List<IEnumerable<Value>> list = GetValuesEnumerableList(dictionary);
+
+            List<SensorHistoryViewModel> model = list.Select(GetViewModelsFromEnumerable).Where(sh => sh != null).OrderBy(vm => vm.SensorName).ToList();
+            ViewBag.measurementTimes = measurementTimes.ToList();
+            return View(model);
+        }
+
         public IActionResult History(int? id, string from, string to)
         {
             DateTime fromDate, toDate;
@@ -96,13 +139,16 @@ namespace TemperatureViewer.Controllers
 
             List<IEnumerable<Value>> list = GetValuesEnumerableList(dictionary, divisor);
 
-            List<SensorHistoryViewModel> model = list.Select(GetViewModelsFromEnumerable).OrderBy(vm => vm.SensorName).ToList();
+            List<SensorHistoryViewModel> model = list.Select(GetViewModelsFromEnumerable).Where(sh => sh != null).OrderBy(vm => vm.SensorName).ToList();
             ViewBag.measurementTimes = measurementTimes;
             return View(model);
         }
 
         private SensorHistoryViewModel GetViewModelsFromEnumerable(IEnumerable<Value> enumerable)
         {
+            if (!enumerable.Any(v => v != null))
+                return null;
+
             return new SensorHistoryViewModel()
             {
                 SensorName = _context.Sensors.AsNoTracking().AsEnumerable().First(s => s.Id == enumerable.First(m => m != null).SensorId).Name,
@@ -113,7 +159,7 @@ namespace TemperatureViewer.Controllers
                         return new ValueOfTime() { Value = m.Temperature, Time = m.MeasurementTime };
                     else
                         return null;
-                })
+                }).ToList()
             };
         }
 
@@ -211,7 +257,7 @@ namespace TemperatureViewer.Controllers
 
             IList<IEnumerable<Value>> list = GetValuesEnumerableList(dictionary, divisor);
 
-            IList<SensorHistoryViewModel> model = list.Select(GetViewModelsFromEnumerable).OrderBy(vm => vm.SensorName).ToList();
+            IList<SensorHistoryViewModel> model = list.Select(GetViewModelsFromEnumerable).Where(vm => vm != null).OrderBy(vm => vm.SensorName).ToList();
             checkpointsOut = measurementTimes;
             return model;
         }
@@ -357,11 +403,20 @@ namespace TemperatureViewer.Controllers
         private static List<IEnumerable<Value>> GetValuesEnumerableList(IDictionary<int, IEnumerable<Value>> dictionary, int divisor)
         {
             List<IEnumerable<Value>> list = new List<IEnumerable<Value>>();
-            int j = 0;
             foreach (var keyValuePair in dictionary)
             {
                 list.Add(keyValuePair.Value.Where((m, i) => i % divisor == 0));
-                j++;
+            }
+
+            return list;
+        }
+
+        private static List<IEnumerable<Value>> GetValuesEnumerableList(IDictionary<int, IEnumerable<Value>> dictionary)
+        {
+            List<IEnumerable<Value>> list = new List<IEnumerable<Value>>();
+            foreach (var keyValuePair in dictionary)
+            {
+                list.Add(keyValuePair.Value);
             }
 
             return list;

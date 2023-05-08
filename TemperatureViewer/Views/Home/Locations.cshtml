@@ -1,4 +1,4 @@
-﻿@model IEnumerable<TemperatureViewer.Models.ViewModels.LocationViewModel>
+﻿@model IEnumerable<LocationViewModel>
 
 @{
     ViewData["Title"] = "Локации";
@@ -10,7 +10,7 @@
         <div class="row p-2 bg-white border rounded">
             <div class="col-md-4 mt-1"><img class="img-fluid img-responsive rounded product-image img-clickable" src="~/img/@(item.Image)" /></div>
             <div class="col-md-8 mt-1">
-                <h5>@item.Name</h5>
+                <h5><span class="text-truncate display-block">@item.Name</span></h5>
                 <div class="row no-gutters">
                     @foreach (var value in item.Values)
                     {

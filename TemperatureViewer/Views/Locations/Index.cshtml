@@ -10,23 +10,23 @@
 <p>
     <a asp-action="Create">Добавить новую</a>
 </p>
-<table class="table">
+<table class="table fixed-table">
     <thead>
         <tr>
-            <th>
+            <th style="width: 35%">
                 @Html.DisplayNameFor(model => model.Name)
             </th>
-            <th>
+            <th style="width: 35%">
                 @Html.DisplayNameFor(model => model.Image)
             </th>
-            <th></th>
+            <th style="width: 30%"></th>
         </tr>
     </thead>
     <tbody>
 @foreach (var item in Model) {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.Name)
+                <span class="text-truncate display-block">@Html.DisplayFor(modelItem => item.Name)</span>
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Image)

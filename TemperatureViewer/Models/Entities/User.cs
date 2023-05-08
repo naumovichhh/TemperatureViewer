@@ -12,7 +12,6 @@ namespace TemperatureViewer.Models.Entities
         [Required]
         [DataType(DataType.Password)]
         public string Password { get; set; }
-        [Required]
         public string Role { get; set; }
         public ICollection<Sensor> Sensors { get; set; }
     }

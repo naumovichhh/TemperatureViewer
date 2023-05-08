@@ -8,6 +8,7 @@ namespace TemperatureViewer.Models.ViewModels
     {
         public int Id { get; set; }
         [Required(ErrorMessage = "Поле '{0}' обязательно.")]
+        [MaxLength(30, ErrorMessage = "Максимальная длина имени - 30.")]
         [DisplayName("Имя")]
         public string Name { get; set; }
         [Required(ErrorMessage = "Поле '{0}' обязательно.")]

@@ -13,7 +13,7 @@
                         <div><b><span class="temp-value">@value.Temperature</span>°</b></div>
                     </div>
                     <div class="col-10">
-                        <div class="therm-name"><a asp-controller="Home" asp-action="History" asp-route-id="@value.SensorId">@value.SensorName</a></div>
+                        <div class="therm-name text-truncate"><a asp-controller="Home" asp-action="History" asp-route-id="@value.SensorId">@value.SensorName</a></div>
                     </div>
                 </div>
             </div>

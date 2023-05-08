@@ -10,20 +10,20 @@
 <p>
     <a asp-action="Create">Добавить нового</a>
 </p>
-<table class="table">
+<table class="table fixed-table">
     <thead>
         <tr>
-            <th>
+            <th style="width: 60%;">
                 @Html.DisplayNameFor(model => model.Name)
             </th>
-            <th></th>
+            <th style="width: 40%;"></th>
         </tr>
     </thead>
     <tbody>
 @foreach (var item in Model) {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.Name)
+                <span class="text-truncate display-block">@Html.DisplayFor(modelItem => item.Name)</span>
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Изменить</a> |
