@@ -1,12 +1,14 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
 using TemperatureViewer.Data;
+using TemperatureViewer.Hubs;
 
 namespace TemperatureViewer
 {
@@ -27,6 +29,7 @@ namespace TemperatureViewer
             services.AddDbContext<DefaultContext>(options => 
                 options.UseSqlServer(connectionString));
             services.AddDatabaseDeveloperPageExceptionFilter();
+            services.AddSignalR();
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options =>
             {
                 options.ExpireTimeSpan = TimeSpan.FromDays(14);
@@ -58,6 +61,8 @@ namespace TemperatureViewer
 
             app.UseEndpoints(endpoints =>
             {
+
+                endpoints.MapHub<TemperatureHub>("/updateTemperature");
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");

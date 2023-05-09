@@ -6,5 +6,6 @@ namespace TemperatureViewer.BackgroundServices
     {
         Value[] GetValues();
         Value[] GetValues(int locationId);
+        Value[] GetValues(int[] sensorIds);
     }
 }

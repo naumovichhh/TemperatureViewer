@@ -10,7 +10,7 @@
             <div class="therm">
                 <div class="row">
                     <div class="col-2">
-                        <div><b><span class="temp-value">@value.Temperature</span>°</b></div>
+                        <div><b><span id="sensor-id-@value.SensorId" class="temp-value">@value.Temperature</span>°</b></div>
                     </div>
                     <div class="col-10">
                         <div class="therm-name text-truncate"><a asp-controller="Home" asp-action="History" asp-route-id="@value.SensorId">@value.SensorName</a></div>
@@ -26,6 +26,8 @@
 </script>
 
 @section Scripts {
+<script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
+<script src="~/js/updateTemperature.js"></script>
 <script src="~/js/brightness.js" asp-append-version="true"></script>
 <script src="~/js/index.js" asp-append-version="true"></script>
 }

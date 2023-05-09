@@ -126,6 +126,40 @@ namespace TemperatureViewer.BackgroundServices
             }
         }
 
+        public Value[] GetValues(int[] sensorIds)
+        {
+            using (var scope = serviceProvider.CreateScope())
+            {
+                using var context = scope.ServiceProvider.GetRequiredService<DefaultContext>();
+                Sensor[] sensorsArray;
+                lock (lockObject)
+                {
+                    sensorsArray = context.Sensors.AsNoTracking().Where(s => !s.WasDisabled && sensorIds.Contains(s.Id)).OrderBy(s => s.Name).Include(s => s.Threshold).ToArray();
+                }
+                Value[] result = new Value[sensorsArray.Length];
+
+                Parallel.For(0, sensorsArray.Length, (i) =>
+                {
+                    decimal? measured;
+                    if (string.IsNullOrEmpty(sensorsArray[i].XPath))
+                    {
+                        measured = GetTemperatureFromTxt(sensorsArray[i].Uri);
+                    }
+                    else
+                    {
+                        measured = GetTemperatureFromXml(sensorsArray[i].Uri, sensorsArray[i].XPath);
+                    }
+
+                    if (measured != null)
+                    {
+                        result[i] = new Value() { Temperature = measured.Value, Sensor = sensorsArray[i] };
+                    }
+                });
+
+                return result;
+            }
+        }
+
         private decimal? GetTemperatureFromXml(string uri, string xPath)
         {
             var xmlDocument = new XmlDocument();
