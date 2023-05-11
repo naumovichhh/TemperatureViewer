@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using TemperatureViewer.BackgroundServices;
 using TemperatureViewer.Data;
 using TemperatureViewer.Helpers;
+using TemperatureViewer.Models.DTO;
 using TemperatureViewer.Models.Entities;
 using TemperatureViewer.Models.ViewModels;
 
@@ -33,7 +34,7 @@ namespace TemperatureViewer.Controllers
 
         public IActionResult Index()
         {
-            IEnumerable<Value> values;
+            IEnumerable<ValueDTO> values;
             values = _sensorsAccessService.GetValues();
             ViewBag.location = null;
 

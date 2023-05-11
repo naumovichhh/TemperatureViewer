@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using TemperatureViewer.BackgroundServices;
-using TemperatureViewer.Models.Entities;
+using TemperatureViewer.Models.DTO;
 
 namespace TemperatureViewer.Hubs
 {
@@ -53,7 +53,7 @@ namespace TemperatureViewer.Hubs
         {
             this.sensorsAccess = sensorsAccess;
             this.hubContext = hubContext;
-            timer = new Timer(UpdateClient, null, 30000, 30000);
+            timer = new Timer(UpdateClient, null, 10000, 10000);
         }
 
         public static IDictionary<string, PersistentConnection> Instances
@@ -75,7 +75,7 @@ namespace TemperatureViewer.Hubs
                 return;
             }
 
-            Value[] values = sensorsAccess.GetValues(Sensors);
+            ValueDTO[] values = sensorsAccess.GetValues(Sensors);
             if (values != null)
             {
                 var result = values.Where(v => v != null).Select(v => new { sensor = v.Sensor.Id, value = v.Temperature }).ToArray();

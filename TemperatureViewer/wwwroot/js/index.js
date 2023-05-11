@@ -21,6 +21,4 @@
         })
         e.style.backgroundColor = liColor;
     });
-
-    setTimeout(() => location.reload(), 120000);
 });

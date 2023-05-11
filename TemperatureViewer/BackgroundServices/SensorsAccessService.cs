@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using TemperatureViewer.Controllers;
 using TemperatureViewer.Data;
+using TemperatureViewer.Models.DTO;
 using TemperatureViewer.Models.Entities;
 using TemperatureViewer.Models.ViewModels;
 
@@ -58,7 +59,7 @@ namespace TemperatureViewer.BackgroundServices
             }
         }
 
-        public Value[] GetValues()
+        public ValueDTO[] GetValues()
         {
             using (var scope = serviceProvider.CreateScope())
             {
@@ -68,7 +69,7 @@ namespace TemperatureViewer.BackgroundServices
                 {
                     sensorsArray = context.Sensors.AsNoTracking().Where(s => !s.WasDisabled).OrderBy(s => s.Name).Include(s => s.Threshold).ToArray();
                 }
-                Value[] result = new Value[sensorsArray.Length];
+                ValueDTO[] result = new ValueDTO[sensorsArray.Length];
 
                 Parallel.For(0, sensorsArray.Length, (i) =>
                 {
@@ -82,17 +83,15 @@ namespace TemperatureViewer.BackgroundServices
                         measured = GetTemperatureFromXml(sensorsArray[i].Uri, sensorsArray[i].XPath);
                     }
 
-                    if (measured != null)
-                    {
-                        result[i] = new Value() { Temperature = measured.Value, Sensor = sensorsArray[i] };
-                    }
+                    
+                    result[i] = new ValueDTO() { Temperature = measured, Sensor = sensorsArray[i] };
                 });
 
                 return result;
             }
         }
 
-        public Value[] GetValues(int locationId)
+        public ValueDTO[] GetValues(int locationId)
         {
             using (var scope = serviceProvider.CreateScope())
             {
@@ -102,7 +101,7 @@ namespace TemperatureViewer.BackgroundServices
                 {
                     sensorsArray = context.Sensors.AsNoTracking().Where(s => !s.WasDisabled && s.LocationId == locationId).OrderBy(s => s.Name).Include(s => s.Threshold).ToArray();
                 }
-                Value[] result = new Value[sensorsArray.Length];
+                ValueDTO[] result = new ValueDTO[sensorsArray.Length];
 
                 Parallel.For(0, sensorsArray.Length, (i) =>
                 {
@@ -116,17 +115,14 @@ namespace TemperatureViewer.BackgroundServices
                         measured = GetTemperatureFromXml(sensorsArray[i].Uri, sensorsArray[i].XPath);
                     }
 
-                    if (measured != null)
-                    {
-                        result[i] = new Value() { Temperature = measured.Value, Sensor = sensorsArray[i] };
-                    }
+                    result[i] = new ValueDTO() { Temperature = measured, Sensor = sensorsArray[i] };
                 });
 
                 return result;
             }
         }
 
-        public Value[] GetValues(int[] sensorIds)
+        public ValueDTO[] GetValues(int[] sensorIds)
         {
             using (var scope = serviceProvider.CreateScope())
             {
@@ -136,7 +132,7 @@ namespace TemperatureViewer.BackgroundServices
                 {
                     sensorsArray = context.Sensors.AsNoTracking().Where(s => !s.WasDisabled && sensorIds.Contains(s.Id)).OrderBy(s => s.Name).Include(s => s.Threshold).ToArray();
                 }
-                Value[] result = new Value[sensorsArray.Length];
+                ValueDTO[] result = new ValueDTO[sensorsArray.Length];
 
                 Parallel.For(0, sensorsArray.Length, (i) =>
                 {
@@ -150,10 +146,7 @@ namespace TemperatureViewer.BackgroundServices
                         measured = GetTemperatureFromXml(sensorsArray[i].Uri, sensorsArray[i].XPath);
                     }
 
-                    if (measured != null)
-                    {
-                        result[i] = new Value() { Temperature = measured.Value, Sensor = sensorsArray[i] };
-                    }
+                    result[i] = new ValueDTO() { Temperature = measured, Sensor = sensorsArray[i] };
                 });
 
                 return result;

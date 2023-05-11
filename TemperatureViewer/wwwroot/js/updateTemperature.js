@@ -2,9 +2,11 @@
     const hubConnection = new signalR.HubConnectionBuilder().withUrl("/updateTemperature").build();
 
     hubConnection.on("Update", function (arr) {
-        arr.forEach(e => {
-            $("#sensor-id-" + e.sensor).text(e.value.toLocaleString());
-        })
+        Array.from(arr).forEach(e => {
+            console.log("#sensor-id-" + e.sensor);
+            console.log(e.value?.toLocaleString());
+            $("#sensor-id-" + e.sensor).text(e.value?.toLocaleString());
+        });
     });
 
     hubConnection.start()

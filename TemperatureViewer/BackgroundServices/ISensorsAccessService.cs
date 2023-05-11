@@ -1,11 +1,11 @@
-﻿using TemperatureViewer.Models.Entities;
+﻿using TemperatureViewer.Models.DTO;
 
 namespace TemperatureViewer.BackgroundServices
 {
     public interface ISensorsAccessService
     {
-        Value[] GetValues();
-        Value[] GetValues(int locationId);
-        Value[] GetValues(int[] sensorIds);
+        ValueDTO[] GetValues();
+        ValueDTO[] GetValues(int locationId);
+        ValueDTO[] GetValues(int[] sensorIds);
     }
 }

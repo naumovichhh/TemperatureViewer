@@ -21,6 +21,4 @@
         let thermColor = `rgb(${r}, ${g}, ${b})`;
         e.style.backgroundColor = thermColor;
     });
-
-    setTimeout(() => location.reload(), 120000);
 });
