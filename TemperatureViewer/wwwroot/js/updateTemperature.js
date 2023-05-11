@@ -3,8 +3,6 @@
 
     hubConnection.on("Update", function (arr) {
         Array.from(arr).forEach(e => {
-            console.log("#sensor-id-" + e.sensor);
-            console.log(e.value?.toLocaleString());
             $("#sensor-id-" + e.sensor).text(e.value?.toLocaleString());
         });
     });
