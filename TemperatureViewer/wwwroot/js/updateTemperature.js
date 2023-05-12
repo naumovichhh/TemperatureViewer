@@ -5,7 +5,8 @@
         Array.from(arr).forEach(e => {
             $("#sensor-id-" + e.sensor).text(e.value?.toLocaleString());
         });
-    });
+        onValueUpdated();
+    })
 
     hubConnection.start()
         .then(function () {
