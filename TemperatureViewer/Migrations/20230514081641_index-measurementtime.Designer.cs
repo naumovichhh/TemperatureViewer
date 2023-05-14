@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TemperatureViewer.Data;
 
@@ -11,9 +12,10 @@ using TemperatureViewer.Data;
 namespace TemperatureViewer.Migrations
 {
     [DbContext(typeof(DefaultContext))]
-    partial class DefaultContextModelSnapshot : ModelSnapshot
+    [Migration("20230514081641_index-measurementtime")]
+    partial class indexmeasurementtime
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -24,13 +26,13 @@ namespace TemperatureViewer.Migrations
 
             modelBuilder.Entity("ObserverSensor", b =>
                 {
-                    b.Property<int>("ObserversId")
-                        .HasColumnType("int");
+                    b.Property<string>("ObserversEmail")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("SensorsId")
                         .HasColumnType("int");
 
-                    b.HasKey("ObserversId", "SensorsId");
+                    b.HasKey("ObserversEmail", "SensorsId");
 
                     b.HasIndex("SensorsId");
 
@@ -75,17 +77,10 @@ namespace TemperatureViewer.Migrations
 
             modelBuilder.Entity("TemperatureViewer.Models.Entities.Observer", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
                     b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("Id");
+                    b.HasKey("Email");
 
                     b.ToTable("Observers");
                 });
@@ -206,7 +201,7 @@ namespace TemperatureViewer.Migrations
                 {
                     b.HasOne("TemperatureViewer.Models.Entities.Observer", null)
                         .WithMany()
-                        .HasForeignKey("ObserversId")
+                        .HasForeignKey("ObserversEmail")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

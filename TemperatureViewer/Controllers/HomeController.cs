@@ -166,6 +166,7 @@ namespace TemperatureViewer.Controllers
 
         public IActionResult Locations()
         {
+            //throw new NotImplementedException("All grey location is hidden");
             var locations = _context.Locations.OrderBy(l => l.Name).AsNoTracking().AsEnumerable();
             var viewModel = new List<LocationViewModel>();
             foreach (var location in locations)

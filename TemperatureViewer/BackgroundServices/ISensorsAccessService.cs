@@ -4,8 +4,8 @@ namespace TemperatureViewer.BackgroundServices
 {
     public interface ISensorsAccessService
     {
-        ValueDTO[] GetValues();
-        ValueDTO[] GetValues(int locationId);
-        ValueDTO[] GetValues(int[] sensorIds);
+        ValueDTO[] GetValues(bool slowly = false);
+        ValueDTO[] GetValues(int locationId, bool slowly = false);
+        ValueDTO[] GetValues(int[] sensorIds, bool slowly = false);
     }
 }

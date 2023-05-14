@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
 using TemperatureViewer.Data;
-using TemperatureViewer.Hubs;
+using TemperatureViewer.SignalR;
 
 namespace TemperatureViewer
 {

@@ -20,7 +20,6 @@ namespace TemperatureViewer.Data
         {
             builder.Entity<Sensor>().HasOne(s => s.Location).WithMany(l => l.Sensors).OnDelete(DeleteBehavior.SetNull);
             builder.Entity<Sensor>().HasOne(s => s.Threshold).WithMany(t => t.Sensors).OnDelete(DeleteBehavior.NoAction);
-            builder.Entity<Value>().HasIndex(v => v.SensorId);
             builder.Entity<Value>().HasIndex(v => v.MeasurementTime);
             base.OnModelCreating(builder);
         }

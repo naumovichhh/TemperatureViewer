@@ -2,10 +2,11 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace TemperatureViewer.BackgroundServices
 {
-    public class DefaultBackgroundService : Microsoft.Extensions.Hosting.BackgroundService
+    public class DefaultBackgroundService : BackgroundService
     {
         private IServiceProvider serviceProvider;
 

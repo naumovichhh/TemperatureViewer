@@ -22,6 +22,7 @@ namespace TemperatureViewer.BackgroundServices
 
     public class SensorsAccessService : ISingletonProcessingService, ISensorsAccessService
     {
+        private const int fastTimeout = 400, slowTimeout = 3000;
         private object lockObject = new object();
         private DateTime nextMeasurementTime;
         private List<Sensor> sensors;
@@ -59,7 +60,7 @@ namespace TemperatureViewer.BackgroundServices
             }
         }
 
-        public ValueDTO[] GetValues()
+        public ValueDTO[] GetValues(bool slowly = false)
         {
             using (var scope = serviceProvider.CreateScope())
             {
@@ -76,11 +77,11 @@ namespace TemperatureViewer.BackgroundServices
                     decimal? measured;
                     if (string.IsNullOrEmpty(sensorsArray[i].XPath))
                     {
-                        measured = GetTemperatureFromTxt(sensorsArray[i].Uri);
+                        measured = GetTemperatureFromTxt(sensorsArray[i].Uri, slowly);
                     }
                     else
                     {
-                        measured = GetTemperatureFromXml(sensorsArray[i].Uri, sensorsArray[i].XPath);
+                        measured = GetTemperatureFromXml(sensorsArray[i].Uri, sensorsArray[i].XPath, slowly);
                     }
 
                     
@@ -91,7 +92,7 @@ namespace TemperatureViewer.BackgroundServices
             }
         }
 
-        public ValueDTO[] GetValues(int locationId)
+        public ValueDTO[] GetValues(int locationId, bool slowly = false)
         {
             using (var scope = serviceProvider.CreateScope())
             {
@@ -108,11 +109,11 @@ namespace TemperatureViewer.BackgroundServices
                     decimal? measured;
                     if (string.IsNullOrEmpty(sensorsArray[i].XPath))
                     {
-                        measured = GetTemperatureFromTxt(sensorsArray[i].Uri);
+                        measured = GetTemperatureFromTxt(sensorsArray[i].Uri, slowly);
                     }
                     else
                     {
-                        measured = GetTemperatureFromXml(sensorsArray[i].Uri, sensorsArray[i].XPath);
+                        measured = GetTemperatureFromXml(sensorsArray[i].Uri, sensorsArray[i].XPath, slowly);
                     }
 
                     result[i] = new ValueDTO() { Temperature = measured, Sensor = sensorsArray[i] };
@@ -122,7 +123,7 @@ namespace TemperatureViewer.BackgroundServices
             }
         }
 
-        public ValueDTO[] GetValues(int[] sensorIds)
+        public ValueDTO[] GetValues(int[] sensorIds, bool slowly = false)
         {
             using (var scope = serviceProvider.CreateScope())
             {
@@ -139,11 +140,11 @@ namespace TemperatureViewer.BackgroundServices
                     decimal? measured;
                     if (string.IsNullOrEmpty(sensorsArray[i].XPath))
                     {
-                        measured = GetTemperatureFromTxt(sensorsArray[i].Uri);
+                        measured = GetTemperatureFromTxt(sensorsArray[i].Uri, slowly);
                     }
                     else
                     {
-                        measured = GetTemperatureFromXml(sensorsArray[i].Uri, sensorsArray[i].XPath);
+                        measured = GetTemperatureFromXml(sensorsArray[i].Uri, sensorsArray[i].XPath, slowly);
                     }
 
                     result[i] = new ValueDTO() { Temperature = measured, Sensor = sensorsArray[i] };
@@ -153,15 +154,16 @@ namespace TemperatureViewer.BackgroundServices
             }
         }
 
-        private decimal? GetTemperatureFromXml(string uri, string xPath)
+        private decimal? GetTemperatureFromXml(string uri, string xPath, bool slowly)
         {
+            int timeout = slowly ? slowTimeout : fastTimeout;
             var xmlDocument = new XmlDocument();
             string str;
             try
             {
                 using (var httpClient = new HttpClient())
                 {
-                    httpClient.Timeout = TimeSpan.FromMilliseconds(800);
+                    httpClient.Timeout = TimeSpan.FromMilliseconds(timeout);
                     using (var stream = httpClient.GetStreamAsync(uri).Result)
                     {
                         xmlDocument.Load(stream);
@@ -189,15 +191,16 @@ namespace TemperatureViewer.BackgroundServices
             }
         }
 
-        private decimal? GetTemperatureFromTxt(string uri)
+        private decimal? GetTemperatureFromTxt(string uri, bool slowly)
         {
+            int timeout = slowly ? slowTimeout : fastTimeout;
             string str;
             decimal result;
             using (var httpClient = new HttpClient())
             {
                 try
                 {
-                    httpClient.Timeout = TimeSpan.FromMilliseconds(800);
+                    httpClient.Timeout = TimeSpan.FromMilliseconds(timeout);
                     str = httpClient.GetStringAsync(uri).Result;
                 }
                 catch
@@ -222,11 +225,11 @@ namespace TemperatureViewer.BackgroundServices
             decimal? measured;
             if (string.IsNullOrEmpty(sensor.XPath))
             {
-                measured = GetTemperatureFromTxt(sensor.Uri);
+                measured = GetTemperatureFromTxt(sensor.Uri, true);
             }
             else
             {
-                measured = GetTemperatureFromXml(sensor.Uri, sensor.XPath);
+                measured = GetTemperatureFromXml(sensor.Uri, sensor.XPath, true);
             }
 
             if (measured != null)

@@ -9,7 +9,6 @@ namespace TemperatureViewer.Models.Entities
         public int Id { get; set; }
         [Required]
         [DisplayName("Название")]
-        [MaxLength(30)]
         public string Name { get; set; }
         [Required]
         [DisplayName("Изображение")]

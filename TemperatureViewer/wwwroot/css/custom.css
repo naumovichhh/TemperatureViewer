@@ -6,6 +6,7 @@
 .therm {
     font-size: 2em;
     color: white;
+    min-height: 1.6em;
 }
 
     .therm a {

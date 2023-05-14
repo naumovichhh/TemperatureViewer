@@ -15,7 +15,7 @@
                     @foreach (var value in item.Values)
                     {
                         <div class="therm col-3 col-md-2 m-1 d-flex justify-content-center">
-                            <div><b><span class="temp-value">@value.Temperature</span>°</b></div>
+                            <div><b><span id="sensor-id-@value.SensorId" class="temp-value">@value.Temperature</span>°</b></div>
                             <!--Storing information about thresholds for value-->
                             <span class="p1" hidden>@value.Thresholds[0]</span>
                             <span class="p2" hidden>@value.Thresholds[1]</span>
@@ -39,7 +39,9 @@
 </div>
 
 @section Scripts {
-    <script src="~/js/locationsClickable.js" asp-append-version="true"></script>
-    <script src="~/js/brightness.js"></script>
-    <script src="~/js/locations.js" asp-append-version="true"></script>
+<script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
+<script src="~/js/locationsClickable.js" asp-append-version="true"></script>
+<script src="~/js/brightness.js"></script>
+<script src="~/js/locations.js" asp-append-version="true"></script>
+<script src="~/js/updateTemperature.js" asp-append-version="true"></script>
 }
