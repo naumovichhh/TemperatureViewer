@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using TemperatureViewer.Data;
+using TemperatureViewer.Database;
 using TemperatureViewer.Models.Entities;
 using TemperatureViewer.Models.ViewModels;
 

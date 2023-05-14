@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using TemperatureViewer.Data;
+using TemperatureViewer.Database;
 
 namespace TemperatureViewer.Components
 {

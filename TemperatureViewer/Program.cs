@@ -3,8 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
-using TemperatureViewer.BackgroundServices;
-using TemperatureViewer.Data;
+using TemperatureViewer.BackgroundNAccessServices;
+using TemperatureViewer.Database;
 
 namespace TemperatureViewer
 {

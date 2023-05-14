@@ -1,6 +1,6 @@
 ﻿using TemperatureViewer.Models.DTO;
 
-namespace TemperatureViewer.BackgroundServices
+namespace TemperatureViewer.BackgroundNAccessServices
 {
     public interface ISensorsAccessService
     {

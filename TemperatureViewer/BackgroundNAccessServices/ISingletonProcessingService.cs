@@ -1,10 +1,10 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace TemperatureViewer.BackgroundServices
+namespace TemperatureViewer.BackgroundNAccessServices
 {
     public interface ISingletonProcessingService
     {
-        Task DoWork(CancellationToken token);
+        Task DoWorkAsync(CancellationToken token);
     }
 }

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
-using TemperatureViewer.BackgroundServices;
+using TemperatureViewer.BackgroundNAccessServices;
 
 namespace TemperatureViewer.SignalR
 {

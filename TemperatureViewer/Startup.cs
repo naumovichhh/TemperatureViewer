@@ -7,7 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
-using TemperatureViewer.Data;
+using TemperatureViewer.Database;
 using TemperatureViewer.SignalR;
 
 namespace TemperatureViewer

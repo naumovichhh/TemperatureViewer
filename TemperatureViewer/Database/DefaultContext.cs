@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TemperatureViewer.Models.Entities;
 
-namespace TemperatureViewer.Data
+namespace TemperatureViewer.Database
 {
     public class DefaultContext : DbContext
     {

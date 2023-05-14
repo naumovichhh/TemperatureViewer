@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace TemperatureViewer.BackgroundServices
+namespace TemperatureViewer.BackgroundNAccessServices
 {
     public class DefaultBackgroundService : BackgroundService
     {
@@ -15,20 +15,15 @@ namespace TemperatureViewer.BackgroundServices
             this.serviceProvider = serviceProvider;
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            await DoWork(stoppingToken);
+            return DoWorkAsync(stoppingToken);
         }
 
-        private async Task DoWork(CancellationToken stoppingToken)
+        private Task DoWorkAsync(CancellationToken stoppingToken)
         {
             ISingletonProcessingService service = serviceProvider.GetRequiredService<ISingletonProcessingService>();
-            await service.DoWork(stoppingToken);
-        }
-
-        public override async Task StopAsync(CancellationToken stoppingToken)
-        {
-            await base.StopAsync(stoppingToken);
+            return service.DoWorkAsync(stoppingToken);
         }
     }
 }

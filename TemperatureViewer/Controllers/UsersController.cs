@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
-using TemperatureViewer.Data;
+using TemperatureViewer.Database;
 using TemperatureViewer.Helpers;
 using TemperatureViewer.Models.Entities;
 using TemperatureViewer.Models.ViewModels;

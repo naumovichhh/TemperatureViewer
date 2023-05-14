@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
-using TemperatureViewer.Data;
+using TemperatureViewer.Database;
 using TemperatureViewer.Helpers;
 using TemperatureViewer.Models.Entities;
 using TemperatureViewer.Models.ViewModels;

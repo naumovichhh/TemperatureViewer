@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Linq;
 
-namespace TemperatureViewer.Data
+namespace TemperatureViewer.Database
 {
     public class DbInitializer
     {

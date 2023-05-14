@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Threading;
 using Microsoft.AspNetCore.SignalR;
-using TemperatureViewer.BackgroundServices;
+using TemperatureViewer.BackgroundNAccessServices;
 using TemperatureViewer.Models.DTO;
 
 namespace TemperatureViewer.SignalR
