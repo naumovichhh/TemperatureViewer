@@ -55,7 +55,7 @@ namespace TemperatureViewer.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        public async Task<IActionResult> Details(string id)
+        public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
             {
@@ -63,7 +63,7 @@ namespace TemperatureViewer.Controllers
             }
 
             Observer observer = await _context.Observers
-                .FirstOrDefaultAsync(o => o.Email == id);
+                .FirstOrDefaultAsync(o => o.Id == id);
             if (observer == null)
             {
                 return NotFound();
@@ -74,7 +74,7 @@ namespace TemperatureViewer.Controllers
             return View(observer);
         }
 
-        public async Task<IActionResult> Edit(string id)
+        public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
                 return NotFound();
@@ -91,9 +91,9 @@ namespace TemperatureViewer.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, ObserverViewModel viewModel)
+        public async Task<IActionResult> Edit(int id, ObserverViewModel viewModel)
         {
-            if (id != viewModel.Email)
+            if (id != viewModel.Id)
             {
                 return NotFound();
             }
@@ -125,7 +125,7 @@ namespace TemperatureViewer.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!ObserverExists(viewModel.Email))
+                    if (!ObserverExists(viewModel.Id))
                     {
                         return NotFound();
                     }
@@ -139,7 +139,7 @@ namespace TemperatureViewer.Controllers
             return View(viewModel);
         }
 
-        public async Task<IActionResult> Delete(string id)
+        public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
             {
@@ -147,7 +147,7 @@ namespace TemperatureViewer.Controllers
             }
 
             var observer = await _context.Observers
-                .FirstOrDefaultAsync(m => m.Email == id);
+                .FirstOrDefaultAsync(m => m.Id == id);
             if (observer == null)
             {
                 return NotFound();
@@ -158,7 +158,7 @@ namespace TemperatureViewer.Controllers
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(string id)
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var observer = await _context.Observers.FindAsync(id);
             _context.Observers.Remove(observer);
@@ -166,9 +166,9 @@ namespace TemperatureViewer.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private bool ObserverExists(string id)
+        private bool ObserverExists(int id)
         {
-            return _context.Observers.Any(e => e.Email == id);
+            return _context.Observers.Any(e => e.Id == id);
         }
     }
 }
