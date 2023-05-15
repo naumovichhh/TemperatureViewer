@@ -22,8 +22,9 @@ namespace TemperatureViewer.BackgroundNAccessServices
 
     public class SensorsAccessService : ISingletonProcessingService, ISensorsAccessService
     {
-        private const int fastTimeout = 400, slowTimeout = 3000;
+        private const int fastTimeout = 600, slowTimeout = 3000;
         private IServiceProvider serviceProvider;
+        private object lockObj = new object();
         private DateTime now;
 
         public SensorsAccessService(IServiceProvider serviceProvider)
@@ -235,14 +236,20 @@ namespace TemperatureViewer.BackgroundNAccessServices
                 Temperature = measured
             };
 
-            context.Values.Add(value);
-            context.SaveChanges();
+            lock (lockObj)
+            {
+                context.Values.Add(value);
+                context.SaveChanges();
+            }
         }
 
         private void SendNotifications(decimal measured, Sensor sensor, DefaultContext context)
         {
             IList<Observer> observers;
-            observers = context.Observers.AsNoTracking().Where(o => o.Sensors.Any(s => s.Id == sensor.Id)).ToList();
+            lock (lockObj)
+            {
+                observers = context.Observers.AsNoTracking().Where(o => o.Sensors.Any(s => s.Id == sensor.Id)).ToList();
+            }
 
             if (observers == null || observers.Count() == 0)
                 return;

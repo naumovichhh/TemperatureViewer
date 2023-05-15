@@ -23,7 +23,7 @@ namespace TemperatureViewer.SignalR
             this.hubContext = hubContext;
             this.sensors = sensors;
             this.connectionId = connectionId;
-            timer = new Timer(UpdateClient, null, 30000, 30000);
+            timer = new Timer(UpdateClient, null, 3000, 20000);
         }
 
         public static IDictionary<string, PersistentConnection> Instances
