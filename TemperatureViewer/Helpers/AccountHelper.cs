@@ -5,16 +5,17 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.EntityFrameworkCore;
 using TemperatureViewer.Models.Entities;
+using TemperatureViewer.Repositories;
 
 namespace TemperatureViewer.Helpers
 {
     public class AccountHelper
     {
-        private DbContext _context;
+        private IUsersRepository _repository;
 
-        public AccountHelper(DbContext context)
+        public AccountHelper(IUsersRepository repository)
         {
-            _context = context;
+            _repository = repository;
         }
 
         public byte[] Salt
@@ -32,7 +33,7 @@ namespace TemperatureViewer.Helpers
             }
         }
 
-        public User ValidateUser(string name, string password)
+        public async Task<User> ValidateUser(string name, string password)
         {
             string hashed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
                     password,
@@ -42,7 +43,7 @@ namespace TemperatureViewer.Helpers
                     32
                     ));
 
-            return _context.Set<User>().FirstOrDefault(u => u.Name == name && u.Password == hashed);
+            return (await _repository.GetAllAsync()).FirstOrDefault(u => u.Name == name && u.Password == hashed);
         }
 
         public User ValidateAdmin(string name, string password)
@@ -68,8 +69,7 @@ namespace TemperatureViewer.Helpers
                         ));
 
                 User userHashed = new User() { Name = user.Name, Password = hashed, Role = user.Role, Sensors = user.Sensors };
-                _context.Add(userHashed);
-                await _context.SaveChangesAsync();
+                await _repository.CreateAsync(userHashed);
                 return true;
             }
             catch (Exception)
@@ -78,12 +78,11 @@ namespace TemperatureViewer.Helpers
             }
         }
 
-        public async Task<bool> UpdateUser(User user)
+        public async Task<bool> UpdateUserAsync(User user)
         {
             try
             {
-                var fromContext = _context.Find<User>(user.Id);
-                _context.Entry(fromContext).Collection(u => u.Sensors).Load();
+                var fromContext = await _repository.GetByIdAsync(user.Id, true);
                 fromContext.Name = user.Name;
                 if (!string.IsNullOrEmpty(user.Password))
                 {
@@ -98,8 +97,7 @@ namespace TemperatureViewer.Helpers
                 }
                 fromContext.Role = user.Role;
                 fromContext.Sensors = user.Sensors;
-                _context.Update(fromContext);
-                await _context.SaveChangesAsync();
+                await _repository.UpdateAsync(fromContext);
                 return true;
             }
             catch (Exception)

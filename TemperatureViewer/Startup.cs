@@ -1,13 +1,14 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
 using TemperatureViewer.Database;
+using TemperatureViewer.Helpers;
+using TemperatureViewer.Repositories;
 using TemperatureViewer.SignalR;
 
 namespace TemperatureViewer
@@ -28,6 +29,8 @@ namespace TemperatureViewer
             var connectionString = Configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<DefaultContext>(options => 
                 options.UseSqlServer(connectionString));
+            services.AddScoped<IUsersRepository, UsersRepository>();
+            services.AddScoped<AccountHelper>();
             services.AddDatabaseDeveloperPageExceptionFilter();
             services.AddSignalR();
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options =>

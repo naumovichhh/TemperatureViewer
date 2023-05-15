@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using TemperatureViewer.Database;
 using TemperatureViewer.Helpers;
 using TemperatureViewer.Models.Entities;
+using TemperatureViewer.Repositories;
 using TemperatureViewer.Models.ViewModels;
 
 namespace TemperatureViewer.Controllers
@@ -17,16 +18,20 @@ namespace TemperatureViewer.Controllers
     [Route("Admin/{controller}/{action=Index}/{id?}")]
     public class UsersController : Controller
     {
+        private readonly IUsersRepository _repository;
+        private readonly AccountHelper _accountHelper;
         private readonly DefaultContext _context;
 
-        public UsersController(DefaultContext context)
+        public UsersController(IUsersRepository repository, AccountHelper accountHelper, DefaultContext context)
         {
+            _repository = repository;
+            _accountHelper = accountHelper;
             _context = context;
         }
 
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Users.ToListAsync());
+            return View(await _repository.GetAllAsync());
         }
 
         public async Task<IActionResult> Details(int? id)
@@ -36,8 +41,7 @@ namespace TemperatureViewer.Controllers
                 return NotFound();
             }
 
-            var user = await _context.Users
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var user = await _repository.GetByIdAsync(id.Value);
             if (user == null)
             {
                 return NotFound();
@@ -58,7 +62,7 @@ namespace TemperatureViewer.Controllers
         {
             if (ModelState.IsValid)
             {
-                var accountHelper = new AccountHelper(_context);
+                var accountHelper = new AccountHelper(_repository);
                 if (viewModel.Sensors == null && viewModel.Role == "u")
                 {
                     ModelState.AddModelError(string.Empty, "Пользователю должны быть видимы датчики");
@@ -120,12 +124,11 @@ namespace TemperatureViewer.Controllers
                 return NotFound();
             }
 
-            var user = await _context.Users.FindAsync(id);
+            var user = await _repository.GetByIdAsync(id.Value, true);
             if (user == null)
             {
                 return NotFound();
             }
-            _context.Entry(user).Collection(u => u.Sensors).Load();
             var viewModel = GetViewModelFromUser(user);
             SetViewbag();
             return View(viewModel);
@@ -150,13 +153,12 @@ namespace TemperatureViewer.Controllers
                     SetViewbag();
                     return View(viewModel);
                 }
-                if (!UserExists(viewModel.Id))
+                if (! await UserExistsAsync(viewModel.Id))
                 {
                     return NotFound();
                 }
-                var accountHelper = new AccountHelper(_context);
                 User user = GetUserFromViewModel(viewModel);
-                bool successfull = await accountHelper.UpdateUser(user);
+                bool successfull = await _accountHelper.UpdateUserAsync(user);
                 if (successfull)
                 {
                     return RedirectToAction(nameof(Index));
@@ -188,8 +190,7 @@ namespace TemperatureViewer.Controllers
                 return NotFound();
             }
 
-            var user = await _context.Users
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var user = await _repository.GetByIdAsync(id.Value);
             if (user == null)
             {
                 return NotFound();
@@ -203,9 +204,7 @@ namespace TemperatureViewer.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var user = await _context.Users.FindAsync(id);
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
+            await _repository.DeleteAsync(id);
             return RedirectToAction(nameof(Index));
         }
 
@@ -225,9 +224,9 @@ namespace TemperatureViewer.Controllers
             ViewBag.Sensors = _context.Sensors.AsNoTracking().OrderBy(s => s.Name);
         }
 
-        private bool UserExists(int id)
+        private async Task<bool> UserExistsAsync(int id)
         {
-            return _context.Users.Any(e => e.Id == id);
+            return (await _repository.GetAllAsync()).Any(e => e.Id == id);
         }
     }
 }
