@@ -33,6 +33,9 @@ namespace TemperatureViewer
             services.AddScoped<IUsersRepository, UsersRepository>();
             services.AddScoped<ISensorsRepository, SensorsRepository>();
             services.AddScoped<ILocationsRepository, LocationsRepository>();
+            services.AddScoped<IObserversRepository, ObserversRepository>();
+            services.AddScoped<IValuesRepository, ValuesRepository>();
+            services.AddScoped<IThresholdsRepository, ThresholdsRepository>();
 
             services.AddScoped<AccountHelper>();
             services.AddDatabaseDeveloperPageExceptionFilter();

@@ -7,9 +7,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using TemperatureViewer.Database;
 using TemperatureViewer.Models.Entities;
 using TemperatureViewer.Models.ViewModels;
+using TemperatureViewer.Repositories;
 
 namespace TemperatureViewer.Controllers
 {
@@ -17,19 +17,20 @@ namespace TemperatureViewer.Controllers
     [Authorize(Roles = "admin")]
     public class LocationsController : Controller
     {
-        private readonly DefaultContext _context;
+        //private readonly DefaultContext _context;
         private readonly IWebHostEnvironment _environment;
+        private readonly ILocationsRepository _locationsRepository;
 
-        public LocationsController(DefaultContext context, IWebHostEnvironment environment)
+        public LocationsController(ILocationsRepository locationsRepository, IWebHostEnvironment environment)
         {
-            _context = context;
+            _locationsRepository = locationsRepository;
             _environment = environment;
         }
 
         // GET: Locations
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Locations.AsNoTracking().OrderBy(l => l.Name).ToListAsync());
+            return View((await _locationsRepository.GetAllAsync()).OrderBy(l => l.Name));//(await _context.Locations.AsNoTracking().OrderBy(l => l.Name).ToListAsync());
         }
 
         // GET: Locations/Details/5
@@ -40,8 +41,7 @@ namespace TemperatureViewer.Controllers
                 return NotFound();
             }
 
-            var location = await _context.Locations
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var location = await _locationsRepository.GetByIdAsync(id.Value);
             if (location == null)
             {
                 return NotFound();
@@ -67,8 +67,9 @@ namespace TemperatureViewer.Controllers
             {
                 string fileName = UploadFile(viewModel.Image);
                 var entity = new Location() { Name = viewModel.Name, Image = fileName };
-                _context.Add(entity);
-                await _context.SaveChangesAsync();
+                await _locationsRepository.CreateAsync(entity);
+                //_context.Add(entity);
+                //await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
 
@@ -83,7 +84,7 @@ namespace TemperatureViewer.Controllers
                 return NotFound();
             }
 
-            var entity = await _context.Locations.FindAsync(id);
+            var entity = await _locationsRepository.GetByIdAsync(id.Value);//_context.Locations.FindAsync(id);
             if (entity == null)
             {
                 return NotFound();
@@ -100,7 +101,10 @@ namespace TemperatureViewer.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, LocationUploadModel viewModel)
         {
-            Location entity = await _context.Locations.FirstOrDefaultAsync(m => m.Id == id);
+            Location entity = await _locationsRepository.GetByIdAsync(id);//_context.Locations.FirstOrDefaultAsync(m => m.Id == id);
+            if (entity == null)
+                return NotFound();
+            
             string oldFileName = entity.Image;
 
             if (ModelState.IsValid)
@@ -110,8 +114,9 @@ namespace TemperatureViewer.Controllers
                 entity.Image = fileName;
                 try
                 {
-                    _context.Update(entity);
-                    await _context.SaveChangesAsync();
+                    await _locationsRepository.UpdateAsync(entity);
+                    //_context.Update(entity);
+                    //await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -142,8 +147,7 @@ namespace TemperatureViewer.Controllers
                 return NotFound();
             }
 
-            var location = await _context.Locations
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var location = await _locationsRepository.GetByIdAsync(id.Value);//_context.Locations.FirstOrDefaultAsync(m => m.Id == id);
             if (location == null)
             {
                 return NotFound();
@@ -157,17 +161,21 @@ namespace TemperatureViewer.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var location = await _context.Locations.FindAsync(id);
+            var location = await _locationsRepository.GetByIdAsync(id);//_context.Locations.FindAsync(id);
+            if (location == null)
+                return NotFound();
+
             string fileName = location.Image;
-            _context.Locations.Remove(location);
-            await _context.SaveChangesAsync();
+            await _locationsRepository.DeleteAsync(location.Id);
+            //_context.Locations.Remove(location);
+            //await _context.SaveChangesAsync();
             System.IO.File.Delete(fileName);
             return RedirectToAction(nameof(Index));
         }
 
         private bool LocationExists(int id)
         {
-            return _context.Locations.Any(e => e.Id == id);
+            return _locationsRepository.GetAllAsync().Result.Any(e => e.Id == id);//_context.Locations.Any(e => e.Id == id);
         }
 
         private string UploadFile(IFormFile file)

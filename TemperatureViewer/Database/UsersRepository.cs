@@ -48,7 +48,7 @@ namespace TemperatureViewer.Database
 
         public async Task DeleteAsync(int id)
         {
-            _context.Entry(await _context.Set<User>().FindAsync(id)).State = EntityState.Deleted;
+            _context.Remove(await _context.Set<User>().FindAsync(id));
             await _context.SaveChangesAsync();
         }
     }

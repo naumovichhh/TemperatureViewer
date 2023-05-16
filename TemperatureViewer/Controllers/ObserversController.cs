@@ -3,9 +3,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using TemperatureViewer.Database;
 using TemperatureViewer.Models.Entities;
 using TemperatureViewer.Models.ViewModels;
+using TemperatureViewer.Repositories;
 
 namespace TemperatureViewer.Controllers
 {
@@ -13,21 +13,24 @@ namespace TemperatureViewer.Controllers
     [Route("Admin/{controller}/{action=Index}/{id?}")]
     public class ObserversController : Controller
     {
-        private readonly DefaultContext _context;
+        //private readonly DefaultContext _context;
+        private readonly IObserversRepository _observersRepository;
+        private readonly ISensorsRepository _sensorsRepository;
 
-        public ObserversController(DefaultContext context)
+        public ObserversController(IObserversRepository observersRepository, ISensorsRepository sensorsRepository)
         {
-            _context = context;
+            _observersRepository = observersRepository;
+            _sensorsRepository = sensorsRepository;
         }
 
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Observers.AsNoTracking().OrderBy(o => o.Email).ToListAsync());
+            return View((await _observersRepository.GetAllAsync()).OrderBy(o => o.Email));//(await _context.Observers.AsNoTracking().OrderBy(o => o.Email).ToListAsync());
         }
 
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            var sensors = _context.Sensors.AsNoTracking().OrderBy(s => s.Name);
+            var sensors = (await _sensorsRepository.GetAllAsync()).OrderBy(s => s.Name);//_context.Sensors.AsNoTracking().OrderBy(s => s.Name);
             ViewBag.Sensors = sensors;
             return View();
         }
@@ -38,20 +41,23 @@ namespace TemperatureViewer.Controllers
         {
             if (!ModelState.IsValid)
             {
-                ViewBag.Sensors = _context.Sensors.AsNoTracking().OrderBy(s => s.Name);
+                ViewBag.Sensors = (await _sensorsRepository.GetAllAsync()).OrderBy(s => s.Name);//_context.Sensors.AsNoTracking().OrderBy(s => s.Name);
                 return View(viewModel);
             }
 
             if (viewModel.Sensors == null || viewModel.Sensors.Count == 0)
             {
                 ModelState.AddModelError("", "Необходимо выбрать датчики для наблюдения.");
-                ViewBag.Sensors = _context.Sensors.AsNoTracking().OrderBy(s => s.Name);
+                ViewBag.Sensors = (await _sensorsRepository.GetAllAsync()).OrderBy(s => s.Name); //_context.Sensors.AsNoTracking().OrderBy(s => s.Name);
                 return View(viewModel);
             }
 
-            var entity = new Observer() { Email = viewModel.Email, Sensors = viewModel.Sensors?.Select(kv => _context.Sensors.FirstOrDefault(s => s.Id == kv.Value)).ToList() };
-            _context.Add(entity);
-            await _context.SaveChangesAsync();
+            var entity = new Observer() { Email = viewModel.Email,
+                Sensors = viewModel.Sensors?.Select(kv => _sensorsRepository.GetByIdAsync(kv.Value).Result).ToList() };//_context.Sensors.FirstOrDefault(s => s.Id == kv.Value)).ToList() };
+            await _observersRepository.CreateAsync(entity);
+            //_context.Add(entity);
+            //await _context.SaveChangesAsync();
+            
             return RedirectToAction(nameof(Index));
         }
 
@@ -62,14 +68,11 @@ namespace TemperatureViewer.Controllers
                 return NotFound();
             }
 
-            Observer observer = await _context.Observers
-                .FirstOrDefaultAsync(o => o.Id == id);
+            Observer observer = await _observersRepository.GetByIdAsync(id.Value, true);//_context.Observers.FirstOrDefaultAsync(o => o.Id == id);
             if (observer == null)
             {
                 return NotFound();
             }
-
-            _context.Entry(observer).Collection(s => s.Sensors).Load();
 
             return View(observer);
         }
@@ -79,13 +82,17 @@ namespace TemperatureViewer.Controllers
             if (id == null)
                 return NotFound();
 
-            Observer observer = await _context.Observers.FindAsync(id);
+            Observer observer = await _observersRepository.GetByIdAsync(id.Value, true);//_context.Observers.FindAsync(id);
             if (observer == null)
                 return NotFound();
 
-            _context.Entry(observer).Collection(o => o.Sensors).Load();
-            ObserverViewModel viewModel = new ObserverViewModel() { Email = observer.Email, SensorsFlags = _context.Sensors.AsNoTracking().ToDictionary(s => s.Id, s => observer.Sensors.Any(os => os.Id == s.Id)) };
-            ViewBag.Sensors = _context.Sensors.AsNoTracking().OrderBy(s => s.Name);
+            var sensors = await _sensorsRepository.GetAllAsync();
+            ObserverViewModel viewModel = new ObserverViewModel()
+            {
+                Email = observer.Email,
+                SensorsFlags = sensors.ToDictionary(s => s.Id, s => observer.Sensors.Any(os => os.Id == s.Id)) 
+            };
+            ViewBag.Sensors = sensors.OrderBy(s => s.Name);
             return View(viewModel);
         }
 
@@ -101,12 +108,12 @@ namespace TemperatureViewer.Controllers
             if (viewModel.Sensors == null || viewModel.Sensors.Count == 0)
             {
                 ModelState.AddModelError("", "Необходимо выбрать датчики для наблюдения.");
-                Observer observer = await _context.Observers.FindAsync(id);
+                Observer observer = await _observersRepository.GetByIdAsync(id, true);//_context.Observers.FindAsync(id);
                 if (observer == null)
                     return NotFound();
-                _context.Entry(observer).Collection(o => o.Sensors).Load();
-                viewModel.SensorsFlags = _context.Sensors.AsNoTracking().ToDictionary(s => s.Id, s => observer.Sensors.Any(os => os.Id == s.Id));
-                ViewBag.Sensors = _context.Sensors.AsNoTracking().OrderBy(s => s.Name);
+                var sensors = await _sensorsRepository.GetAllAsync();
+                viewModel.SensorsFlags = sensors.ToDictionary(s => s.Id, s => observer.Sensors.Any(os => os.Id == s.Id));
+                ViewBag.Sensors = sensors.OrderBy(s => s.Name);
                 return View(viewModel);
             }
 
