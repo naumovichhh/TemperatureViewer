@@ -3,8 +3,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using TemperatureViewer.Database;
 using TemperatureViewer.Models.Entities;
+using TemperatureViewer.Repositories;
 
 namespace TemperatureViewer.Controllers
 {
@@ -12,17 +12,19 @@ namespace TemperatureViewer.Controllers
     [Route("Admin/{controller}/{action=Index}/{id?}")]
     public class SensorsController : Controller
     {
-        private readonly DefaultContext _context;
+        private readonly ISensorsRepository _sensorsRepository;
+        private readonly ILocationsRepository _locationsRepository;
 
-        public SensorsController(DefaultContext context)
+        public SensorsController(ISensorsRepository sensorsRepository, ILocationsRepository locationsRepository)
         {
-            _context = context;
+            _sensorsRepository = sensorsRepository;
+            _locationsRepository = locationsRepository;
         }
 
         // GET: Sensors
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Sensors.AsNoTracking().OrderBy(s => s.Name).ToListAsync());
+            return View((await _sensorsRepository.GetAllAsync()).OrderBy(s => s.Name).ToList());
         }
 
         // GET: Sensors/Details/5
@@ -33,8 +35,7 @@ namespace TemperatureViewer.Controllers
                 return NotFound();
             }
 
-            var sensor = await _context.Sensors
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var sensor = await _sensorsRepository.GetByIdAsync(id.Value);
             if (sensor == null)
             {
                 return NotFound();
@@ -44,9 +45,9 @@ namespace TemperatureViewer.Controllers
         }
 
         // GET: Sensors/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewBag.Locations = _context.Locations.AsNoTracking().AsEnumerable();
+            ViewBag.Locations = await _locationsRepository.GetAllAsync();
             return View();
         }
 
@@ -59,8 +60,7 @@ namespace TemperatureViewer.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(sensor);
-                await _context.SaveChangesAsync();
+                await _sensorsRepository.CreateAsync(sensor);
                 return RedirectToAction(nameof(Index));
             }
             return View(sensor);
@@ -69,18 +69,18 @@ namespace TemperatureViewer.Controllers
         // GET: Sensors/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            //if (id == null)
+            //{
+            //    return NotFound();
+            //}
 
-            var sensor = await _context.Sensors.FindAsync(id);
+            var sensor = await _sensorsRepository.GetByIdAsync(id.Value);
             if (sensor == null)
             {
                 return NotFound();
             }
 
-            ViewBag.Locations = _context.Locations.AsNoTracking().AsEnumerable();
+            ViewBag.Locations = await _locationsRepository.GetAllAsync();
             return View(sensor);
         }
 
@@ -100,9 +100,12 @@ namespace TemperatureViewer.Controllers
             {
                 try
                 {
-                    sensor.ThresholdId = _context.Sensors.AsNoTracking().FirstOrDefault(s => s.Id == sensor.Id).ThresholdId;
-                    _context.Update(sensor);
-                    await _context.SaveChangesAsync();
+                    Sensor fromRepository = await _sensorsRepository.GetByIdAsync(sensor.Id);
+                    fromRepository.Name = sensor.Name;
+                    fromRepository.Uri = sensor.Uri;
+                    fromRepository.LocationId = sensor.LocationId;
+                    fromRepository.XPath = sensor.XPath;
+                    await _sensorsRepository.UpdateAsync(fromRepository);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -128,8 +131,7 @@ namespace TemperatureViewer.Controllers
                 return NotFound();
             }
 
-            var sensor = await _context.Sensors
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var sensor = await _sensorsRepository.GetByIdAsync(id.Value);
             if (sensor == null)
             {
                 return NotFound();
@@ -143,9 +145,9 @@ namespace TemperatureViewer.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DisableConfirmed(int id)
         {
-            var sensor = await _context.Sensors.FindAsync(id);
+            var sensor = await _sensorsRepository.GetByIdAsync(id);
             sensor.WasDisabled = true;
-            await _context.SaveChangesAsync();
+            await _sensorsRepository.UpdateAsync(sensor);
             return RedirectToAction(nameof(Index));
         }
 
@@ -156,7 +158,7 @@ namespace TemperatureViewer.Controllers
                 return NotFound();
             }
 
-            var sensor = await _context.Sensors.FirstOrDefaultAsync(s => s.Id == id);
+            var sensor = await _sensorsRepository.GetByIdAsync(id.Value);
             if (sensor == null)
             {
                 return NotFound();
@@ -168,15 +170,15 @@ namespace TemperatureViewer.Controllers
         [HttpPost, ActionName("Enable")]
         public async Task<IActionResult> EnableConfirmed(int id)
         {
-            var sensor = await _context.Sensors.FindAsync(id);
+            var sensor = await _sensorsRepository.GetByIdAsync(id);
             sensor.WasDisabled = false;
-            await _context.SaveChangesAsync();
+            await _sensorsRepository.UpdateAsync(sensor);
             return RedirectToAction(nameof(Index));
         }
 
         private bool SensorExists(int id)
         {
-            return _context.Sensors.Any(e => e.Id == id);
+            return _sensorsRepository.GetByIdAsync(id) != null;
         }
     }
 }

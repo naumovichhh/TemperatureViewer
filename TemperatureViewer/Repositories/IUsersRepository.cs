@@ -6,11 +6,11 @@ namespace TemperatureViewer.Repositories
 {
     public interface IUsersRepository
     {
-        public Task<User> GetByIdAsync(int id, bool loadRelated = false);
-        public Task<IList<User>> GetAllAsync(bool loadRelated = false);
-        public Task CreateAsync(User user);
-        public Task UpdateAsync(User user);
-        public Task DeleteAsync(int id);
+        Task<User> GetByIdAsync(int id, bool loadRelated = false);
+        Task<IList<User>> GetAllAsync(bool loadRelated = false);
+        Task CreateAsync(User user);
+        Task UpdateAsync(User user);
+        Task DeleteAsync(int id);
 
     }
 }

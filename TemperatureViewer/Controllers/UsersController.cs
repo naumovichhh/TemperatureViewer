@@ -18,20 +18,20 @@ namespace TemperatureViewer.Controllers
     [Route("Admin/{controller}/{action=Index}/{id?}")]
     public class UsersController : Controller
     {
-        private readonly IUsersRepository _repository;
+        private readonly IUsersRepository _usersRepository;
+        private readonly ISensorsRepository _sensorsRepository;
         private readonly AccountHelper _accountHelper;
-        private readonly DefaultContext _context;
 
-        public UsersController(IUsersRepository repository, AccountHelper accountHelper, DefaultContext context)
+        public UsersController(IUsersRepository usersRepository, ISensorsRepository sensorsRepository, AccountHelper accountHelper)
         {
-            _repository = repository;
+            _usersRepository = usersRepository;
+            _sensorsRepository = sensorsRepository;
             _accountHelper = accountHelper;
-            _context = context;
         }
 
         public async Task<IActionResult> Index()
         {
-            return View(await _repository.GetAllAsync());
+            return View(await _usersRepository.GetAllAsync());
         }
 
         public async Task<IActionResult> Details(int? id)
@@ -41,7 +41,7 @@ namespace TemperatureViewer.Controllers
                 return NotFound();
             }
 
-            var user = await _repository.GetByIdAsync(id.Value);
+            var user = await _usersRepository.GetByIdAsync(id.Value);
             if (user == null)
             {
                 return NotFound();
@@ -62,7 +62,7 @@ namespace TemperatureViewer.Controllers
         {
             if (ModelState.IsValid)
             {
-                var accountHelper = new AccountHelper(_repository);
+                var accountHelper = new AccountHelper(_usersRepository);
                 if (viewModel.Sensors == null && viewModel.Role == "u")
                 {
                     ModelState.AddModelError(string.Empty, "Пользователю должны быть видимы датчики");
@@ -95,7 +95,7 @@ namespace TemperatureViewer.Controllers
             };
             if (viewModel.Role == "u")
             {
-                user.Sensors = viewModel.Sensors?.Select(s => _context.Sensors.FirstOrDefault(e => e.Id == s.Value)).Where(e => e != null).ToList();
+                user.Sensors = viewModel.Sensors?.Select(s => _sensorsRepository.GetByIdAsync(s.Value).Result).Where(e => e != null).ToList();
             }
 
             return user;
@@ -124,7 +124,7 @@ namespace TemperatureViewer.Controllers
                 return NotFound();
             }
 
-            var user = await _repository.GetByIdAsync(id.Value, true);
+            var user = await _usersRepository.GetByIdAsync(id.Value, true);
             if (user == null)
             {
                 return NotFound();
@@ -190,7 +190,7 @@ namespace TemperatureViewer.Controllers
                 return NotFound();
             }
 
-            var user = await _repository.GetByIdAsync(id.Value);
+            var user = await _usersRepository.GetByIdAsync(id.Value);
             if (user == null)
             {
                 return NotFound();
@@ -204,7 +204,7 @@ namespace TemperatureViewer.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            await _repository.DeleteAsync(id);
+            await _usersRepository.DeleteAsync(id);
             return RedirectToAction(nameof(Index));
         }
 
@@ -221,12 +221,12 @@ namespace TemperatureViewer.Controllers
             roleAdministrator.Title = "Администратор";
             roleAdministrator.Value = "a";
             ViewBag.Roles = new[] { roleOperator, roleAdministrator };
-            ViewBag.Sensors = _context.Sensors.AsNoTracking().OrderBy(s => s.Name);
+            ViewBag.Sensors = _sensorsRepository.GetAllAsync().Result.OrderBy(s => s.Name).ToList();
         }
 
         private async Task<bool> UserExistsAsync(int id)
         {
-            return (await _repository.GetAllAsync()).Any(e => e.Id == id);
+            return (await _usersRepository.GetAllAsync()).Any(e => e.Id == id);
         }
     }
 }

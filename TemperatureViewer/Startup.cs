@@ -29,7 +29,11 @@ namespace TemperatureViewer
             var connectionString = Configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<DefaultContext>(options => 
                 options.UseSqlServer(connectionString));
+            
             services.AddScoped<IUsersRepository, UsersRepository>();
+            services.AddScoped<ISensorsRepository, SensorsRepository>();
+            services.AddScoped<ILocationsRepository, LocationsRepository>();
+
             services.AddScoped<AccountHelper>();
             services.AddDatabaseDeveloperPageExceptionFilter();
             services.AddSignalR();
