@@ -7,9 +7,9 @@ using NPOI.XSSF.UserModel;
 using TemperatureViewer.Models.Entities;
 using NPOI.SS.UserModel;
 
-namespace TemperatureViewer.Helpers
+namespace TemperatureViewer.Services
 {
-    public static class ExcelHelper
+    public static class ExcelService
     {
         public static MemoryStream Create(IDictionary<Sensor, IEnumerable<Value>> data, IEnumerable<DateTime> measurementTimes)
         {

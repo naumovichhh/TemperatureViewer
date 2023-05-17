@@ -19,7 +19,7 @@ namespace TemperatureViewer.Database
             User user = await _context.Set<User>().FindAsync(id);
             if (loadRelated)
             {
-                await _context.Entry(user).Collection(u => u.Sensors).LoadAsync();
+                _context.Entry(user).Collection(u => u.Sensors).Load();
             }
             return user;
         }
@@ -48,8 +48,12 @@ namespace TemperatureViewer.Database
 
         public async Task DeleteAsync(int id)
         {
-            _context.Remove(await _context.Set<User>().FindAsync(id));
-            await _context.SaveChangesAsync();
+            var user = await _context.FindAsync<User>(id);
+            if (user != null)
+            {
+                _context.Remove(user);
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

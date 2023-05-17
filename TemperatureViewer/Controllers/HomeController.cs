@@ -11,7 +11,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using TemperatureViewer.BackgroundNAccessServices;
 using TemperatureViewer.Database;
-using TemperatureViewer.Helpers;
+using TemperatureViewer.Services;
 using TemperatureViewer.Models.DTO;
 using TemperatureViewer.Models.Entities;
 using TemperatureViewer.Models.ViewModels;
@@ -23,32 +23,34 @@ namespace TemperatureViewer.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private DefaultContext _context;
-        private ISensorsAccessService _sensorsAccessService;
+        private readonly ISensorsAccessService _sensorsAccessService;
+        private readonly InformationService _informationService;
 
-        public HomeController(ILogger<HomeController> logger, DefaultContext context, ISensorsAccessService temperatureService)
+        public HomeController(ILogger<HomeController> logger, InformationService informationService, DefaultContext context, ISensorsAccessService temperatureService)
         {
             _logger = logger;
             _context = context;
             _sensorsAccessService = temperatureService;
+            _informationService = informationService;
         }
 
         public IActionResult Index()
         {
             IEnumerable<ValueDTO> values;
-            values = _sensorsAccessService.GetValues();
-            ViewBag.location = null;
+            values = _informationService.GetValues();
+            //values = _sensorsAccessService.GetValues();
 
-            var viewModel = values?.Where(e => e != null).Select(e =>
+            var viewModel = values?.Select(e =>
             {
-                Threshold threshold = e.Sensor.Threshold ?? GetDefaultThreshold();
                 return new ValueViewModel()
                 {
                     Temperature = e.Temperature,
                     SensorName = e.Sensor.Name,
                     SensorId = e.Sensor.Id,
-                    Thresholds = new int[] { threshold.P1, threshold.P2, threshold.P3, threshold.P4 }
+                    Thresholds = e.Thresholds
                 };
             });
+            ViewBag.location = null;
             return View(viewModel);
         }
 
@@ -140,6 +142,7 @@ namespace TemperatureViewer.Controllers
 
             List<IEnumerable<Value>> list = GetValuesEnumerableList(dictionary, divisor);
 
+            IList<IEnumerable<Value>> list = _informationService.GetHistoryEnumerableList(id, );
             List<SensorHistoryViewModel> model = list.Select(GetViewModelsFromEnumerable).Where(sh => sh != null).OrderBy(vm => vm.SensorName).ToList();
             ViewBag.measurementTimes = measurementTimes;
             return View(model);
@@ -174,7 +177,7 @@ namespace TemperatureViewer.Controllers
                 var values = _sensorsAccessService.GetValues(location.Id).Where(e => e != null).OrderBy(e => e.Sensor.Name).ToList();
                 var valuesViewModels = values?.Select(e =>
                 {
-                    Threshold threshold = e.Sensor.Threshold ?? GetDefaultThreshold();
+                    Threshold threshold = e.Sensor.Threshold ?? InformationService.GetDefaultThreshold();
                     return new ValueViewModel()
                     {
                         Temperature = e.Temperature,
@@ -190,7 +193,7 @@ namespace TemperatureViewer.Controllers
             return View(viewModel);
         }
 
-        public static Threshold GetDefaultThreshold() => new Threshold() { P1 = 12, P2 = 16, P3 = 25, P4 = 30 };
+        
 
         public IActionResult ExtendedLocation(int? id, string from, string to)
         {
@@ -281,7 +284,7 @@ namespace TemperatureViewer.Controllers
                     output.Add(_context.Sensors.First(s => s.Id == kvp.Key), kvp.Value);
                 }
 
-                resultStream = ExcelHelper.Create(output, measurementTimes);
+                resultStream = ExcelService.Create(output, measurementTimes);
             }
             else if (id == null)
             {
@@ -293,7 +296,7 @@ namespace TemperatureViewer.Controllers
                     output.Add(_context.Sensors.First(s => s.Id == kvp.Key), kvp.Value);
                 }
 
-                resultStream = ExcelHelper.Create(output, measurementTimes);
+                resultStream = ExcelService.Create(output, measurementTimes);
             }
             else
             {
@@ -304,7 +307,7 @@ namespace TemperatureViewer.Controllers
 
                 IEnumerable<Value> enumerable = GetData(id.Value, fromDate, toDate);
                 IDictionary<Sensor, IEnumerable<Value>> output = new Dictionary<Sensor, IEnumerable<Value>>() { { _context.Sensors.First(s => s.Id == id), enumerable } };
-                resultStream = ExcelHelper.Create(output, output.Values.First().Select(m => m.MeasurementTime));
+                resultStream = ExcelService.Create(output, output.Values.First().Select(m => m.MeasurementTime));
             }
 
             byte[] array = resultStream.ToArray();

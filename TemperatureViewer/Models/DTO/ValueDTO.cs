@@ -6,5 +6,6 @@ namespace TemperatureViewer.Models.DTO
     {
         public decimal? Temperature { get; set; }
         public Sensor Sensor { get; set; }
+        public int[] Thresholds { get; set; }
     }
 }

@@ -22,7 +22,7 @@ namespace TemperatureViewer.Database
             if (loadRelated)
             {
                 var entry = _context.Entry(threshold);
-                entry.Collection(t => t.Sensors);
+                entry.Collection(t => t.Sensors).Load();
             }
             return threshold;
         }
@@ -52,8 +52,12 @@ namespace TemperatureViewer.Database
 
         public async Task DeleteAsync(int id)
         {
-            _context.Remove(await _context.FindAsync<Threshold>(id));
-            await _context.SaveChangesAsync();
+            var threshold = await _context.FindAsync<Threshold>(id);
+            if (threshold != null)
+            {
+                _context.Remove(threshold);
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

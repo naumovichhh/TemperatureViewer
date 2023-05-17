@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 using TemperatureViewer.Database;
-using TemperatureViewer.Helpers;
+using TemperatureViewer.Services;
 using TemperatureViewer.Models.Entities;
 using TemperatureViewer.Repositories;
 using TemperatureViewer.Models.ViewModels;
@@ -20,9 +20,9 @@ namespace TemperatureViewer.Controllers
     {
         private readonly IUsersRepository _usersRepository;
         private readonly ISensorsRepository _sensorsRepository;
-        private readonly AccountHelper _accountHelper;
+        private readonly AccountService _accountHelper;
 
-        public UsersController(IUsersRepository usersRepository, ISensorsRepository sensorsRepository, AccountHelper accountHelper)
+        public UsersController(IUsersRepository usersRepository, ISensorsRepository sensorsRepository, AccountService accountHelper)
         {
             _usersRepository = usersRepository;
             _sensorsRepository = sensorsRepository;
@@ -62,7 +62,7 @@ namespace TemperatureViewer.Controllers
         {
             if (ModelState.IsValid)
             {
-                var accountHelper = new AccountHelper(_usersRepository);
+                var accountHelper = new AccountService(_usersRepository);
                 if (viewModel.Sensors == null && viewModel.Role == "u")
                 {
                     ModelState.AddModelError(string.Empty, "Пользователю должны быть видимы датчики");

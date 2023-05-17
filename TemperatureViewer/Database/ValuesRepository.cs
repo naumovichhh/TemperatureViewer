@@ -23,7 +23,7 @@ namespace TemperatureViewer.Database
             Value value = await _context.FindAsync<Value>(id);
             if (loadRelated)
             {
-                await _context.Entry(value).Reference(v => v.Sensor).LoadAsync();
+                _context.Entry(value).Reference(v => v.Sensor).Load();
             }
             return value;
         }
@@ -58,8 +58,12 @@ namespace TemperatureViewer.Database
 
         public async Task DeleteAsync(int id)
         {
-            _context.Remove(await _context.FindAsync<Value>(id));
-            await _context.SaveChangesAsync();
+            var value = await _context.FindAsync<Value>(id);
+            if (value != null)
+            {
+                _context.Remove(value);
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

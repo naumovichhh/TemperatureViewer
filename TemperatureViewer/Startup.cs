@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
 using TemperatureViewer.Database;
-using TemperatureViewer.Helpers;
+using TemperatureViewer.Services;
 using TemperatureViewer.Repositories;
 using TemperatureViewer.SignalR;
 
@@ -36,8 +36,9 @@ namespace TemperatureViewer
             services.AddScoped<IObserversRepository, ObserversRepository>();
             services.AddScoped<IValuesRepository, ValuesRepository>();
             services.AddScoped<IThresholdsRepository, ThresholdsRepository>();
+            services.AddScoped<InformationService>();
 
-            services.AddScoped<AccountHelper>();
+            services.AddScoped<AccountService>();
             services.AddDatabaseDeveloperPageExceptionFilter();
             services.AddSignalR();
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options =>

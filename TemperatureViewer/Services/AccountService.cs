@@ -7,13 +7,13 @@ using Microsoft.EntityFrameworkCore;
 using TemperatureViewer.Models.Entities;
 using TemperatureViewer.Repositories;
 
-namespace TemperatureViewer.Helpers
+namespace TemperatureViewer.Services
 {
-    public class AccountHelper
+    public class AccountService
     {
         private IUsersRepository _repository;
 
-        public AccountHelper(IUsersRepository repository)
+        public AccountService(IUsersRepository repository)
         {
             _repository = repository;
         }

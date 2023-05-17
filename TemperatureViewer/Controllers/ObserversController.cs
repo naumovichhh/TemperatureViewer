@@ -121,14 +121,11 @@ namespace TemperatureViewer.Controllers
             {
                 try
                 {
-                    var entity = await _context.Observers.FindAsync(id);
-                    _context.Entry(entity).Collection(o => o.Sensors).Load();
+                    var entity = await _observersRepository.GetByIdAsync(id, true);//_context.Observers.FindAsync(id);
                     entity.Sensors.Clear();
-                    _context.Update(entity);
-                    await _context.SaveChangesAsync();
-                    entity.Sensors = viewModel.Sensors?.Select(kv => _context.Sensors.FirstOrDefault(s => s.Id == kv.Value)).ToList();
-                    _context.Update(entity);
-                    await _context.SaveChangesAsync();
+                    await _observersRepository.UpdateAsync(entity);
+                    entity.Sensors = viewModel.Sensors?.Select(kv => _sensorsRepository.GetByIdAsync(kv.Value).Result).ToList();
+                    await _observersRepository.UpdateAsync(entity);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -153,8 +150,7 @@ namespace TemperatureViewer.Controllers
                 return NotFound();
             }
 
-            var observer = await _context.Observers
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var observer = await _observersRepository.GetByIdAsync(id.Value);
             if (observer == null)
             {
                 return NotFound();
@@ -167,15 +163,16 @@ namespace TemperatureViewer.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var observer = await _context.Observers.FindAsync(id);
-            _context.Observers.Remove(observer);
-            await _context.SaveChangesAsync();
+            //var observer = await _context.Observers.FindAsync(id);
+            //_context.Observers.Remove(observer);
+            //await _context.SaveChangesAsync();
+            await _observersRepository.DeleteAsync(id);
             return RedirectToAction(nameof(Index));
         }
 
         private bool ObserverExists(int id)
         {
-            return _context.Observers.Any(e => e.Id == id);
+            return _observersRepository.GetByIdAsync(id).Result != null;//_context.Observers.Any(e => e.Id == id);
         }
     }
 }

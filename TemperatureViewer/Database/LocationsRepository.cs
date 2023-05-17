@@ -57,8 +57,12 @@ namespace TemperatureViewer.Database
 
         public async Task DeleteAsync(int id)
         {
-            _context.Remove(await _context.FindAsync<Location>(id));
-            await _context.SaveChangesAsync();
+            var location = await _context.FindAsync<Location>(id);
+            if (location != null)
+            {
+                _context.Remove(location);
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

@@ -21,7 +21,7 @@ namespace TemperatureViewer.Database
             if (loadRelated)
             {
                 var entry = _context.Entry(observer);
-                entry.Collection(o => o.Sensors);
+                entry.Collection(o => o.Sensors).Load();
             }
             return observer;
         }
@@ -55,8 +55,12 @@ namespace TemperatureViewer.Database
 
         public async Task DeleteAsync(int id)
         {
-            _context.Remove(await _context.FindAsync<Observer>(id));
-            await _context.SaveChangesAsync();
+            var observer = await _context.FindAsync<Observer>(id);
+            if (observer != null)
+            {
+                _context.Remove(observer);
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

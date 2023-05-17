@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using TemperatureViewer.Database;
-using TemperatureViewer.Helpers;
+using TemperatureViewer.Services;
 using TemperatureViewer.Models.Entities;
 using TemperatureViewer.Models.ViewModels;
 
@@ -14,9 +14,9 @@ namespace TemperatureViewer.Controllers
     public class AccountController : Controller
     {
         private readonly DefaultContext _context;
-        private readonly AccountHelper _accountHelper;
+        private readonly AccountService _accountHelper;
 
-        public AccountController(DefaultContext context, AccountHelper accountHelper)
+        public AccountController(DefaultContext context, AccountService accountHelper)
         {
             _context = context;
             _accountHelper = accountHelper;

@@ -16,6 +16,7 @@ using TemperatureViewer.Database;
 using TemperatureViewer.Models.DTO;
 using TemperatureViewer.Models.Entities;
 using TemperatureViewer.Models.ViewModels;
+using TemperatureViewer.Services;
 
 namespace TemperatureViewer.BackgroundNAccessServices
 {
@@ -255,7 +256,7 @@ namespace TemperatureViewer.BackgroundNAccessServices
                 return;
 
             if (sensor.Threshold == null)
-                sensor.Threshold = HomeController.GetDefaultThreshold();
+                sensor.Threshold = InformationService.GetDefaultThreshold();
 
             if (measured >= sensor.Threshold.P4 || measured <= sensor.Threshold.P1)
             {
