@@ -99,6 +99,12 @@ namespace TemperatureViewer.Services
             return list;
         }
 
+        public IList<IEnumerable<Value>> GetLocationHistoryEnumerableListMax50(int locationId, DateTime from, DateTime to, out IEnumerable<DateTime> checkpoints)
+        {
+            var historyDictionary = GetData(from, to, out checkpoints, locationId);
+            GetValuesEnumerableList(historyDictionary, checkpoints, out checkpoints);
+        }
+
         public IList<LocationDTO> GetValuesOnLocations()
         {
             var locations = _locationsRepository.GetAllAsync().Result.OrderBy(l => l.Name);
@@ -123,10 +129,70 @@ namespace TemperatureViewer.Services
             return locationDTOs;
         }
 
-        public List<LocationDTO> GetValuesOnLocation(int id)
+        public LocationDTO GetValuesOnLocation(int id)
         {
+            var entity = _locationsRepository.GetByIdAsync(id).Result;
             var values = _sensorsAccess.GetValues(id).Where(e => e != null).OrderBy(e => e.Sensor.Name);
-            return values.Select(v => v.);
+            return new LocationDTO() { Id = id, Image = entity.Image, Name = entity.Name, Values = values };
+        }
+
+        private IDictionary<int, IEnumerable<Value>> GetData(DateTime fromDate, DateTime toDate, out IEnumerable<DateTime> measurementTimes, int locationId)
+        {
+            Dictionary<int, List<Value>> dictionary = new Dictionary<int, List<Value>>();
+            var query = _valuesRepository.GetFilteredAsync(v => v.Sensor.LocationId == locationId && v.MeasurementTime < toDate && v.MeasurementTime > fromDate, true).Result;//_context.Values.Include(m => m.Sensor).AsNoTracking().Where(m => m.Sensor.LocationId == locationId && m.MeasurementTime < toDate && m.MeasurementTime > fromDate);
+            var groupedByTime = query.GroupBy(v => v.MeasurementTime).OrderBy(g => g.Key);
+            var sensorIds = query.Select(m => m.SensorId).Distinct();
+            foreach (var sensorId in sensorIds)
+            {
+                dictionary.Add(sensorId, new List<Value>());
+            }
+
+            measurementTimes = groupedByTime.Select(g => g.Key);
+
+            foreach (var valuesInTime in groupedByTime)
+            {
+                foreach (var keyValuePair in dictionary)
+                {
+                    if (valuesInTime.Where(m => m.SensorId == keyValuePair.Key).Count() > 0)
+                    {
+                        keyValuePair.Value.Add(valuesInTime.First(m => m.SensorId == keyValuePair.Key));
+                    }
+                    else
+                    {
+                        keyValuePair.Value.Add(null);
+                    }
+                }
+            }
+
+            Dictionary<int, IEnumerable<Value>> result = new Dictionary<int, IEnumerable<Value>>();
+            foreach (var keyValuePair in dictionary)
+            {
+                result.Add(keyValuePair.Key, keyValuePair.Value);
+            }
+            return result;
+        }
+
+        private static List<IEnumerable<Value>> GetValuesEnumerableList(
+            IDictionary<int, IEnumerable<Value>> dictionary, 
+            IEnumerable<DateTime> checkpointsIn, 
+            out IEnumerable<DateTime> checkpointsOut)
+        {
+            if (!dictionary.All(e => e.Value.Count() == dictionary.First().Value.Count()))
+                throw new ArgumentException("Data must contain enumerables of values of equal length.", nameof(dictionary));
+
+            if (dictionary.Count() == 0)
+            {
+                checkpointsOut = null;
+                return null;
+            }
+
+            var maxValuesNum = 50;
+            var valuesCount = dictionary.First().Value.Count();
+            int divisor = (valuesCount - 1) / maxValuesNum + 1;
+            var measurementTimes = checkpointsIn.Where((m, i) => i % divisor == 0);
+            List<IEnumerable<Value>> list = GetValuesEnumerableList(dictionary, divisor);
+            checkpointsOut = measurementTimes;
+            return list;
         }
 
         private static List<IEnumerable<Value>> GetValuesEnumerableList(IDictionary<int, IEnumerable<Value>> dictionary)

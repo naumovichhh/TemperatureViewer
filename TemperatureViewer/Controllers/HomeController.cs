@@ -152,7 +152,7 @@ namespace TemperatureViewer.Controllers
                 Id = dto.Id, 
                 Name = dto.Name, 
                 Image = dto.Image,
-                Values = dto.Values.Select(v => new ValueViewModel() 
+                Values = dto.Values.Select(v => new ValueViewModel()
                 {
                     Temperature = v.Temperature, 
                     SensorId = v.Sensor.Id, 
@@ -184,7 +184,11 @@ namespace TemperatureViewer.Controllers
             IEnumerable<DateTime> checkpoints;
 
             var locationDTO = _informationService.GetValuesOnLocation(id.Value);
-
+            var historyEnumerableList = _informationService.GetLocationHistoryEnumerableListMax50(
+                id.Value,
+                fromDate,
+                toDate,
+                out checkpoints);
 
             //Location entity;
             //if ((entity = _context.Locations.AsNoTracking().FirstOrDefault(l => l.Id == id)) == null)
@@ -300,42 +304,6 @@ namespace TemperatureViewer.Controllers
         }
 
         
-
-        private IDictionary<int, IEnumerable<Value>> GetData(DateTime fromDate, DateTime toDate, out IEnumerable<DateTime> measurementTimes, int locationId)
-        {
-            Dictionary<int, List<Value>> dictionary = new Dictionary<int, List<Value>>();
-            var query = _context.Values.Include(m => m.Sensor).AsNoTracking().Where(m => m.Sensor.LocationId == locationId && m.MeasurementTime < toDate && m.MeasurementTime > fromDate);
-            var groupedByTime = query.AsEnumerable().GroupBy(m => m.MeasurementTime).OrderBy(g => g.Key);
-            var sensorIds = query.Select(m => m.SensorId).Distinct();
-            foreach (var sensorId in sensorIds)
-            {
-                dictionary.Add(sensorId, new List<Value>());
-            }
-
-            measurementTimes = groupedByTime.Select(g => g.Key);
-
-            foreach (var valuesInTime in groupedByTime)
-            {
-                foreach (var keyValuePair in dictionary)
-                {
-                    if (valuesInTime.Where(m => m.SensorId == keyValuePair.Key).Count() > 0)
-                    {
-                        keyValuePair.Value.Add(valuesInTime.First(m => m.SensorId == keyValuePair.Key));
-                    }
-                    else
-                    {
-                        keyValuePair.Value.Add(null);
-                    }
-                }
-            }
-
-            Dictionary<int, IEnumerable<Value>> result = new Dictionary<int, IEnumerable<Value>>();
-            foreach (var keyValuePair in dictionary)
-            {
-                result.Add(keyValuePair.Key, keyValuePair.Value);
-            }
-            return result;
-        }
 
         private static int[] GetOffsets(IEnumerable<IGrouping<int, Value>> groups, int valuesCount)
         {
