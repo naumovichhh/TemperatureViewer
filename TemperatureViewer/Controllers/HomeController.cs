@@ -26,19 +26,22 @@ namespace TemperatureViewer.Controllers
         //private DefaultContext _context;
         private readonly ISensorsAccessService _sensorsAccessService;
         private readonly ISensorsRepository _sensorsRepository;
+        private readonly ILocationsRepository _locationsRepository;
         private readonly InformationService _informationService;
 
         public HomeController(ILogger<HomeController> logger,
             InformationService informationService,
             DefaultContext context,
             ISensorsAccessService temperatureService,
-            ISensorsRepository sensorsRepository)
+            ISensorsRepository sensorsRepository,
+            ILocationsRepository locationsRepository)
         {
             _logger = logger;
             //_context = context;
             _sensorsAccessService = temperatureService;
             _informationService = informationService;
             _sensorsRepository = sensorsRepository;
+            _locationsRepository = locationsRepository;
         }
 
         public IActionResult Index()
@@ -65,7 +68,7 @@ namespace TemperatureViewer.Controllers
         {
             if (id != null)
             {
-                if (_sensorsRepository.GetByIdAsync(id.Value) == null)//(_context.Sensors.FirstOrDefault(s => s.Id == id) == null)
+                if (await _sensorsRepository.GetByIdAsync(id.Value) == null)
                 {
                     return NotFound();
                 }
@@ -88,8 +91,22 @@ namespace TemperatureViewer.Controllers
             return View(model);
         }
 
-        public IActionResult History(int? id, string from, string to)
+        public async Task<IActionResult> History(int? id, string from, string to)
         {
+            if (id != null)
+            {
+                if ((await _sensorsRepository.GetByIdAsync(id.Value)) == null)
+                {
+                    return NotFound();
+                }
+
+                ViewBag.id = id;
+            }
+            else
+            {
+                ViewBag.allSensors = true;
+            }
+
             DateTime fromDate, toDate;
             fromDate = GetFromDateTime(from);
             toDate = GetToDateTime(to);
@@ -98,42 +115,11 @@ namespace TemperatureViewer.Controllers
             ViewBag.allSensors = false;
             IEnumerable<DateTime> measurementTimes;
 
-            IDictionary<int, IEnumerable<Value>> dictionary;
-            if (id != null)
-            {
-                if (_context.Sensors.FirstOrDefault(s => s.Id == id) == null)
-                {
-                    return NotFound();
-                }
-
-                IEnumerable<Value> enumerable = GetData(id.Value, fromDate, toDate);
-                measurementTimes = enumerable.Select(m => m.MeasurementTime);
-                if (enumerable.Count() == 0)
-                    dictionary = new Dictionary<int, IEnumerable<Value>>();
-                else
-                    dictionary = new Dictionary<int, IEnumerable<Value>>() { { id.Value, enumerable } };
-                ViewBag.id = id;
-            }
-            else
-            {
-                dictionary = GetData(fromDate, toDate, out measurementTimes);
-                ViewBag.allSensors = true;
-            }
-
-            if (!dictionary.All(e => e.Value.Count() == dictionary.First().Value.Count()))
-                throw new ArgumentException("Data must contain enumerables of values of equal length.", nameof(dictionary));
-
-            if (dictionary.Count() == 0)
+            
+            IList<IEnumerable<Value>> list = _informationService.GetHistoryEnumerableListMax50(id, fromDate, toDate, out measurementTimes);
+            if (list == null)
                 return View();
 
-            var maxValuesNum = 50;
-            var valuesCount = dictionary.First().Value.Count();
-            int divisor = (valuesCount - 1) / maxValuesNum + 1;
-            measurementTimes = measurementTimes.Where((m, i) => i % divisor == 0);
-
-            List<IEnumerable<Value>> list = GetValuesEnumerableList(dictionary, divisor);
-
-            IList<IEnumerable<Value>> list = _informationService.GetHistoryEnumerableList(id, );
             List<SensorHistoryViewModel> model = list.Select(GetViewModelsFromEnumerable).Where(sh => sh != null).OrderBy(vm => vm.SensorName).ToList();
             ViewBag.measurementTimes = measurementTimes;
             return View(model);
@@ -146,7 +132,7 @@ namespace TemperatureViewer.Controllers
 
             return new SensorHistoryViewModel()
             {
-                SensorName = _context.Sensors.AsNoTracking().AsEnumerable().First(s => s.Id == enumerable.First(m => m != null).SensorId).Name,
+                SensorName = _sensorsRepository.GetByIdAsync(enumerable.First(m => m != null).SensorId).Result.Name,//_context.Sensors.AsNoTracking().AsEnumerable().First(s => s.Id == enumerable.First(m => m != null).SensorId).Name,
                 Values = enumerable.Select(
                 m =>
                 {
@@ -160,41 +146,32 @@ namespace TemperatureViewer.Controllers
 
         public IActionResult Locations()
         {
-            //throw new NotImplementedException("All grey location is hidden");
-            var locations = _context.Locations.OrderBy(l => l.Name).AsNoTracking().AsEnumerable();
-            var viewModel = new List<LocationViewModel>();
-            foreach (var location in locations)
+            var locationDTOs = _informationService.GetValuesOnLocations();
+            var viewModel = locationDTOs.Select(dto => new LocationViewModel() 
             {
-                var values = _sensorsAccessService.GetValues(location.Id).Where(e => e != null).OrderBy(e => e.Sensor.Name).ToList();
-                var valuesViewModels = values?.Select(e =>
+                Id = dto.Id, 
+                Name = dto.Name, 
+                Image = dto.Image,
+                Values = dto.Values.Select(v => new ValueViewModel() 
                 {
-                    Threshold threshold = e.Sensor.Threshold ?? InformationService.GetDefaultThreshold();
-                    return new ValueViewModel()
-                    {
-                        Temperature = e.Temperature,
-                        SensorName = e.Sensor.Name,
-                        SensorId = e.Sensor.Id,
-                        Thresholds = new int[] { threshold.P1, threshold.P2, threshold.P3, threshold.P4 }
-                    };
-                });
-
-                viewModel.Add(new LocationViewModel() { Id = location.Id, Name = location.Name, Image = location.Image, Values = valuesViewModels });
-            }
+                    Temperature = v.Temperature, 
+                    SensorId = v.Sensor.Id, 
+                    SensorName = v.Sensor.Name,
+                    Thresholds = v.Thresholds
+                }) 
+            }).ToList();
 
             return View(viewModel);
         }
 
-        
-
-        public IActionResult ExtendedLocation(int? id, string from, string to)
+        public async Task<IActionResult> ExtendedLocation(int? id, string from, string to)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            Location entity;
-            if ((entity = _context.Locations.AsNoTracking().FirstOrDefault(l => l.Id == id)) == null)
+            if ((await _locationsRepository.GetByIdAsync(id.Value)) == null)
             {
                 return NotFound();
             }
@@ -206,33 +183,49 @@ namespace TemperatureViewer.Controllers
             ViewBag.to = to;
             IEnumerable<DateTime> checkpoints;
 
-            var historyDictionary = GetData(fromDate, toDate, out checkpoints, id.Value);
-            IList<SensorHistoryViewModel> history = GetHistoryViewModel(historyDictionary, checkpoints, out checkpoints);
+            var locationDTO = _informationService.GetValuesOnLocation(id.Value);
 
-            var values = _sensorsAccessService.GetValues(entity.Id).Where(e => e != null).OrderBy(e => e.Sensor.Name);
-            var valuesViewModels = values?.Select(e =>
-            {
-                Threshold threshold = e.Sensor.Threshold ?? new Threshold() { P1 = 12, P2 = 16, P3 = 25, P4 = 30 };
-                return new ValueViewModel()
-                {
-                    Temperature = e.Temperature,
-                    SensorName = e.Sensor.Name,
-                    SensorId = e.Sensor.Id,
-                    Thresholds = new int[] { threshold.P1, threshold.P2, threshold.P3, threshold.P4 }
-                };
-            });
 
-            ExtendedLocationViewModel viewModel = new ExtendedLocationViewModel()
-            {
-                Name = entity.Name,
-                Image = entity.Image,
-                History = history,
-                HistoryCheckpoints = checkpoints,
-                Values = valuesViewModels
-            };
+            //Location entity;
+            //if ((entity = _context.Locations.AsNoTracking().FirstOrDefault(l => l.Id == id)) == null)
+            //{
+            //    return NotFound();
+            //}
 
-            ViewBag.locationId = id;
-            return View(viewModel);
+            //DateTime fromDate, toDate;
+            //fromDate = GetFromDateTime(from);
+            //toDate = GetToDateTime(to);
+            //ViewBag.from = from;
+            //ViewBag.to = to;
+            //IEnumerable<DateTime> checkpoints;
+
+            //var historyDictionary = GetData(fromDate, toDate, out checkpoints, id.Value);
+            //IList<SensorHistoryViewModel> history = GetHistoryViewModel(historyDictionary, checkpoints, out checkpoints);
+
+            //var values = _sensorsAccessService.GetValues(entity.Id).Where(e => e != null).OrderBy(e => e.Sensor.Name);
+            //var valuesViewModels = values?.Select(e =>
+            //{
+            //    Threshold threshold = e.Sensor.Threshold ?? new Threshold() { P1 = 12, P2 = 16, P3 = 25, P4 = 30 };
+            //    return new ValueViewModel()
+            //    {
+            //        Temperature = e.Temperature,
+            //        SensorName = e.Sensor.Name,
+            //        SensorId = e.Sensor.Id,
+            //        Thresholds = new int[] { threshold.P1, threshold.P2, threshold.P3, threshold.P4 }
+            //    };
+            //});
+
+            //ExtendedLocationViewModel viewModel = new ExtendedLocationViewModel()
+            //{
+            //    Name = entity.Name,
+            //    Image = entity.Image,
+            //    History = history,
+            //    HistoryCheckpoints = checkpoints,
+            //    Values = valuesViewModels
+            //};
+
+            //ViewBag.locationId = id;
+            //return View(viewModel);
         }
 
         private IList<SensorHistoryViewModel> GetHistoryViewModel(IDictionary<int, IEnumerable<Value>> dictionary, IEnumerable<DateTime> checkpointsIn, out IEnumerable<DateTime> checkpointsOut)
