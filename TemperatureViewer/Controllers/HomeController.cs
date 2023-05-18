@@ -15,6 +15,7 @@ using TemperatureViewer.Services;
 using TemperatureViewer.Models.DTO;
 using TemperatureViewer.Models.Entities;
 using TemperatureViewer.Models.ViewModels;
+using TemperatureViewer.Repositories;
 
 namespace TemperatureViewer.Controllers
 {
@@ -22,16 +23,22 @@ namespace TemperatureViewer.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private DefaultContext _context;
+        //private DefaultContext _context;
         private readonly ISensorsAccessService _sensorsAccessService;
+        private readonly ISensorsRepository _sensorsRepository;
         private readonly InformationService _informationService;
 
-        public HomeController(ILogger<HomeController> logger, InformationService informationService, DefaultContext context, ISensorsAccessService temperatureService)
+        public HomeController(ILogger<HomeController> logger,
+            InformationService informationService,
+            DefaultContext context,
+            ISensorsAccessService temperatureService,
+            ISensorsRepository sensorsRepository)
         {
             _logger = logger;
-            _context = context;
+            //_context = context;
             _sensorsAccessService = temperatureService;
             _informationService = informationService;
+            _sensorsRepository = sensorsRepository;
         }
 
         public IActionResult Index()
@@ -54,43 +61,27 @@ namespace TemperatureViewer.Controllers
             return View(viewModel);
         }
 
-        public IActionResult HistoryTable(int? id, string from, string to)
+        public async Task<IActionResult> HistoryTable(int? id, string from, string to)
         {
+            if (id != null)
+            {
+                if (_sensorsRepository.GetByIdAsync(id.Value) == null)//(_context.Sensors.FirstOrDefault(s => s.Id == id) == null)
+                {
+                    return NotFound();
+                }
+
+                ViewBag.id = id;
+            }
+
             DateTime fromDate, toDate;
             fromDate = GetFromDateTime(from);
             toDate = GetToDateTime(to);
             ViewBag.from = from;
             ViewBag.to = to;
             IEnumerable<DateTime> measurementTimes;
-
-            IDictionary<int, IEnumerable<Value>> dictionary;
-            if (id != null)
-            {
-                if (_context.Sensors.FirstOrDefault(s => s.Id == id) == null)
-                {
-                    return NotFound();
-                }
-
-                IEnumerable<Value> enumerable = GetData(id.Value, fromDate, toDate);
-                measurementTimes = enumerable.Select(m => m.MeasurementTime);
-                if (enumerable.Count() == 0)
-                    dictionary = new Dictionary<int, IEnumerable<Value>>();
-                else
-                    dictionary = new Dictionary<int, IEnumerable<Value>>() { { id.Value, enumerable } };
-                ViewBag.id = id;
-            }
-            else
-            {
-                dictionary = GetData(fromDate, toDate, out measurementTimes);
-            }
-
-            if (!dictionary.All(e => e.Value.Count() == dictionary.First().Value.Count()))
-                throw new ArgumentException("Data must contain enumerables of values of equal length.", nameof(dictionary));
-
-            if (dictionary.Count() == 0)
+            IList<IEnumerable<Value>> list = _informationService.GetHistoryEnumerableList(id, fromDate, toDate, out measurementTimes);
+            if (list == null)
                 return View();
-
-            List<IEnumerable<Value>> list = GetValuesEnumerableList(dictionary);
 
             List<SensorHistoryViewModel> model = list.Select(GetViewModelsFromEnumerable).Where(sh => sh != null).OrderBy(vm => vm.SensorName).ToList();
             ViewBag.measurementTimes = measurementTimes.ToList();
@@ -315,51 +306,12 @@ namespace TemperatureViewer.Controllers
             return File(array, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
         }
 
-        private IEnumerable<Value> GetData(int id, DateTime fromDate, DateTime toDate)
-        {
-            return _context.Values.AsNoTracking().Where(m => m.SensorId == id && m.MeasurementTime < toDate && m.MeasurementTime > fromDate).OrderBy(m => m.MeasurementTime).AsEnumerable();
-        }
+        
 
         private IDictionary<int, IEnumerable<Value>> GetData(DateTime fromDate, DateTime toDate, out IEnumerable<DateTime> measurementTimes, int locationId)
         {
             Dictionary<int, List<Value>> dictionary = new Dictionary<int, List<Value>>();
             var query = _context.Values.Include(m => m.Sensor).AsNoTracking().Where(m => m.Sensor.LocationId == locationId && m.MeasurementTime < toDate && m.MeasurementTime > fromDate);
-            var groupedByTime = query.AsEnumerable().GroupBy(m => m.MeasurementTime).OrderBy(g => g.Key);
-            var sensorIds = query.Select(m => m.SensorId).Distinct();
-            foreach (var sensorId in sensorIds)
-            {
-                dictionary.Add(sensorId, new List<Value>());
-            }
-
-            measurementTimes = groupedByTime.Select(g => g.Key);
-
-            foreach (var valuesInTime in groupedByTime)
-            {
-                foreach (var keyValuePair in dictionary)
-                {
-                    if (valuesInTime.Where(m => m.SensorId == keyValuePair.Key).Count() > 0)
-                    {
-                        keyValuePair.Value.Add(valuesInTime.First(m => m.SensorId == keyValuePair.Key));
-                    }
-                    else
-                    {
-                        keyValuePair.Value.Add(null);
-                    }
-                }
-            }
-
-            Dictionary<int, IEnumerable<Value>> result = new Dictionary<int, IEnumerable<Value>>();
-            foreach (var keyValuePair in dictionary)
-            {
-                result.Add(keyValuePair.Key, keyValuePair.Value);
-            }
-            return result;
-        }
-
-        private IDictionary<int, IEnumerable<Value>> GetData(DateTime fromDate, DateTime toDate, out IEnumerable<DateTime> measurementTimes)
-        {
-            Dictionary<int, List<Value>> dictionary = new Dictionary<int, List<Value>>();
-            var query = _context.Values.AsNoTracking().Where(m => m.MeasurementTime < toDate && m.MeasurementTime > fromDate);
             var groupedByTime = query.AsEnumerable().GroupBy(m => m.MeasurementTime).OrderBy(g => g.Key);
             var sensorIds = query.Select(m => m.SensorId).Distinct();
             foreach (var sensorId in sensorIds)
@@ -403,42 +355,6 @@ namespace TemperatureViewer.Controllers
             }
 
             return offsets;
-        }
-
-        private static List<IEnumerable<Value>> GetValuesEnumerableList(IDictionary<int, IEnumerable<Value>> dictionary, int divisor)
-        {
-            List<IEnumerable<Value>> list = new List<IEnumerable<Value>>();
-            foreach (var keyValuePair in dictionary)
-            {
-                list.Add(keyValuePair.Value.Where((m, i) => i % divisor == 0));
-            }
-
-            return list;
-        }
-
-        private static List<IEnumerable<Value>> GetValuesEnumerableList(IDictionary<int, IEnumerable<Value>> dictionary)
-        {
-            List<IEnumerable<Value>> list = new List<IEnumerable<Value>>();
-            foreach (var keyValuePair in dictionary)
-            {
-                list.Add(keyValuePair.Value);
-            }
-
-            return list;
-        }
-
-        private static List<IEnumerable<Value>> GetValuesEnumerableList(IEnumerable<IGrouping<int, Value>> groups, int[] offsets, int divisor)
-        {
-            List<IEnumerable<Value>> list = new List<IEnumerable<Value>>();
-            int j = 0;
-            foreach (var group in groups)
-            {
-                int k = j;
-                list.Add(group.OrderBy(m => m.MeasurementTime).Where((m, i) => (i + offsets[k]) % divisor == 0));
-                j++;
-            }
-
-            return list;
         }
 
         private static DateTime GetFromDateTime(string from)

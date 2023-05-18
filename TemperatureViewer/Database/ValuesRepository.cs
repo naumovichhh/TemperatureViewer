@@ -28,7 +28,7 @@ namespace TemperatureViewer.Database
             return value;
         }
 
-        public async Task<IList<Value>> GetFiltered(Expression<Func<Value, bool>> predicate, bool loadRelated = false)
+        public async Task<IList<Value>> GetFilteredAsync(Expression<Func<Value, bool>> predicate, bool loadRelated = false)
         {
             var query = _context.Set<Value>().Where(predicate);
             if (loadRelated)
