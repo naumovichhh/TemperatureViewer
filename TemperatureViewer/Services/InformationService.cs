@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using TemperatureViewer.Models.DTO;
@@ -14,15 +15,18 @@ namespace TemperatureViewer.Services
         private readonly ISensorsAccessService _sensorsAccess;
         private readonly IValuesRepository _valuesRepository;
         private readonly ILocationsRepository _locationsRepository;
+        private readonly ISensorsRepository _sensorsRepository;
         //private readonly DefaultContext _context;
 
         public InformationService(ISensorsAccessService sensorsAccess, 
             IValuesRepository valuesRepository, 
-            ILocationsRepository locationsRepository)
+            ILocationsRepository locationsRepository,
+            ISensorsRepository sensorsRepository)
         {
             _sensorsAccess = sensorsAccess;
             _valuesRepository = valuesRepository;
             _locationsRepository = locationsRepository;
+            _sensorsRepository = sensorsRepository;
         }
 
         public ValueDTO[] GetValues()
@@ -99,10 +103,70 @@ namespace TemperatureViewer.Services
             return list;
         }
 
+        public byte[] DownloadExcel(DateTime from, DateTime to, int? id, int? locationId)
+        {
+            MemoryStream resultStream;
+
+            if (locationId != null)
+            {
+                resultStream = DownloadLocation(from, to, locationId.Value);
+            }
+            else if (id == null)
+            {
+                resultStream = DownloadAll(from, to);
+            }
+            else
+            {
+                resultStream = DownloadSensor(from, to, id.Value);
+            }
+
+            return resultStream.ToArray();
+        }
+
+        private MemoryStream DownloadLocation(DateTime from, DateTime to, int locationId)
+        {
+            IEnumerable<DateTime> measurementTimes;
+            IDictionary<int, IEnumerable<Value>> data = GetData(from, to, out measurementTimes, locationId);
+            IDictionary<Sensor, IEnumerable<Value>> output = new Dictionary<Sensor, IEnumerable<Value>>();
+            foreach (var kvp in data)
+            {
+                output.Add(_sensorsRepository.GetByIdAsync(kvp.Key).Result, kvp.Value);
+            }
+
+            return ExcelService.Create(output, measurementTimes);
+        }
+
+        private MemoryStream DownloadAll(DateTime from, DateTime to)
+        {
+            IEnumerable<DateTime> measurementTimes;
+            IDictionary<int, IEnumerable<Value>> data = GetData(from, to, out measurementTimes);
+            IDictionary<Sensor, IEnumerable<Value>> output = new Dictionary<Sensor, IEnumerable<Value>>();
+            foreach (var kvp in data)
+            {
+                output.Add(_sensorsRepository.GetByIdAsync(kvp.Key).Result, kvp.Value);
+            }
+
+            return ExcelService.Create(output, measurementTimes);
+        }
+
+        private MemoryStream DownloadSensor(DateTime from, DateTime to, int id)
+        {
+
+            IEnumerable<Value> enumerable = GetData(id, from, to);
+            IDictionary<Sensor, IEnumerable<Value>> output = new Dictionary<Sensor, IEnumerable<Value>>()
+                {
+                    {
+                        _sensorsRepository.GetByIdAsync(id).Result,
+                        enumerable
+                    }
+                };
+            return ExcelService.Create(output, output.Values.First().Select(m => m.MeasurementTime));
+        }
+
         public IList<IEnumerable<Value>> GetLocationHistoryEnumerableListMax50(int locationId, DateTime from, DateTime to, out IEnumerable<DateTime> checkpoints)
         {
             var historyDictionary = GetData(from, to, out checkpoints, locationId);
-            GetValuesEnumerableList(historyDictionary, checkpoints, out checkpoints);
+            return GetValuesEnumerableList(historyDictionary, checkpoints, out checkpoints);
         }
 
         public IList<LocationDTO> GetValuesOnLocations()
@@ -111,8 +175,8 @@ namespace TemperatureViewer.Services
             var locationDTOs = new List<LocationDTO>();
             foreach (var location in locations)
             {
-                var values = _sensorsAccess.GetValues(location.Id).Where(e => e != null).OrderBy(e => e.Sensor.Name).ToList();
-                var valueDTOs = values?.Select(e =>
+                var valueDTOsNoThresholds = _sensorsAccess.GetValues(location.Id).Where(e => e != null).OrderBy(e => e.Sensor.Name).ToList();
+                var valueDTOs = valueDTOsNoThresholds?.Select(e =>
                 {
                     Threshold threshold = e.Sensor.Threshold ?? GetDefaultThreshold();
                     return new ValueDTO()
@@ -132,8 +196,18 @@ namespace TemperatureViewer.Services
         public LocationDTO GetValuesOnLocation(int id)
         {
             var entity = _locationsRepository.GetByIdAsync(id).Result;
-            var values = _sensorsAccess.GetValues(id).Where(e => e != null).OrderBy(e => e.Sensor.Name);
-            return new LocationDTO() { Id = id, Image = entity.Image, Name = entity.Name, Values = values };
+            var valueDTOsNoThresholds = _sensorsAccess.GetValues(id).Where(e => e != null).OrderBy(e => e.Sensor.Name);
+            var valueDTOs = valueDTOsNoThresholds?.Select(e =>
+            {
+                Threshold threshold = e.Sensor.Threshold ?? GetDefaultThreshold();
+                return new ValueDTO()
+                {
+                    Temperature = e.Temperature,
+                    Sensor = e.Sensor,
+                    Thresholds = new int[] { threshold.P1, threshold.P2, threshold.P3, threshold.P4 }
+                };
+            });
+            return new LocationDTO() { Id = id, Image = entity.Image, Name = entity.Name, Values = valueDTOs };
         }
 
         private IDictionary<int, IEnumerable<Value>> GetData(DateTime fromDate, DateTime toDate, out IEnumerable<DateTime> measurementTimes, int locationId)

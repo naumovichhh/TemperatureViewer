@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.EntityFrameworkCore;
+using TemperatureViewer.Models.DTO;
 using TemperatureViewer.Models.Entities;
 using TemperatureViewer.Repositories;
 
@@ -33,7 +34,7 @@ namespace TemperatureViewer.Services
             }
         }
 
-        public async Task<User> ValidateUser(string name, string password)
+        public async Task<UserDTO> ValidateUser(string name, string password)
         {
             string hashed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
                     password,
@@ -43,17 +44,11 @@ namespace TemperatureViewer.Services
                     32
                     ));
 
-            return (await _repository.GetAllAsync()).FirstOrDefault(u => u.Name == name && u.Password == hashed);
-        }
+            if (name == "adminad" && hashed == "VBBnikBLRFREizRFF3jiA0V7RoGo5S9C8bjOcusgocs=")
+                return new UserDTO() { Name = "adminad", Role = "a" };
 
-        public User ValidateAdmin(string name, string password)
-        {
-            if (name == "adminad" && password == "rad2020")
-            {
-                return new User() { Name = name };
-            }
-            else
-                return null;
+            var user = (await _repository.GetAllAsync()).FirstOrDefault(u => u.Name == name && u.Password == hashed);
+            return new UserDTO() { Name = user.Name, Role = user.Role };
         }
 
         public async Task<bool> CreateUser(User user)

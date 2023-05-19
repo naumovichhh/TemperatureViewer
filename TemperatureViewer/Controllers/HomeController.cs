@@ -190,6 +190,33 @@ namespace TemperatureViewer.Controllers
                 toDate,
                 out checkpoints);
 
+
+            IList<SensorHistoryViewModel> historyViewModel = historyEnumerableList
+                .Select(GetViewModelsFromEnumerable)
+                .Where(vm => vm != null)
+                .OrderBy(vm => vm.SensorName)
+                .ToList();
+            ExtendedLocationViewModel viewModel = new ExtendedLocationViewModel()
+            {
+                Name = locationDTO.Name,
+                Image = locationDTO.Image,
+                History = historyViewModel,
+                HistoryCheckpoints = checkpoints,
+                Values = locationDTO.Values.Select(dto => new ValueViewModel()
+                { 
+                    SensorId = dto.Sensor.Id,
+                    SensorName = dto.Sensor.Name,
+                    Temperature = dto.Temperature,
+                    Thresholds = dto.Thresholds
+                })
+            };
+
+            ViewBag.locationId = id;
+            return View(viewModel);
+
+
+
+
             //Location entity;
             //if ((entity = _context.Locations.AsNoTracking().FirstOrDefault(l => l.Id == id)) == null)
             //{
@@ -232,91 +259,102 @@ namespace TemperatureViewer.Controllers
             //return View(viewModel);
         }
 
-        private IList<SensorHistoryViewModel> GetHistoryViewModel(IDictionary<int, IEnumerable<Value>> dictionary, IEnumerable<DateTime> checkpointsIn, out IEnumerable<DateTime> checkpointsOut)
-        {
-            if (!dictionary.All(e => e.Value.Count() == dictionary.First().Value.Count()))
-                throw new ArgumentException("Data must contain enumerables of values of equal length.", nameof(dictionary));
+        //private IList<SensorHistoryViewModel> GetHistoryViewModel(IDictionary<int, IEnumerable<Value>> dictionary, IEnumerable<DateTime> checkpointsIn, out IEnumerable<DateTime> checkpointsOut)
+        //{
+        //    if (!dictionary.All(e => e.Value.Count() == dictionary.First().Value.Count()))
+        //        throw new ArgumentException("Data must contain enumerables of values of equal length.", nameof(dictionary));
 
-            if (dictionary.Count() == 0)
-            {
-                checkpointsOut = null;
-                return null;
-            }
+        //    if (dictionary.Count() == 0)
+        //    {
+        //        checkpointsOut = null;
+        //        return null;
+        //    }
 
-            var maxValuesNum = 50;
-            var valuesCount = dictionary.First().Value.Count();
-            int divisor = (valuesCount - 1) / maxValuesNum + 1;
-            var measurementTimes = checkpointsIn.Where((m, i) => i % divisor == 0);
+        //    var maxValuesNum = 50;
+        //    var valuesCount = dictionary.First().Value.Count();
+        //    int divisor = (valuesCount - 1) / maxValuesNum + 1;
+        //    var measurementTimes = checkpointsIn.Where((m, i) => i % divisor == 0);
 
-            IList<IEnumerable<Value>> list = GetValuesEnumerableList(dictionary, divisor);
+        //    IList<IEnumerable<Value>> list = GetValuesEnumerableList(dictionary, divisor);
 
-            IList<SensorHistoryViewModel> model = list.Select(GetViewModelsFromEnumerable).Where(vm => vm != null).OrderBy(vm => vm.SensorName).ToList();
-            checkpointsOut = measurementTimes;
-            return model;
-        }
+        //    IList<SensorHistoryViewModel> model = list.Select(GetViewModelsFromEnumerable).Where(vm => vm != null).OrderBy(vm => vm.SensorName).ToList();
+        //    checkpointsOut = measurementTimes;
+        //    return model;
+        //}
 
-        public IActionResult Download(int? id, string from, string to, int? locationId)
+        public async Task<IActionResult> Download(int? id, string from, string to, int? locationId)
         {
             DateTime fromDate, toDate;
             fromDate = GetFromDateTime(from);
             toDate = GetToDateTime(to);
-            MemoryStream resultStream;
-
             if (locationId != null)
             {
-                IEnumerable<DateTime> measurementTimes;
-                IDictionary<int, IEnumerable<Value>> data = GetData(fromDate, toDate, out measurementTimes, locationId.Value);
-                IDictionary<Sensor, IEnumerable<Value>> output = new Dictionary<Sensor, IEnumerable<Value>>();
-                foreach (var kvp in data)
-                {
-                    output.Add(_context.Sensors.First(s => s.Id == kvp.Key), kvp.Value);
-                }
-
-                resultStream = ExcelService.Create(output, measurementTimes);
-            }
-            else if (id == null)
-            {
-                IEnumerable<DateTime> measurementTimes;
-                IDictionary<int, IEnumerable<Value>> data = GetData(fromDate, toDate, out measurementTimes);
-                IDictionary<Sensor, IEnumerable<Value>> output = new Dictionary<Sensor, IEnumerable<Value>>();
-                foreach (var kvp in data)
-                {
-                    output.Add(_context.Sensors.First(s => s.Id == kvp.Key), kvp.Value);
-                }
-
-                resultStream = ExcelService.Create(output, measurementTimes);
-            }
-            else
-            {
-                if (_context.Sensors.FirstOrDefault(s => s.Id == id) == null)
-                {
+                if (await _locationsRepository.GetByIdAsync(locationId.Value) == null)
                     return NotFound();
-                }
-
-                IEnumerable<Value> enumerable = GetData(id.Value, fromDate, toDate);
-                IDictionary<Sensor, IEnumerable<Value>> output = new Dictionary<Sensor, IEnumerable<Value>>() { { _context.Sensors.First(s => s.Id == id), enumerable } };
-                resultStream = ExcelService.Create(output, output.Values.First().Select(m => m.MeasurementTime));
             }
-
-            byte[] array = resultStream.ToArray();
+            else if (id != null)
+            {
+                if (await _sensorsRepository.GetByIdAsync(id.Value) == null)
+                    return NotFound();
+            }
+            
+            byte[] fileArray = _informationService.DownloadExcel(fromDate, toDate, id, locationId);
             string fileName = fromDate.ToString("g", CultureInfo.GetCultureInfo("de-DE")) + " - " + toDate.ToString("g", CultureInfo.GetCultureInfo("de-DE")) + (id == null ? "" : $" Id{id.Value}") + ".xlsx";
-            return File(array, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+            return File(fileArray, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+            //if (locationId != null)
+            //{
+            //    IEnumerable<DateTime> measurementTimes;
+            //    IDictionary<int, IEnumerable<Value>> data = GetData(fromDate, toDate, out measurementTimes, locationId.Value);
+            //    IDictionary<Sensor, IEnumerable<Value>> output = new Dictionary<Sensor, IEnumerable<Value>>();
+            //    foreach (var kvp in data)
+            //    {
+            //        output.Add(_context.Sensors.First(s => s.Id == kvp.Key), kvp.Value);
+            //    }
+
+            //    resultStream = ExcelService.Create(output, measurementTimes);
+            //}
+            //else if (id == null)
+            //{
+            //    IEnumerable<DateTime> measurementTimes;
+            //    IDictionary<int, IEnumerable<Value>> data = GetData(fromDate, toDate, out measurementTimes);
+            //    IDictionary<Sensor, IEnumerable<Value>> output = new Dictionary<Sensor, IEnumerable<Value>>();
+            //    foreach (var kvp in data)
+            //    {
+            //        output.Add(_context.Sensors.First(s => s.Id == kvp.Key), kvp.Value);
+            //    }
+
+            //    resultStream = ExcelService.Create(output, measurementTimes);
+            //}
+            //else
+            //{
+            //    if (_context.Sensors.FirstOrDefault(s => s.Id == id) == null)
+            //    {
+            //        return NotFound();
+            //    }
+
+            //    IEnumerable<Value> enumerable = GetData(id.Value, fromDate, toDate);
+            //    IDictionary<Sensor, IEnumerable<Value>> output = new Dictionary<Sensor, IEnumerable<Value>>() { { _context.Sensors.First(s => s.Id == id), enumerable } };
+            //    resultStream = ExcelService.Create(output, output.Values.First().Select(m => m.MeasurementTime));
+            //}
+
+            //byte[] array = resultStream.ToArray();
+
         }
 
         
 
-        private static int[] GetOffsets(IEnumerable<IGrouping<int, Value>> groups, int valuesCount)
-        {
-            int[] offsets = new int[groups.Count()];
-            int j = 0;
-            foreach (var group in groups)
-            {
-                offsets[j] = valuesCount - group.Count();
-                j++;
-            }
+        //private static int[] GetOffsets(IEnumerable<IGrouping<int, Value>> groups, int valuesCount)
+        //{
+        //    int[] offsets = new int[groups.Count()];
+        //    int j = 0;
+        //    foreach (var group in groups)
+        //    {
+        //        offsets[j] = valuesCount - group.Count();
+        //        j++;
+        //    }
 
-            return offsets;
-        }
+        //    return offsets;
+        //}
 
         private static DateTime GetFromDateTime(string from)
         {

@@ -41,16 +41,18 @@ namespace TemperatureViewer.Controllers
         {
             if (ModelState.IsValid)
             {
-                User user;
-                bool admin = false;
-                if ((user = _accountHelper.ValidateAdmin(loginModel.Name, loginModel.Password)) != null)
-                {
-                    admin = true;
-                }
-                else
-                {
-                    user = await _accountHelper.ValidateUser(loginModel.Name, loginModel.Password);
-                }
+                //User user;
+                //bool admin = false;
+                //if ((user = _accountHelper.ValidateAdmin(loginModel.Name, loginModel.Password)) != null)
+                //{
+                //    admin = true;
+                //}
+                //else
+                //{
+                //    user = await _accountHelper.ValidateUser(loginModel.Name, loginModel.Password);
+                //}
+
+                var user = await _accountHelper.ValidateUser(loginModel.Name, loginModel.Password);
 
                 if (user == null)
                 {
@@ -59,9 +61,9 @@ namespace TemperatureViewer.Controllers
                 }
 
                 var claims = new List<Claim>()
-                    {
-                        new Claim(ClaimsIdentity.DefaultNameClaimType, loginModel.Name)
-                    };
+                {
+                    new Claim(ClaimsIdentity.DefaultNameClaimType, loginModel.Name)
+                };
                 if (admin)
                 {
                     claims.Add(new Claim(ClaimsIdentity.DefaultRoleClaimType, "admin"));
