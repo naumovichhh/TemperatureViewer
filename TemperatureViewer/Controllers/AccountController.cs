@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using TemperatureViewer.Database;
 using TemperatureViewer.Services;
+using TemperatureViewer.Models.DTO;
 using TemperatureViewer.Models.Entities;
 using TemperatureViewer.Models.ViewModels;
 
@@ -52,22 +53,20 @@ namespace TemperatureViewer.Controllers
                 //    user = await _accountHelper.ValidateUser(loginModel.Name, loginModel.Password);
                 //}
 
-                var user = await _accountHelper.ValidateUser(loginModel.Name, loginModel.Password);
+                var user = await _accountHelper.ValidateUserAsync(loginModel.Name, loginModel.Password);
 
                 if (user == null)
                 {
-                    ModelState.AddModelError("", "Invalid login attempt.");
+                    ModelState.AddModelError("", "Неверное имя пользователя или пароль.");
                     return View(loginModel);
                 }
 
                 var claims = new List<Claim>()
                 {
-                    new Claim(ClaimsIdentity.DefaultNameClaimType, loginModel.Name)
+                    new Claim(ClaimsIdentity.DefaultNameClaimType, user.Name)
                 };
-                if (admin)
-                {
-                    claims.Add(new Claim(ClaimsIdentity.DefaultRoleClaimType, "admin"));
-                }
+
+                SetRoleClaim(claims, user);
 
                 var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                 await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
@@ -79,6 +78,22 @@ namespace TemperatureViewer.Controllers
             }
 
             return View(loginModel);
+        }
+
+        private void SetRoleClaim(List<Claim> claims, UserDTO user)
+        {
+            if (user.Role == "a")
+            {
+                claims.Add(new Claim(ClaimsIdentity.DefaultRoleClaimType, "admin"));
+            }
+            else if (user.Role == "o")
+            {
+                claims.Add(new Claim(ClaimsIdentity.DefaultRoleClaimType, "operator"));
+            }
+            else
+            {
+                claims.Add(new Claim(ClaimsIdentity.DefaultRoleClaimType, "user"));
+            }
         }
 
         public async Task<IActionResult> Logout()

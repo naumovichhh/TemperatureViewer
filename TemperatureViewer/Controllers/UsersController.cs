@@ -20,13 +20,13 @@ namespace TemperatureViewer.Controllers
     {
         private readonly IUsersRepository _usersRepository;
         private readonly ISensorsRepository _sensorsRepository;
-        private readonly AccountService _accountHelper;
+        private readonly AccountService _accountService;
 
-        public UsersController(IUsersRepository usersRepository, ISensorsRepository sensorsRepository, AccountService accountHelper)
+        public UsersController(IUsersRepository usersRepository, ISensorsRepository sensorsRepository, AccountService accountService)
         {
             _usersRepository = usersRepository;
             _sensorsRepository = sensorsRepository;
-            _accountHelper = accountHelper;
+            _accountService = accountService;
         }
 
         public async Task<IActionResult> Index()
@@ -58,11 +58,10 @@ namespace TemperatureViewer.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(UserViewModel viewModel)
+        public IActionResult Create(UserViewModel viewModel)
         {
             if (ModelState.IsValid)
             {
-                var accountHelper = new AccountService(_usersRepository);
                 if (viewModel.Sensors == null && viewModel.Role == "u")
                 {
                     ModelState.AddModelError(string.Empty, "Пользователю должны быть видимы датчики");
@@ -70,14 +69,22 @@ namespace TemperatureViewer.Controllers
                     return View(viewModel);
                 }
                 User user = GetUserFromViewModel(viewModel);
-                bool successfull = await accountHelper.CreateUser(user);
+                string message = null;
+                bool successfull = _accountService.CreateUser(user, ref message);
                 if (successfull)
                 {
                     return RedirectToAction(nameof(Index));
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, "Ошибка создания пользователя");
+                    if (message != null)
+                    {
+                        ModelState.AddModelError(string.Empty, message);
+                    }
+                    else
+                    {
+                        ModelState.AddModelError(string.Empty, "Ошибка создания пользователя");
+                    }
                 }
             }
             SetViewbag();
@@ -158,7 +165,7 @@ namespace TemperatureViewer.Controllers
                     return NotFound();
                 }
                 User user = GetUserFromViewModel(viewModel);
-                bool successfull = await _accountHelper.UpdateUserAsync(user);
+                bool successfull = await _accountService.UpdateUserAsync(user);
                 if (successfull)
                 {
                     return RedirectToAction(nameof(Index));

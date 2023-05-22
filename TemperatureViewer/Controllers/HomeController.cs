@@ -1,11 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -23,21 +21,17 @@ namespace TemperatureViewer.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        //private DefaultContext _context;
         private readonly ISensorsAccessService _sensorsAccessService;
         private readonly ISensorsRepository _sensorsRepository;
         private readonly ILocationsRepository _locationsRepository;
         private readonly InformationService _informationService;
 
-        public HomeController(ILogger<HomeController> logger,
-            InformationService informationService,
+        public HomeController(InformationService informationService,
             DefaultContext context,
             ISensorsAccessService temperatureService,
             ISensorsRepository sensorsRepository,
             ILocationsRepository locationsRepository)
         {
-            _logger = logger;
-            //_context = context;
             _sensorsAccessService = temperatureService;
             _informationService = informationService;
             _sensorsRepository = sensorsRepository;
@@ -48,7 +42,6 @@ namespace TemperatureViewer.Controllers
         {
             IEnumerable<ValueDTO> values;
             values = _informationService.GetValues();
-            //values = _sensorsAccessService.GetValues();
 
             var viewModel = values?.Select(e =>
             {
@@ -213,74 +206,7 @@ namespace TemperatureViewer.Controllers
 
             ViewBag.locationId = id;
             return View(viewModel);
-
-
-
-
-            //Location entity;
-            //if ((entity = _context.Locations.AsNoTracking().FirstOrDefault(l => l.Id == id)) == null)
-            //{
-            //    return NotFound();
-            //}
-
-            //DateTime fromDate, toDate;
-            //fromDate = GetFromDateTime(from);
-            //toDate = GetToDateTime(to);
-            //ViewBag.from = from;
-            //ViewBag.to = to;
-            //IEnumerable<DateTime> checkpoints;
-
-            //var historyDictionary = GetData(fromDate, toDate, out checkpoints, id.Value);
-            //IList<SensorHistoryViewModel> history = GetHistoryViewModel(historyDictionary, checkpoints, out checkpoints);
-
-            //var values = _sensorsAccessService.GetValues(entity.Id).Where(e => e != null).OrderBy(e => e.Sensor.Name);
-            //var valuesViewModels = values?.Select(e =>
-            //{
-            //    Threshold threshold = e.Sensor.Threshold ?? new Threshold() { P1 = 12, P2 = 16, P3 = 25, P4 = 30 };
-            //    return new ValueViewModel()
-            //    {
-            //        Temperature = e.Temperature,
-            //        SensorName = e.Sensor.Name,
-            //        SensorId = e.Sensor.Id,
-            //        Thresholds = new int[] { threshold.P1, threshold.P2, threshold.P3, threshold.P4 }
-            //    };
-            //});
-
-            //ExtendedLocationViewModel viewModel = new ExtendedLocationViewModel()
-            //{
-            //    Name = entity.Name,
-            //    Image = entity.Image,
-            //    History = history,
-            //    HistoryCheckpoints = checkpoints,
-            //    Values = valuesViewModels
-            //};
-
-            //ViewBag.locationId = id;
-            //return View(viewModel);
         }
-
-        //private IList<SensorHistoryViewModel> GetHistoryViewModel(IDictionary<int, IEnumerable<Value>> dictionary, IEnumerable<DateTime> checkpointsIn, out IEnumerable<DateTime> checkpointsOut)
-        //{
-        //    if (!dictionary.All(e => e.Value.Count() == dictionary.First().Value.Count()))
-        //        throw new ArgumentException("Data must contain enumerables of values of equal length.", nameof(dictionary));
-
-        //    if (dictionary.Count() == 0)
-        //    {
-        //        checkpointsOut = null;
-        //        return null;
-        //    }
-
-        //    var maxValuesNum = 50;
-        //    var valuesCount = dictionary.First().Value.Count();
-        //    int divisor = (valuesCount - 1) / maxValuesNum + 1;
-        //    var measurementTimes = checkpointsIn.Where((m, i) => i % divisor == 0);
-
-        //    IList<IEnumerable<Value>> list = GetValuesEnumerableList(dictionary, divisor);
-
-        //    IList<SensorHistoryViewModel> model = list.Select(GetViewModelsFromEnumerable).Where(vm => vm != null).OrderBy(vm => vm.SensorName).ToList();
-        //    checkpointsOut = measurementTimes;
-        //    return model;
-        //}
 
         public async Task<IActionResult> Download(int? id, string from, string to, int? locationId)
         {
@@ -301,60 +227,7 @@ namespace TemperatureViewer.Controllers
             byte[] fileArray = _informationService.DownloadExcel(fromDate, toDate, id, locationId);
             string fileName = fromDate.ToString("g", CultureInfo.GetCultureInfo("de-DE")) + " - " + toDate.ToString("g", CultureInfo.GetCultureInfo("de-DE")) + (id == null ? "" : $" Id{id.Value}") + ".xlsx";
             return File(fileArray, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
-            //if (locationId != null)
-            //{
-            //    IEnumerable<DateTime> measurementTimes;
-            //    IDictionary<int, IEnumerable<Value>> data = GetData(fromDate, toDate, out measurementTimes, locationId.Value);
-            //    IDictionary<Sensor, IEnumerable<Value>> output = new Dictionary<Sensor, IEnumerable<Value>>();
-            //    foreach (var kvp in data)
-            //    {
-            //        output.Add(_context.Sensors.First(s => s.Id == kvp.Key), kvp.Value);
-            //    }
-
-            //    resultStream = ExcelService.Create(output, measurementTimes);
-            //}
-            //else if (id == null)
-            //{
-            //    IEnumerable<DateTime> measurementTimes;
-            //    IDictionary<int, IEnumerable<Value>> data = GetData(fromDate, toDate, out measurementTimes);
-            //    IDictionary<Sensor, IEnumerable<Value>> output = new Dictionary<Sensor, IEnumerable<Value>>();
-            //    foreach (var kvp in data)
-            //    {
-            //        output.Add(_context.Sensors.First(s => s.Id == kvp.Key), kvp.Value);
-            //    }
-
-            //    resultStream = ExcelService.Create(output, measurementTimes);
-            //}
-            //else
-            //{
-            //    if (_context.Sensors.FirstOrDefault(s => s.Id == id) == null)
-            //    {
-            //        return NotFound();
-            //    }
-
-            //    IEnumerable<Value> enumerable = GetData(id.Value, fromDate, toDate);
-            //    IDictionary<Sensor, IEnumerable<Value>> output = new Dictionary<Sensor, IEnumerable<Value>>() { { _context.Sensors.First(s => s.Id == id), enumerable } };
-            //    resultStream = ExcelService.Create(output, output.Values.First().Select(m => m.MeasurementTime));
-            //}
-
-            //byte[] array = resultStream.ToArray();
-
         }
-
-        
-
-        //private static int[] GetOffsets(IEnumerable<IGrouping<int, Value>> groups, int valuesCount)
-        //{
-        //    int[] offsets = new int[groups.Count()];
-        //    int j = 0;
-        //    foreach (var group in groups)
-        //    {
-        //        offsets[j] = valuesCount - group.Count();
-        //        j++;
-        //    }
-
-        //    return offsets;
-        //}
 
         private static DateTime GetFromDateTime(string from)
         {

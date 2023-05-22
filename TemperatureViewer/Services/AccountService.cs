@@ -34,7 +34,7 @@ namespace TemperatureViewer.Services
             }
         }
 
-        public async Task<UserDTO> ValidateUser(string name, string password)
+        public async Task<UserDTO> ValidateUserAsync(string name, string password)
         {
             string hashed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
                     password,
@@ -44,15 +44,23 @@ namespace TemperatureViewer.Services
                     32
                     ));
 
-            if (name == "adminad" && hashed == "VBBnikBLRFREizRFF3jiA0V7RoGo5S9C8bjOcusgocs=")
-                return new UserDTO() { Name = "adminad", Role = "a" };
+            if (name == "primary" && hashed == "lwCuMTZNTdlNkVaBS4Y0cCH6H018e/vzk3VMlEQRd6U=")
+                return new UserDTO() { Name = "primary", Role = "a" };
 
             var user = (await _repository.GetAllAsync()).FirstOrDefault(u => u.Name == name && u.Password == hashed);
+            if (user == null)
+                return null;
             return new UserDTO() { Name = user.Name, Role = user.Role };
         }
 
-        public async Task<bool> CreateUser(User user)
+        public bool CreateUser(User user, ref string message)
         {
+            if (_repository.GetAllAsync().Result.Count(u => user.Name == u.Name) > 0)
+            {
+                message = "Имя пользователя занято.";
+                return false;
+            }
+
             try
             {
                 string hashed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
@@ -64,7 +72,7 @@ namespace TemperatureViewer.Services
                         ));
 
                 User userHashed = new User() { Name = user.Name, Password = hashed, Role = user.Role, Sensors = user.Sensors };
-                await _repository.CreateAsync(userHashed);
+                _repository.CreateAsync(userHashed).Wait();
                 return true;
             }
             catch (Exception)

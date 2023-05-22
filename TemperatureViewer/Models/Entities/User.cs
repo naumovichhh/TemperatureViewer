@@ -8,6 +8,7 @@ namespace TemperatureViewer.Models.Entities
     {
         public int Id { get; set; }
         [Required]
+        [DisplayName("Имя")]
         public string Name { get; set; }
         [Required]
         [DataType(DataType.Password)]

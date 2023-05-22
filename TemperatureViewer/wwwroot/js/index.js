@@ -13,15 +13,15 @@
 
         let value = Number(str.replace(",", "."));
         console.log(thresholds[i]);
-        //if (value >= thresholds[i][3] || value <= thresholds[i][0]) {
-        //    g = 0;
-        //}
-        //if (value >= thresholds[i][2]) {
-        //    r = brightness;
-        //}
-        //if (value <= thresholds[i][1]) {
-        //    b = brightness
-        //}
+        if (value >= thresholds[i][3] || value <= thresholds[i][0]) {
+            g = 0;
+        }
+        if (value >= thresholds[i][2]) {
+            r = brightness;
+        }
+        if (value <= thresholds[i][1]) {
+            b = brightness
+        }
 
         setBackgroundColor(e, r, g, b)
     });
