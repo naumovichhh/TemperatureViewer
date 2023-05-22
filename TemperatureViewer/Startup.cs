@@ -27,7 +27,7 @@ namespace TemperatureViewer
         {
             services.AddControllersWithViews();
             var connectionString = Configuration.GetConnectionString("DefaultConnection");
-            services.AddDbContext<DefaultContext>(options => 
+            services.AddDbContext<DefaultContext>(options =>
                 options.UseSqlServer(connectionString));
             
             services.AddScoped<IUsersRepository, UsersRepository>();

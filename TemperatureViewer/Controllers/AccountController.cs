@@ -14,13 +14,11 @@ namespace TemperatureViewer.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly DefaultContext _context;
-        private readonly AccountService _accountHelper;
+        private readonly AccountService _accountService;
 
-        public AccountController(DefaultContext context, AccountService accountHelper)
+        public AccountController(AccountService accountHelper)
         {
-            _context = context;
-            _accountHelper = accountHelper;
+            _accountService = accountHelper;
         }
 
         public IActionResult AccessDenied()
@@ -53,7 +51,7 @@ namespace TemperatureViewer.Controllers
                 //    user = await _accountHelper.ValidateUser(loginModel.Name, loginModel.Password);
                 //}
 
-                var user = await _accountHelper.ValidateUserAsync(loginModel.Name, loginModel.Password);
+                var user = await _accountService.ValidateUserAsync(loginModel.Name, loginModel.Password);
 
                 if (user == null)
                 {

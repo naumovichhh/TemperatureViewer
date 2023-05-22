@@ -46,19 +46,25 @@
                             </li>
                             <vc:locations-dropdown />
                         </ul>
-                        @if (User.IsInRole("admin"))
+                        @if (User.IsInRole("admin") || User.IsInRole("operator"))
                         {
                             <div class="dropdown">
                                 <button class="btn dropdown-toggle" id="dropdownMenuButton" data-toggle="dropdown">
                                     Администрирование
                                 </button>
                                 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="Sensors" asp-action="Index">Датчики</a>
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="Locations" asp-action="Index">Локации</a>
+                                    @if (User.IsInRole("admin"))
+                                    {
+                                        <a class="nav-link text-dark" asp-area="" asp-controller="Sensors" asp-action="Index">Датчики</a>
+                                        <a class="nav-link text-dark" asp-area="" asp-controller="Locations" asp-action="Index">Локации</a>
+                                    }
                                     <a class="nav-link text-dark" asp-area="" asp-controller="Thresholds" asp-action="Index">Пороги температур</a>
                                     <a class="nav-link text-dark" asp-area="" asp-controller="Observers" asp-action="Index">Наблюдатели</a>
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="SmtpSettings">Настройки SMTP</a>
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="Users" asp-action="Index">Пользователи</a>
+                                    @if (User.IsInRole("admin"))
+                                    {
+                                        <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="SmtpSettings">Настройки SMTP</a>
+                                        <a class="nav-link text-dark" asp-area="" asp-controller="Users" asp-action="Index">Пользователи</a>
+                                    }
                                     <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Logout">Выйти</a>
                                 </div>
                             </div>
@@ -84,7 +90,7 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2022 - ОАСУП
+            &copy; 2023 - ОАСУП
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

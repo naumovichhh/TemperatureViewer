@@ -9,7 +9,7 @@ using TemperatureViewer.Repositories;
 
 namespace TemperatureViewer.Controllers
 {
-    [Authorize(Roles = "admin")]
+    [Authorize(Roles = "admin,operator")]
     [Route("Admin/{controller}/{action=Index}/{id?}")]
     public class ObserversController : Controller
     {

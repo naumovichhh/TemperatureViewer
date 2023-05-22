@@ -12,7 +12,7 @@ using System.Xml;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using TemperatureViewer.Controllers;
-using TemperatureViewer.Database;
+using TemperatureViewer.Repositories;
 using TemperatureViewer.Models.DTO;
 using TemperatureViewer.Models.Entities;
 using TemperatureViewer.Models.ViewModels;
@@ -27,6 +27,8 @@ namespace TemperatureViewer.BackgroundNAccessServices
         private IServiceProvider serviceProvider;
         private object lockObj = new object();
         private DateTime now;
+        private int hourCounter = 0;
+        private Dictionary<int, SensorState> stateDictionary = new Dictionary<int, SensorState>();
 
         public SensorsAccessService(IServiceProvider serviceProvider)
         {
@@ -41,19 +43,20 @@ namespace TemperatureViewer.BackgroundNAccessServices
             {
                 using (var scope = serviceProvider.CreateScope())
                 {
-                    using var context = scope.ServiceProvider.GetRequiredService<DefaultContext>();
+                    //using var context = scope.ServiceProvider.GetRequiredService<DefaultContext>();
+                    var sensorsRepository = scope.ServiceProvider.GetRequiredService<ISensorsRepository>();
 
                     Sensor[] sensorsArray;
-                    sensorsArray = context.Sensors.Where(s => !s.WasDisabled).Include(s => s.Threshold).AsNoTracking().ToArray();
+                    sensorsArray = (await sensorsRepository.GetAllAsync(true)).Where(s => !s.WasDisabled).ToArray();// context.Sensors.Where(s => !s.WasDisabled).Include(s => s.Threshold).AsNoTracking().ToArray();
 
                     now = DateTime.Now;
-                    Parallel.ForEach(sensorsArray, s => HandleMeasurement(s, context));
+                    Parallel.ForEach(sensorsArray, s => HandleMeasurement(s, scope));
 
                     if (stoppingToken.IsCancellationRequested)
                         break;
 
                     await Task.Delay(nextMeasurementTime - DateTime.Now, stoppingToken);
-                    nextMeasurementTime = nextMeasurementTime + TimeSpan.FromHours(1);
+                    nextMeasurementTime = nextMeasurementTime + TimeSpan.FromMinutes(5);
                 }
             }
         }
@@ -62,9 +65,10 @@ namespace TemperatureViewer.BackgroundNAccessServices
         {
             using (var scope = serviceProvider.CreateScope())
             {
-                using var context = scope.ServiceProvider.GetRequiredService<DefaultContext>();
+                //using var context = scope.ServiceProvider.GetRequiredService<DefaultContext>();
+                var sensorsRepository = scope.ServiceProvider.GetRequiredService<ISensorsRepository>();
                 Sensor[] sensorsArray;
-                sensorsArray = context.Sensors.AsNoTracking().Where(s => !s.WasDisabled).OrderBy(s => s.Name).Include(s => s.Threshold).ToArray();
+                sensorsArray = sensorsRepository.GetAllAsync(true).Result.Where(s => !s.WasDisabled).OrderBy(s => s.Name).ToArray(); //context.Sensors.AsNoTracking().Where(s => !s.WasDisabled).OrderBy(s => s.Name).Include(s => s.Threshold).ToArray();
                 ValueDTO[] result = new ValueDTO[sensorsArray.Length];
 
                 Parallel.For(0, sensorsArray.Length, (i) =>
@@ -91,9 +95,10 @@ namespace TemperatureViewer.BackgroundNAccessServices
         {
             using (var scope = serviceProvider.CreateScope())
             {
-                using var context = scope.ServiceProvider.GetRequiredService<DefaultContext>();
+                //using var context = scope.ServiceProvider.GetRequiredService<DefaultContext>();
+                var sensorsRepository = scope.ServiceProvider.GetRequiredService<ISensorsRepository>();
                 Sensor[] sensorsArray;
-                sensorsArray = context.Sensors.AsNoTracking().Where(s => !s.WasDisabled && s.LocationId == locationId).OrderBy(s => s.Name).Include(s => s.Threshold).ToArray();
+                sensorsArray = sensorsRepository.GetAllAsync(true).Result.Where(s => !s.WasDisabled && s.LocationId == locationId).OrderBy(s => s.Name).ToArray(); //context.Sensors.AsNoTracking().Where(s => !s.WasDisabled && s.LocationId == locationId).OrderBy(s => s.Name).Include(s => s.Threshold).ToArray();
                 ValueDTO[] result = new ValueDTO[sensorsArray.Length];
 
                 Parallel.For(0, sensorsArray.Length, (i) =>
@@ -119,9 +124,10 @@ namespace TemperatureViewer.BackgroundNAccessServices
         {
             using (var scope = serviceProvider.CreateScope())
             {
-                using var context = scope.ServiceProvider.GetRequiredService<DefaultContext>();
+                //using var context = scope.ServiceProvider.GetRequiredService<DefaultContext>();
+                var sensorsRepository = scope.ServiceProvider.GetRequiredService<ISensorsRepository>();
                 Sensor[] sensorsArray;
-                sensorsArray = context.Sensors.AsNoTracking().Where(s => !s.WasDisabled && sensorIds.Contains(s.Id)).OrderBy(s => s.Name).Include(s => s.Threshold).ToArray();
+                sensorsArray = sensorsRepository.GetAllAsync(true).Result.Where(s => !s.WasDisabled && sensorIds.Contains(s.Id)).OrderBy(s => s.Name).ToArray();//context.Sensors.AsNoTracking().Where(s => !s.WasDisabled && sensorIds.Contains(s.Id)).OrderBy(s => s.Name).Include(s => s.Threshold).ToArray();
                 ValueDTO[] result = new ValueDTO[sensorsArray.Length];
 
                 Parallel.For(0, sensorsArray.Length, (i) =>
@@ -209,7 +215,7 @@ namespace TemperatureViewer.BackgroundNAccessServices
             }
         }
 
-        private void HandleMeasurement(Sensor sensor, DefaultContext context)
+        private void HandleMeasurement(Sensor sensor, IServiceScope scope)
         {
             decimal? measured;
             if (string.IsNullOrEmpty(sensor.XPath))
@@ -223,13 +229,19 @@ namespace TemperatureViewer.BackgroundNAccessServices
 
             if (measured != null)
             {
-                WriteValue(measured.Value, sensor, context);
-                SendNotifications(measured.Value, sensor, context);
+                if (hourCounter == 0)
+                {
+                    WriteValue(measured.Value, sensor, scope);
+                }
+                SendNotifications(measured.Value, sensor, scope);
             }
+
+            hourCounter = (hourCounter + 1) % 12;
         }
 
-        private void WriteValue(decimal measured, Sensor sensor, DefaultContext context)
+        private void WriteValue(decimal measured, Sensor sensor, IServiceScope scope)
         {
+            var valuesRepository = scope.ServiceProvider.GetRequiredService<IValuesRepository>();
             Value value = new Value()
             {
                 MeasurementTime = now,
@@ -239,17 +251,17 @@ namespace TemperatureViewer.BackgroundNAccessServices
 
             lock (lockObj)
             {
-                context.Values.Add(value);
-                context.SaveChanges();
+                valuesRepository.CreateAsync(value).Wait();
             }
         }
 
-        private void SendNotifications(decimal measured, Sensor sensor, DefaultContext context)
+        private void SendNotifications(decimal measured, Sensor sensor, IServiceScope scope)
         {
             IList<Observer> observers;
             lock (lockObj)
             {
-                observers = context.Observers.AsNoTracking().Where(o => o.Sensors.Any(s => s.Id == sensor.Id)).ToList();
+                var observersRepository = scope.ServiceProvider.GetRequiredService<IObserversRepository>();
+                observers = observersRepository.GetAllAsync().Result.Where(o => o.Sensors.Any(s => s.Id == sensor.Id)).ToList(); //context.Observers.AsNoTracking().Where(o => o.Sensors.Any(s => s.Id == sensor.Id)).ToList();
             }
 
             if (observers == null || observers.Count() == 0)
@@ -258,39 +270,99 @@ namespace TemperatureViewer.BackgroundNAccessServices
             if (sensor.Threshold == null)
                 sensor.Threshold = InformationService.GetDefaultThreshold();
 
-            if (measured >= sensor.Threshold.P4 || measured <= sensor.Threshold.P1)
+            if (StateWasNormal(sensor.Id) && measured >= sensor.Threshold.P4 || measured <= sensor.Threshold.P1)
             {
-                SmtpSettings smtpSettings = AdminController.GetSmtpSettings();
-                SmtpClient client = new SmtpClient(smtpSettings.Server);
-                client.EnableSsl = smtpSettings.SSL;
-                client.Port = smtpSettings.Port;
-                client.Credentials = new NetworkCredential(smtpSettings.Login, smtpSettings.Password);
-                string body;
                 if (measured >= sensor.Threshold.P4)
-                {
-                    body = $"Температура вышла за верхний предел: {sensor.Name} = {measured}°";
-                }
+                    stateDictionary[sensor.Id] = SensorState.AboveMax;
                 else
-                {
-                    body = $"Температура вышла за нижний предел: {sensor.Name} = {measured}°";
-                }
+                    stateDictionary[sensor.Id] = SensorState.BelowMin;
 
-                try
+                SendNotNormal(sensor, measured, observers);
+            }
+            else if (!StateWasNormal(sensor.Id) && measured < sensor.Threshold.P4 && measured > sensor.Threshold.P1)
+            {
+                stateDictionary[sensor.Id] = SensorState.Normal;
+
+                SendReturnedToNormal(sensor, observers);
+            }
+        }
+
+        private bool StateWasNormal(int id)
+        {
+            if (stateDictionary.ContainsKey(id) && stateDictionary[id] == SensorState.Normal)
+                return true;
+            if (!stateDictionary.ContainsKey(id))
+                return true;
+
+            return false;
+        }
+
+        private void SendNotNormal(Sensor sensor, decimal measured, IList<Observer> observers)
+        {
+            SmtpSettings smtpSettings = AdminController.GetSmtpSettings();
+            SmtpClient client = new SmtpClient(smtpSettings.Server);
+            client.EnableSsl = smtpSettings.SSL;
+            client.Port = smtpSettings.Port;
+            client.Credentials = new NetworkCredential(smtpSettings.Login, smtpSettings.Password);
+            string body;
+            if (measured >= sensor.Threshold.P4)
+            {
+                body = $"Температура вышла за верхний критический предел: {sensor.Name} = {measured}°";
+            }
+            else
+            {
+                body = $"Температура вышла за нижний критический предел: {sensor.Name} = {measured}°";
+            }
+
+            try
+            {
+                foreach (var observer in observers)
                 {
-                    foreach (var observer in observers)
-                    {
-                        MailAddress from = new MailAddress(smtpSettings.Sender);
-                        MailAddress to = new MailAddress(observer.Email);
-                        MailMessage message = new MailMessage(from, to);
-                        message.Subject = "Температуры Радиоволна";
-                        message.Body = body;
-                        client.Send(message);
-                    }
-                }
-                catch
-                {
+                    MailAddress from = new MailAddress(smtpSettings.Sender);
+                    MailAddress to = new MailAddress(observer.Email);
+                    MailMessage message = new MailMessage(from, to);
+                    message.Subject = "Температуры Радиоволна";
+                    message.Body = body;
+                    client.Send(message);
                 }
             }
+            catch
+            {
+            }
+        }
+
+        private void SendReturnedToNormal(Sensor sensor, IList<Observer> observers)
+        {
+            SmtpSettings smtpSettings = AdminController.GetSmtpSettings();
+            SmtpClient client = new SmtpClient(smtpSettings.Server);
+            client.EnableSsl = smtpSettings.SSL;
+            client.Port = smtpSettings.Port;
+            client.Credentials = new NetworkCredential(smtpSettings.Login, smtpSettings.Password);
+            string body;
+            body = $"Температура вернулась в нормальный диапазон: {sensor.Name}";
+
+            try
+            {
+                foreach (var observer in observers)
+                {
+                    MailAddress from = new MailAddress(smtpSettings.Sender);
+                    MailAddress to = new MailAddress(observer.Email);
+                    MailMessage message = new MailMessage(from, to);
+                    message.Subject = "Температуры Радиоволна";
+                    message.Body = body;
+                    client.Send(message);
+                }
+            }
+            catch
+            {
+            }
+        }
+
+        public enum SensorState
+        {
+            Normal,
+            AboveMax,
+            BelowMin
         }
     }
 }
