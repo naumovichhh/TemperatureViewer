@@ -28,9 +28,15 @@ namespace TemperatureViewer.Services
             _sensorsRepository = sensorsRepository;
         }
 
-        public ValueDTO[] GetValues()
+        public ValueDTO[] GetValues(string userName = "")
         {
-            ValueDTO[] values = _sensorsAccess.GetValues().Where(v => v != null).ToArray();
+            IList<Sensor> visibleSensors;
+            if (userName == string.Empty)
+                visibleSensors = _sensorsRepository.GetAllAsync().Result;
+            else
+                visibleSensors = _sensorsRepository.GetAllAsync(true).Result.Where(s => s.Users.Count(u => u.Name == userName) > 0).ToList();
+
+            ValueDTO[] values = _sensorsAccess.GetValues().Where(v => v != null && visibleSensors.Count(vs => vs.Id == v.Sensor.Id) > 0).ToArray();
             foreach (var value in values)
             {
                 var thresholds = value.Sensor.Threshold ?? GetDefaultThreshold();
@@ -40,13 +46,13 @@ namespace TemperatureViewer.Services
             return values;
         }
 
-        public IList<IEnumerable<Value>> GetHistoryEnumerableList(int? id, DateTime fromDate, DateTime toDate, out IEnumerable<DateTime> measurementTimes)
+        public IList<IEnumerable<Value>> GetHistoryEnumerableList(int? id, DateTime fromDate, DateTime toDate, out IEnumerable<DateTime> measurementTimes, string userName = "")
         {
 
             IDictionary<int, IEnumerable<Value>> dictionary;
             if (id != null)
             {
-                IEnumerable<Value> enumerable = GetData(id.Value, fromDate, toDate);
+                IEnumerable<Value> enumerable = GetData(id.Value, fromDate, toDate, userName);
                 measurementTimes = enumerable.Select(m => m.MeasurementTime);
                 if (enumerable.Count() == 0)
                     dictionary = new Dictionary<int, IEnumerable<Value>>();
@@ -55,7 +61,7 @@ namespace TemperatureViewer.Services
             }
             else
             {
-                dictionary = GetData(fromDate, toDate, out measurementTimes);
+                dictionary = GetData(fromDate, toDate, out measurementTimes, userName);
             }
 
             if (!dictionary.All(e => e.Value.Count() == dictionary.First().Value.Count()))
@@ -162,9 +168,9 @@ namespace TemperatureViewer.Services
             return ExcelService.Create(output, output.Values.First().Select(m => m.MeasurementTime));
         }
 
-        public IList<IEnumerable<Value>> GetLocationHistoryEnumerableListMax50(int locationId, DateTime from, DateTime to, out IEnumerable<DateTime> checkpoints)
+        public IList<IEnumerable<Value>> GetLocationHistoryEnumerableListMax50(int locationId, DateTime from, DateTime to, out IEnumerable<DateTime> checkpoints, string userName = "")
         {
-            var historyDictionary = GetData(from, to, out checkpoints, locationId);
+            var historyDictionary = GetData(from, to, out checkpoints, locationId, userName);
             return GetValuesEnumerableList(historyDictionary, checkpoints, out checkpoints);
         }
 
@@ -192,10 +198,16 @@ namespace TemperatureViewer.Services
             return locationDTOs;
         }
 
-        public LocationDTO GetValuesOnLocation(int id)
+        public LocationDTO GetValuesOnLocation(int id, string userName = "")
         {
+            IList<Sensor> visibleSensors;
+            if (userName == string.Empty)
+                visibleSensors = _sensorsRepository.GetAllAsync().Result;
+            else
+                visibleSensors = _sensorsRepository.GetAllAsync(true).Result.Where(s => s.Users.Count(u => u.Name == userName) > 0).ToList();
+
             var entity = _locationsRepository.GetByIdAsync(id).Result;
-            var valueDTOsNoThresholds = _sensorsAccess.GetValues(id).Where(e => e != null).OrderBy(e => e.Sensor.Name);
+            var valueDTOsNoThresholds = _sensorsAccess.GetValues(id).Where(e => e != null && visibleSensors.Count(vs => vs.Id == e.Sensor.Id) > 0).OrderBy(e => e.Sensor.Name);
             var valueDTOs = valueDTOsNoThresholds?.Select(e =>
             {
                 Threshold threshold = e.Sensor.Threshold ?? GetDefaultThreshold();
@@ -209,10 +221,17 @@ namespace TemperatureViewer.Services
             return new LocationDTO() { Id = id, Image = entity.Image, Name = entity.Name, Values = valueDTOs };
         }
 
-        private IDictionary<int, IEnumerable<Value>> GetData(DateTime fromDate, DateTime toDate, out IEnumerable<DateTime> measurementTimes, int locationId)
+        private IDictionary<int, IEnumerable<Value>> GetData(DateTime fromDate, DateTime toDate, out IEnumerable<DateTime> measurementTimes, int locationId, string userName = "")
         {
+            IList<Sensor> visibleSensors;
+            if (userName == string.Empty)
+                visibleSensors = _sensorsRepository.GetAllAsync().Result;
+            else
+                visibleSensors = _sensorsRepository.GetAllAsync(true).Result.Where(s => s.Users.Count(u => u.Name == userName) > 0).ToList();
+
             Dictionary<int, List<Value>> dictionary = new Dictionary<int, List<Value>>();
-            var query = _valuesRepository.GetFilteredAsync(v => v.Sensor.LocationId == locationId && v.MeasurementTime < toDate && v.MeasurementTime > fromDate, true).Result;//_context.Values.Include(m => m.Sensor).AsNoTracking().Where(m => m.Sensor.LocationId == locationId && m.MeasurementTime < toDate && m.MeasurementTime > fromDate);
+            var query = _valuesRepository.GetFilteredAsync(v => v.Sensor.LocationId == locationId && v.MeasurementTime < toDate && v.MeasurementTime > fromDate, true).Result
+                .Where(v => visibleSensors.Count(vs => vs.Id == v.Sensor.Id) > 0);//_context.Values.Include(m => m.Sensor).AsNoTracking().Where(m => m.Sensor.LocationId == locationId && m.MeasurementTime < toDate && m.MeasurementTime > fromDate);
             var groupedByTime = query.GroupBy(v => v.MeasurementTime).OrderBy(g => g.Key);
             var sensorIds = query.Select(m => m.SensorId).Distinct();
             foreach (var sensorId in sensorIds)
@@ -304,16 +323,29 @@ namespace TemperatureViewer.Services
             return list;
         }
 
-        private IEnumerable<Value> GetData(int id, DateTime fromDate, DateTime toDate)
+        private IEnumerable<Value> GetData(int id, DateTime fromDate, DateTime toDate, string userName = "")
         {
-            return _valuesRepository.GetFilteredAsync(m => m.SensorId == id && m.MeasurementTime < toDate && m.MeasurementTime > fromDate).Result.OrderBy(v => v.MeasurementTime);
+            IList<Sensor> visibleSensors;
+            if (userName == string.Empty)
+                visibleSensors = _sensorsRepository.GetAllAsync().Result;
+            else
+                visibleSensors = _sensorsRepository.GetAllAsync(true).Result.Where(s => s.Users.Count(u => u.Name == userName) > 0).ToList();
+
+            return _valuesRepository.GetFilteredAsync(m => m.SensorId == id && visibleSensors.Count(vs => vs.Id == m.SensorId) > 0 && m.MeasurementTime < toDate && m.MeasurementTime > fromDate, true).Result.OrderBy(v => v.MeasurementTime);
             //return _context.Values.AsNoTracking().Where(m => m.SensorId == id && m.MeasurementTime < toDate && m.MeasurementTime > fromDate).OrderBy(m => m.MeasurementTime).AsEnumerable();
         }
 
-        private IDictionary<int, IEnumerable<Value>> GetData(DateTime fromDate, DateTime toDate, out IEnumerable<DateTime> measurementTimes)
+        private IDictionary<int, IEnumerable<Value>> GetData(DateTime fromDate, DateTime toDate, out IEnumerable<DateTime> measurementTimes, string userName = "")
         {
+            IList<Sensor> visibleSensors;
+            if (userName == string.Empty)
+                visibleSensors = _sensorsRepository.GetAllAsync().Result;
+            else
+                visibleSensors = _sensorsRepository.GetAllAsync(true).Result.Where(s => s.Users.Count(u => u.Name == userName) > 0).ToList();
+
             Dictionary<int, List<Value>> dictionary = new Dictionary<int, List<Value>>();
-            var values = _valuesRepository.GetFilteredAsync(m => m.MeasurementTime < toDate && m.MeasurementTime > fromDate).Result;
+            var values = _valuesRepository.GetFilteredAsync(m => m.MeasurementTime < toDate && m.MeasurementTime > fromDate).Result
+                .Where(v => visibleSensors.Count(vs => vs.Id == v.SensorId) > 0);
             var groupedByTime = values.GroupBy(m => m.MeasurementTime).OrderBy(g => g.Key);
             var sensorIds = values.Select(m => m.SensorId).Distinct();
             foreach (var sensorId in sensorIds)

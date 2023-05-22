@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
-using Microsoft.EntityFrameworkCore;
 using TemperatureViewer.Models.DTO;
 using TemperatureViewer.Models.Entities;
 using TemperatureViewer.Repositories;
@@ -55,7 +53,7 @@ namespace TemperatureViewer.Services
 
         public bool CreateUser(User user, ref string message)
         {
-            if (_repository.GetAllAsync().Result.Count(u => user.Name == u.Name) > 0)
+            if (user.Name == "primary" || _repository.GetAllAsync().Result.Count(u => user.Name == u.Name) > 0)
             {
                 message = "Имя пользователя занято.";
                 return false;

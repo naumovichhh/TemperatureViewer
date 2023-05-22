@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using TemperatureViewer.BackgroundNAccessServices;
 using TemperatureViewer.Database;
@@ -41,7 +42,15 @@ namespace TemperatureViewer.Controllers
         public IActionResult Index()
         {
             IEnumerable<ValueDTO> values;
-            values = _informationService.GetValues();
+            if (User.IsInRole("user"))
+            {
+                string userName = User.Claims.FirstOrDefault(c => c.Type == ClaimsIdentity.DefaultNameClaimType)?.Value;
+                values = _informationService.GetValues(userName);
+            }
+            else
+            {
+                values = _informationService.GetValues();
+            }
 
             var viewModel = values?.Select(e =>
             {
@@ -75,7 +84,16 @@ namespace TemperatureViewer.Controllers
             ViewBag.from = from;
             ViewBag.to = to;
             IEnumerable<DateTime> measurementTimes;
-            IList<IEnumerable<Value>> list = _informationService.GetHistoryEnumerableList(id, fromDate, toDate, out measurementTimes);
+            IList<IEnumerable<Value>> list;
+            if (User.IsInRole("user"))
+            {
+                string userName = User.Claims.FirstOrDefault(c => c.Type == ClaimsIdentity.DefaultNameClaimType)?.Value;
+                list = _informationService.GetHistoryEnumerableList(id, fromDate, toDate, out measurementTimes, userName);
+            }
+            else
+            {
+                list = _informationService.GetHistoryEnumerableList(id, fromDate, toDate, out measurementTimes);
+            }
             if (list == null)
                 return View();
 
@@ -175,14 +193,28 @@ namespace TemperatureViewer.Controllers
             ViewBag.from = from;
             ViewBag.to = to;
             IEnumerable<DateTime> checkpoints;
-
-            var locationDTO = _informationService.GetValuesOnLocation(id.Value);
-            var historyEnumerableList = _informationService.GetLocationHistoryEnumerableListMax50(
-                id.Value,
-                fromDate,
-                toDate,
-                out checkpoints);
-
+            LocationDTO locationDTO;
+            IList<IEnumerable<Value>> historyEnumerableList;
+            if (User.IsInRole("user"))
+            {
+                string userName = User.Claims.FirstOrDefault(c => c.Type == ClaimsIdentity.DefaultNameClaimType)?.Value;
+                locationDTO = _informationService.GetValuesOnLocation(id.Value, userName);
+                historyEnumerableList = _informationService.GetLocationHistoryEnumerableListMax50(
+                    id.Value,
+                    fromDate,
+                    toDate,
+                    out checkpoints,
+                    userName);
+            }
+            else
+            {
+                locationDTO = _informationService.GetValuesOnLocation(id.Value);
+                historyEnumerableList = _informationService.GetLocationHistoryEnumerableListMax50(
+                    id.Value,
+                    fromDate,
+                    toDate,
+                    out checkpoints);
+            }
 
             IList<SensorHistoryViewModel> historyViewModel = historyEnumerableList
                 .Select(GetViewModelsFromEnumerable)
