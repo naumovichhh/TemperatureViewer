@@ -16,9 +16,9 @@ namespace TemperatureViewer.Controllers
     {
         private readonly AccountService _accountService;
 
-        public AccountController(AccountService accountHelper)
+        public AccountController(AccountService accountService)
         {
-            _accountService = accountHelper;
+            _accountService = accountService;
         }
 
         public IActionResult AccessDenied()

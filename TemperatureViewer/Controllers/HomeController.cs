@@ -21,14 +21,12 @@ namespace TemperatureViewer.Controllers
     [Authorize]
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
         private readonly ISensorsAccessService _sensorsAccessService;
         private readonly ISensorsRepository _sensorsRepository;
         private readonly ILocationsRepository _locationsRepository;
         private readonly InformationService _informationService;
 
         public HomeController(InformationService informationService,
-            DefaultContext context,
             ISensorsAccessService temperatureService,
             ISensorsRepository sensorsRepository,
             ILocationsRepository locationsRepository)

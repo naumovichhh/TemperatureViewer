@@ -79,11 +79,17 @@ namespace TemperatureViewer.Services
             }
         }
 
-        public async Task<bool> UpdateUserAsync(User user)
+        public bool UpdateUserAsync(User user, ref string message)
         {
+            if (user.Name == "primary" || _repository.GetAllAsync().Result.Count(u => user.Name == u.Name) > 0)
+            {
+                message = "Имя пользователя занято.";
+                return false;
+            }
+
             try
             {
-                var fromContext = await _repository.GetByIdAsync(user.Id, true);
+                var fromContext = _repository.GetByIdAsync(user.Id, true).Result;
                 fromContext.Name = user.Name;
                 if (!string.IsNullOrEmpty(user.Password))
                 {
@@ -98,7 +104,7 @@ namespace TemperatureViewer.Services
                 }
                 fromContext.Role = user.Role;
                 fromContext.Sensors = user.Sensors;
-                await _repository.UpdateAsync(fromContext);
+                _repository.UpdateAsync(fromContext).Wait();
                 return true;
             }
             catch (Exception)
