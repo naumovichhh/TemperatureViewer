@@ -13,7 +13,6 @@ namespace TemperatureViewer.Controllers
     [Route("Admin/{controller}/{action=Index}/{id?}")]
     public class ObserversController : Controller
     {
-        //private readonly DefaultContext _context;
         private readonly IObserversRepository _observersRepository;
         private readonly ISensorsRepository _sensorsRepository;
 
@@ -25,12 +24,12 @@ namespace TemperatureViewer.Controllers
 
         public async Task<IActionResult> Index()
         {
-            return View((await _observersRepository.GetAllAsync()).OrderBy(o => o.Email));//(await _context.Observers.AsNoTracking().OrderBy(o => o.Email).ToListAsync());
+            return View((await _observersRepository.GetAllAsync()).OrderBy(o => o.Email));
         }
 
         public async Task<IActionResult> Create()
         {
-            var sensors = (await _sensorsRepository.GetAllAsync()).OrderBy(s => s.Name);//_context.Sensors.AsNoTracking().OrderBy(s => s.Name);
+            var sensors = (await _sensorsRepository.GetAllAsync()).OrderBy(s => s.Name);
             ViewBag.Sensors = sensors;
             return View();
         }
@@ -41,22 +40,20 @@ namespace TemperatureViewer.Controllers
         {
             if (!ModelState.IsValid)
             {
-                ViewBag.Sensors = (await _sensorsRepository.GetAllAsync()).OrderBy(s => s.Name);//_context.Sensors.AsNoTracking().OrderBy(s => s.Name);
+                ViewBag.Sensors = (await _sensorsRepository.GetAllAsync()).OrderBy(s => s.Name);
                 return View(viewModel);
             }
 
             if (viewModel.Sensors == null || viewModel.Sensors.Count == 0)
             {
                 ModelState.AddModelError("", "Необходимо выбрать датчики для наблюдения.");
-                ViewBag.Sensors = (await _sensorsRepository.GetAllAsync()).OrderBy(s => s.Name); //_context.Sensors.AsNoTracking().OrderBy(s => s.Name);
+                ViewBag.Sensors = (await _sensorsRepository.GetAllAsync()).OrderBy(s => s.Name);
                 return View(viewModel);
             }
 
             var entity = new Observer() { Email = viewModel.Email,
-                Sensors = viewModel.Sensors?.Select(kv => _sensorsRepository.GetByIdAsync(kv.Value).Result).ToList() };//_context.Sensors.FirstOrDefault(s => s.Id == kv.Value)).ToList() };
+                Sensors = viewModel.Sensors?.Select(kv => _sensorsRepository.GetByIdAsync(kv.Value).Result).ToList() };
             await _observersRepository.CreateAsync(entity);
-            //_context.Add(entity);
-            //await _context.SaveChangesAsync();
             
             return RedirectToAction(nameof(Index));
         }
@@ -68,7 +65,7 @@ namespace TemperatureViewer.Controllers
                 return NotFound();
             }
 
-            Observer observer = await _observersRepository.GetByIdAsync(id.Value, true);//_context.Observers.FirstOrDefaultAsync(o => o.Id == id);
+            Observer observer = await _observersRepository.GetByIdAsync(id.Value, true);
             if (observer == null)
             {
                 return NotFound();
@@ -82,7 +79,7 @@ namespace TemperatureViewer.Controllers
             if (id == null)
                 return NotFound();
 
-            Observer observer = await _observersRepository.GetByIdAsync(id.Value, true);//_context.Observers.FindAsync(id);
+            Observer observer = await _observersRepository.GetByIdAsync(id.Value, true);
             if (observer == null)
                 return NotFound();
 
@@ -108,7 +105,7 @@ namespace TemperatureViewer.Controllers
             if (viewModel.Sensors == null || viewModel.Sensors.Count == 0)
             {
                 ModelState.AddModelError("", "Необходимо выбрать датчики для наблюдения.");
-                Observer observer = await _observersRepository.GetByIdAsync(id, true);//_context.Observers.FindAsync(id);
+                Observer observer = await _observersRepository.GetByIdAsync(id, true);
                 if (observer == null)
                     return NotFound();
                 var sensors = await _sensorsRepository.GetAllAsync();
@@ -121,7 +118,7 @@ namespace TemperatureViewer.Controllers
             {
                 try
                 {
-                    var entity = await _observersRepository.GetByIdAsync(id, true);//_context.Observers.FindAsync(id);
+                    var entity = await _observersRepository.GetByIdAsync(id, true);
                     entity.Sensors.Clear();
                     await _observersRepository.UpdateAsync(entity);
                     entity.Sensors = viewModel.Sensors?.Select(kv => _sensorsRepository.GetByIdAsync(kv.Value).Result).ToList();
@@ -163,16 +160,13 @@ namespace TemperatureViewer.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            //var observer = await _context.Observers.FindAsync(id);
-            //_context.Observers.Remove(observer);
-            //await _context.SaveChangesAsync();
             await _observersRepository.DeleteAsync(id);
             return RedirectToAction(nameof(Index));
         }
 
         private bool ObserverExists(int id)
         {
-            return _observersRepository.GetByIdAsync(id).Result != null;//_context.Observers.Any(e => e.Id == id);
+            return _observersRepository.GetByIdAsync(id).Result != null;
         }
     }
 }

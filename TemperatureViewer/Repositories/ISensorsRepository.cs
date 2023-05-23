@@ -9,7 +9,7 @@ namespace TemperatureViewer.Repositories
         Task<Sensor> GetByIdAsync(int id, bool loadRelated = false);
         Task<IList<Sensor>> GetAllAsync(bool loadRelated = false);
         Task CreateAsync(Sensor sensor);
-        Task UpdateAsync(Sensor user);
+        Task UpdateAsync(Sensor sensor);
         Task DeleteAsync(int id);
 
     }

@@ -34,13 +34,7 @@ namespace TemperatureViewer.Services
 
         public async Task<UserDTO> ValidateUserAsync(string name, string password)
         {
-            string hashed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
-                    password,
-                    Salt,
-                    KeyDerivationPrf.HMACSHA256,
-                    10000,
-                    32
-                    ));
+            string hashed = GetHashedPassword(password);
 
             if (name == "primary" && hashed == "lwCuMTZNTdlNkVaBS4Y0cCH6H018e/vzk3VMlEQRd6U=")
                 return new UserDTO() { Name = "primary", Role = "a" };
@@ -61,13 +55,7 @@ namespace TemperatureViewer.Services
 
             try
             {
-                string hashed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
-                        user.Password,
-                        Salt,
-                        KeyDerivationPrf.HMACSHA256,
-                        10000,
-                        32
-                        ));
+                string hashed = GetHashedPassword(user.Password);
 
                 User userHashed = new User() { Name = user.Name, Password = hashed, Role = user.Role, Sensors = user.Sensors };
                 _repository.CreateAsync(userHashed).Wait();
@@ -79,7 +67,7 @@ namespace TemperatureViewer.Services
             }
         }
 
-        public bool UpdateUserAsync(User user, ref string message)
+        public bool UpdateUser(User user, ref string message)
         {
             if (user.Name == "primary" || _repository.GetAllAsync().Result.Count(u => user.Name == u.Name) > 0)
             {
@@ -93,13 +81,7 @@ namespace TemperatureViewer.Services
                 fromContext.Name = user.Name;
                 if (!string.IsNullOrEmpty(user.Password))
                 {
-                    string hashed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
-                        user.Password,
-                        Salt,
-                        KeyDerivationPrf.HMACSHA256,
-                        10000,
-                        32
-                        ));
+                    string hashed = GetHashedPassword(user.Password);
                     fromContext.Password = hashed;
                 }
                 fromContext.Role = user.Role;
@@ -111,6 +93,17 @@ namespace TemperatureViewer.Services
             {
                 return false;
             }
+        }
+
+        private string GetHashedPassword(string password)
+        {
+            return Convert.ToBase64String(KeyDerivation.Pbkdf2(
+                        password,
+                        Salt,
+                        KeyDerivationPrf.HMACSHA256,
+                        10000,
+                        32
+                        ));
         }
     }
 }

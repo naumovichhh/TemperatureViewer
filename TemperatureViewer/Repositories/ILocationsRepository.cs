@@ -8,8 +8,8 @@ namespace TemperatureViewer.Repositories
     {
         Task<Location> GetByIdAsync(int id, bool loadRelated = false);
         Task<IList<Location>> GetAllAsync(bool loadRelated = false);
-        Task CreateAsync(Location sensor);
-        Task UpdateAsync(Location user);
+        Task CreateAsync(Location location);
+        Task UpdateAsync(Location location);
         Task DeleteAsync(int id);
     }
 }

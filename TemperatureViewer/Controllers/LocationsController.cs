@@ -17,7 +17,6 @@ namespace TemperatureViewer.Controllers
     [Authorize(Roles = "admin")]
     public class LocationsController : Controller
     {
-        //private readonly DefaultContext _context;
         private readonly IWebHostEnvironment _environment;
         private readonly ILocationsRepository _locationsRepository;
 
@@ -115,8 +114,6 @@ namespace TemperatureViewer.Controllers
                 try
                 {
                     await _locationsRepository.UpdateAsync(entity);
-                    //_context.Update(entity);
-                    //await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -167,8 +164,6 @@ namespace TemperatureViewer.Controllers
 
             string fileName = location.Image;
             await _locationsRepository.DeleteAsync(location.Id);
-            //_context.Locations.Remove(location);
-            //await _context.SaveChangesAsync();
             System.IO.File.Delete(fileName);
             return RedirectToAction(nameof(Index));
         }

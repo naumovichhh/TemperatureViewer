@@ -165,14 +165,22 @@ namespace TemperatureViewer.Controllers
                     return NotFound();
                 }
                 User user = GetUserFromViewModel(viewModel);
-                bool successfull = await _accountService.UpdateUserAsync(user);
+                string message = null;
+                bool successfull = _accountService.UpdateUser(user, ref message);
                 if (successfull)
                 {
                     return RedirectToAction(nameof(Index));
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, "Ошибка изменения пользователя");
+                    if (message != null)
+                    {
+                        ModelState.AddModelError(string.Empty, message);
+                    }
+                    else
+                    {
+                        ModelState.AddModelError(string.Empty, "Ошибка создания пользователя");
+                    }
                 }
             }
             SetViewbag();

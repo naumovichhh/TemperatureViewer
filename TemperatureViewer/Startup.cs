@@ -37,8 +37,8 @@ namespace TemperatureViewer
             services.AddScoped<IValuesRepository, ValuesRepository>();
             services.AddScoped<IThresholdsRepository, ThresholdsRepository>();
             services.AddScoped<InformationService>();
-
             services.AddScoped<AccountService>();
+
             services.AddDatabaseDeveloperPageExceptionFilter();
             services.AddSignalR();
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options =>
