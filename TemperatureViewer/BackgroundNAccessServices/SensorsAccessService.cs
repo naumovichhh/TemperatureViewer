@@ -299,7 +299,7 @@ namespace TemperatureViewer.BackgroundNAccessServices
 
         private void SendNotNormal(Sensor sensor, decimal measured, IList<Observer> observers)
         {
-            SmtpSettings smtpSettings = AdminController.GetSmtpSettings();
+            SmtpSettings smtpSettings = SmtpService.GetSmtpSettings();
             SmtpClient client = new SmtpClient(smtpSettings.Server);
             client.EnableSsl = smtpSettings.SSL;
             client.Port = smtpSettings.Port;
@@ -333,7 +333,7 @@ namespace TemperatureViewer.BackgroundNAccessServices
 
         private void SendReturnedToNormal(Sensor sensor, IList<Observer> observers)
         {
-            SmtpSettings smtpSettings = AdminController.GetSmtpSettings();
+            SmtpSettings smtpSettings = SmtpService.GetSmtpSettings();
             SmtpClient client = new SmtpClient(smtpSettings.Server);
             client.EnableSsl = smtpSettings.SSL;
             client.Port = smtpSettings.Port;

@@ -15,7 +15,6 @@ namespace TemperatureViewer.Services
         private readonly IValuesRepository _valuesRepository;
         private readonly ILocationsRepository _locationsRepository;
         private readonly ISensorsRepository _sensorsRepository;
-        //private readonly DefaultContext _context;
 
         public InformationService(ISensorsAccessService sensorsAccess, 
             IValuesRepository valuesRepository, 
@@ -46,12 +45,16 @@ namespace TemperatureViewer.Services
             return values;
         }
 
-        public IList<IEnumerable<Value>> GetHistoryEnumerableList(int? id, DateTime fromDate, DateTime toDate, out IEnumerable<DateTime> measurementTimes, string userName = "")
+        public IList<IEnumerable<Value>> GetHistoryEnumerableListMax50(int? id,
+            DateTime fromDate,
+            DateTime toDate,
+            out IEnumerable<DateTime> measurementTimes,
+            string userName = "")
         {
-
             IDictionary<int, IEnumerable<Value>> dictionary;
             if (id != null)
             {
+
                 IEnumerable<Value> enumerable = GetData(id.Value, fromDate, toDate, userName);
                 measurementTimes = enumerable.Select(m => m.MeasurementTime);
                 if (enumerable.Count() == 0)
@@ -62,34 +65,6 @@ namespace TemperatureViewer.Services
             else
             {
                 dictionary = GetData(fromDate, toDate, out measurementTimes, userName);
-            }
-
-            if (!dictionary.All(e => e.Value.Count() == dictionary.First().Value.Count()))
-                throw new ArgumentException("Data must contain enumerables of values of equal length.", nameof(dictionary));
-
-            if (dictionary.Count() == 0)
-                return null;
-
-            List<IEnumerable<Value>> list = GetValuesEnumerableList(dictionary);
-            return list;
-        }
-
-        public IList<IEnumerable<Value>> GetHistoryEnumerableListMax50(int? id, DateTime fromDate, DateTime toDate, out IEnumerable<DateTime> measurementTimes)
-        {
-            IDictionary<int, IEnumerable<Value>> dictionary;
-            if (id != null)
-            {
-
-                IEnumerable<Value> enumerable = GetData(id.Value, fromDate, toDate);
-                measurementTimes = enumerable.Select(m => m.MeasurementTime);
-                if (enumerable.Count() == 0)
-                    dictionary = new Dictionary<int, IEnumerable<Value>>();
-                else
-                    dictionary = new Dictionary<int, IEnumerable<Value>>() { { id.Value, enumerable } };
-            }
-            else
-            {
-                dictionary = GetData(fromDate, toDate, out measurementTimes);
                 
             }
 
@@ -108,30 +83,30 @@ namespace TemperatureViewer.Services
             return list;
         }
 
-        public byte[] DownloadExcel(DateTime from, DateTime to, int? id, int? locationId)
+        public byte[] DownloadExcel(DateTime from, DateTime to, int? id, int? locationId, string userName = "")
         {
             MemoryStream resultStream;
 
             if (locationId != null)
             {
-                resultStream = DownloadLocation(from, to, locationId.Value);
+                resultStream = DownloadLocation(from, to, locationId.Value, userName);
             }
             else if (id == null)
             {
-                resultStream = DownloadAll(from, to);
+                resultStream = DownloadAll(from, to, userName);
             }
             else
             {
-                resultStream = DownloadSensor(from, to, id.Value);
+                resultStream = DownloadSensor(from, to, id.Value, userName);
             }
 
             return resultStream.ToArray();
         }
 
-        private MemoryStream DownloadLocation(DateTime from, DateTime to, int locationId)
+        private MemoryStream DownloadLocation(DateTime from, DateTime to, int locationId, string userName = "")
         {
             IEnumerable<DateTime> measurementTimes;
-            IDictionary<int, IEnumerable<Value>> data = GetData(from, to, out measurementTimes, locationId);
+            IDictionary<int, IEnumerable<Value>> data = GetData(from, to, out measurementTimes, locationId, userName);
             IDictionary<Sensor, IEnumerable<Value>> output = new Dictionary<Sensor, IEnumerable<Value>>();
             foreach (var kvp in data)
             {
@@ -141,10 +116,10 @@ namespace TemperatureViewer.Services
             return ExcelService.Create(output, measurementTimes);
         }
 
-        private MemoryStream DownloadAll(DateTime from, DateTime to)
+        private MemoryStream DownloadAll(DateTime from, DateTime to, string userName = "")
         {
             IEnumerable<DateTime> measurementTimes;
-            IDictionary<int, IEnumerable<Value>> data = GetData(from, to, out measurementTimes);
+            IDictionary<int, IEnumerable<Value>> data = GetData(from, to, out measurementTimes, userName);
             IDictionary<Sensor, IEnumerable<Value>> output = new Dictionary<Sensor, IEnumerable<Value>>();
             foreach (var kvp in data)
             {
@@ -154,10 +129,9 @@ namespace TemperatureViewer.Services
             return ExcelService.Create(output, measurementTimes);
         }
 
-        private MemoryStream DownloadSensor(DateTime from, DateTime to, int id)
+        private MemoryStream DownloadSensor(DateTime from, DateTime to, int id, string userName = "")
         {
-
-            IEnumerable<Value> enumerable = GetData(id, from, to);
+            IEnumerable<Value> enumerable = GetData(id, from, to, userName);
             IDictionary<Sensor, IEnumerable<Value>> output = new Dictionary<Sensor, IEnumerable<Value>>()
                 {
                     {
@@ -174,13 +148,23 @@ namespace TemperatureViewer.Services
             return GetValuesEnumerableList(historyDictionary, checkpoints, out checkpoints);
         }
 
-        public IList<LocationDTO> GetValuesOnLocations()
+        public IList<LocationDTO> GetValuesOnLocations(string userName = "")
         {
+            IList<Sensor> visibleSensors;
+            if (userName == string.Empty)
+                visibleSensors = _sensorsRepository.GetAllAsync().Result;
+            else
+                visibleSensors = _sensorsRepository.GetAllAsync(true).Result.Where(s => s.Users.Count(u => u.Name == userName) > 0).ToList();
+
             var locations = _locationsRepository.GetAllAsync().Result.OrderBy(l => l.Name);
             var locationDTOs = new List<LocationDTO>();
             foreach (var location in locations)
             {
-                var valueDTOsNoThresholds = _sensorsAccess.GetValues(location.Id).Where(e => e != null).OrderBy(e => e.Sensor.Name).ToList();
+                var valueDTOsNoThresholds = _sensorsAccess
+                    .GetValues(location.Id)
+                    .Where(e => e != null && visibleSensors.Count(vs => vs.Id == e.Sensor.Id) > 0)
+                    .OrderBy(e => e.Sensor.Name)
+                    .ToList();
                 var valueDTOs = valueDTOsNoThresholds?.Select(e =>
                 {
                     Threshold threshold = e.Sensor.Threshold ?? GetDefaultThreshold();
@@ -221,6 +205,34 @@ namespace TemperatureViewer.Services
             return new LocationDTO() { Id = id, Image = entity.Image, Name = entity.Name, Values = valueDTOs };
         }
 
+        public IList<IEnumerable<Value>> GetHistoryEnumerableList(int? id, DateTime fromDate, DateTime toDate, out IEnumerable<DateTime> measurementTimes, string userName = "")
+        {
+
+            IDictionary<int, IEnumerable<Value>> dictionary;
+            if (id != null)
+            {
+                IEnumerable<Value> enumerable = GetData(id.Value, fromDate, toDate, userName);
+                measurementTimes = enumerable.Select(m => m.MeasurementTime);
+                if (enumerable.Count() == 0)
+                    dictionary = new Dictionary<int, IEnumerable<Value>>();
+                else
+                    dictionary = new Dictionary<int, IEnumerable<Value>>() { { id.Value, enumerable } };
+            }
+            else
+            {
+                dictionary = GetData(fromDate, toDate, out measurementTimes, userName);
+            }
+
+            if (!dictionary.All(e => e.Value.Count() == dictionary.First().Value.Count()))
+                throw new ArgumentException("Data must contain enumerables of values of equal length.", nameof(dictionary));
+
+            if (dictionary.Count() == 0)
+                return null;
+
+            List<IEnumerable<Value>> list = GetValuesEnumerableList(dictionary);
+            return list;
+        }
+
         private IDictionary<int, IEnumerable<Value>> GetData(DateTime fromDate, DateTime toDate, out IEnumerable<DateTime> measurementTimes, int locationId, string userName = "")
         {
             IList<Sensor> visibleSensors;
@@ -231,7 +243,7 @@ namespace TemperatureViewer.Services
 
             Dictionary<int, List<Value>> dictionary = new Dictionary<int, List<Value>>();
             var query = _valuesRepository.GetFilteredAsync(v => v.Sensor.LocationId == locationId && v.MeasurementTime < toDate && v.MeasurementTime > fromDate, true).Result
-                .Where(v => visibleSensors.Count(vs => vs.Id == v.Sensor.Id) > 0);//_context.Values.Include(m => m.Sensor).AsNoTracking().Where(m => m.Sensor.LocationId == locationId && m.MeasurementTime < toDate && m.MeasurementTime > fromDate);
+                .Where(v => visibleSensors.Count(vs => vs.Id == v.Sensor.Id) > 0);
             var groupedByTime = query.GroupBy(v => v.MeasurementTime).OrderBy(g => g.Key);
             var sensorIds = query.Select(m => m.SensorId).Distinct();
             foreach (var sensorId in sensorIds)
@@ -331,8 +343,7 @@ namespace TemperatureViewer.Services
             else
                 visibleSensors = _sensorsRepository.GetAllAsync(true).Result.Where(s => s.Users.Count(u => u.Name == userName) > 0).ToList();
 
-            return _valuesRepository.GetFilteredAsync(m => m.SensorId == id && visibleSensors.Count(vs => vs.Id == m.SensorId) > 0 && m.MeasurementTime < toDate && m.MeasurementTime > fromDate, true).Result.OrderBy(v => v.MeasurementTime);
-            //return _context.Values.AsNoTracking().Where(m => m.SensorId == id && m.MeasurementTime < toDate && m.MeasurementTime > fromDate).OrderBy(m => m.MeasurementTime).AsEnumerable();
+            return _valuesRepository.GetFilteredAsync(m => m.SensorId == id && m.MeasurementTime < toDate && m.MeasurementTime > fromDate, true).Result.Where(v => visibleSensors.Count(vs => vs.Id == v.SensorId) > 0).OrderBy(v => v.MeasurementTime);
         }
 
         private IDictionary<int, IEnumerable<Value>> GetData(DateTime fromDate, DateTime toDate, out IEnumerable<DateTime> measurementTimes, string userName = "")

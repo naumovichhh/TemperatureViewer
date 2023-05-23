@@ -124,8 +124,18 @@ namespace TemperatureViewer.Controllers
             ViewBag.allSensors = false;
             IEnumerable<DateTime> measurementTimes;
 
-            
-            IList<IEnumerable<Value>> list = _informationService.GetHistoryEnumerableListMax50(id, fromDate, toDate, out measurementTimes);
+
+            IList<IEnumerable<Value>> list;
+            if (User.IsInRole("user"))
+            {
+                string userName = User.Claims.FirstOrDefault(c => c.Type == ClaimsIdentity.DefaultNameClaimType)?.Value;
+                list = _informationService.GetHistoryEnumerableListMax50(id, fromDate, toDate, out measurementTimes, userName);
+            }
+            else
+            {
+                list = _informationService.GetHistoryEnumerableListMax50(id, fromDate, toDate, out measurementTimes);
+            }
+
             if (list == null)
                 return View();
 
@@ -155,7 +165,16 @@ namespace TemperatureViewer.Controllers
 
         public IActionResult Locations()
         {
-            var locationDTOs = _informationService.GetValuesOnLocations();
+            IList<LocationDTO> locationDTOs;
+            if (User.IsInRole("user"))
+            {
+                string userName = User.Claims.FirstOrDefault(c => c.Type == ClaimsIdentity.DefaultNameClaimType)?.Value;
+                locationDTOs = _informationService.GetValuesOnLocations(userName);
+            }
+            else
+            {
+                locationDTOs = _informationService.GetValuesOnLocations();
+            }
             var viewModel = locationDTOs.Select(dto => new LocationViewModel() 
             {
                 Id = dto.Id, 
@@ -215,7 +234,7 @@ namespace TemperatureViewer.Controllers
             }
 
             IList<SensorHistoryViewModel> historyViewModel = historyEnumerableList
-                .Select(GetViewModelsFromEnumerable)
+                ?.Select(GetViewModelsFromEnumerable)
                 .Where(vm => vm != null)
                 .OrderBy(vm => vm.SensorName)
                 .ToList();
@@ -253,8 +272,17 @@ namespace TemperatureViewer.Controllers
                 if (await _sensorsRepository.GetByIdAsync(id.Value) == null)
                     return NotFound();
             }
-            
-            byte[] fileArray = _informationService.DownloadExcel(fromDate, toDate, id, locationId);
+
+            byte[] fileArray;
+            if (User.IsInRole("user"))
+            {
+                string userName = User.Claims.FirstOrDefault(c => c.Type == ClaimsIdentity.DefaultNameClaimType)?.Value;
+                fileArray = _informationService.DownloadExcel(fromDate, toDate, id, locationId, userName);
+            }
+            else
+            {
+                fileArray = _informationService.DownloadExcel(fromDate, toDate, id, locationId);
+            }
             string fileName = fromDate.ToString("g", CultureInfo.GetCultureInfo("de-DE")) + " - " + toDate.ToString("g", CultureInfo.GetCultureInfo("de-DE")) + (id == null ? "" : $" Id{id.Value}") + ".xlsx";
             return File(fileArray, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
         }

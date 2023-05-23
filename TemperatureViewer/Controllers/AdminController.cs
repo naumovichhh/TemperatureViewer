@@ -27,14 +27,7 @@ namespace TemperatureViewer.Controllers
         {
             if (ModelState.IsValid)
             {
-                //if (!VerifySmtpSettings(smtpSettings))
-                //{
-                //    ModelState.AddModelError("", "Неправильная конфигурация SMTP");
-                //    return View(smtpSettings);
-                //}
-
-                var list = new List<string>() { smtpSettings.Server, smtpSettings.Sender, smtpSettings.SSL.ToString(), smtpSettings.Port.ToString(), smtpSettings.Login, smtpSettings.Password };
-                System.IO.File.WriteAllLines("smtp", list.ToArray());
+                SmtpService.SetSmtpSettings(smtpSettings);
                 return RedirectToAction("Index");
             }
             else

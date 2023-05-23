@@ -69,7 +69,7 @@ namespace TemperatureViewer.Services
 
         public bool UpdateUser(User user, ref string message)
         {
-            if (user.Name == "primary" || _repository.GetAllAsync().Result.Count(u => user.Name == u.Name) > 0)
+            if (user.Name == "primary" || _repository.GetAllAsync().Result.Count(u => user.Name == u.Name && user.Id != u.Id) > 0)
             {
                 message = "Имя пользователя занято.";
                 return false;
