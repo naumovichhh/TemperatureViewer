@@ -15,9 +15,9 @@ namespace TemperatureViewer.Components
             _repository = repository;
         }
 
-        public async Task<IViewComponentResult> Invoke()
+        public IViewComponentResult Invoke()
         {
-            var locations = (await _repository.GetAllAsync()).OrderBy(l => l.Name);
+            var locations = _repository.GetAllAsync().Result.OrderBy(l => l.Name);
             return View(locations);
         }
     }

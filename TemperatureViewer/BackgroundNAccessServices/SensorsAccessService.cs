@@ -261,7 +261,8 @@ namespace TemperatureViewer.BackgroundNAccessServices
             lock (lockObj)
             {
                 var observersRepository = scope.ServiceProvider.GetRequiredService<IObserversRepository>();
-                observers = observersRepository.GetAllAsync().Result.Where(o => o.Sensors.Any(s => s.Id == sensor.Id)).ToList(); //context.Observers.AsNoTracking().Where(o => o.Sensors.Any(s => s.Id == sensor.Id)).ToList();
+                var all = observersRepository.GetAllAsync().Result;
+                observers = all.Where(o => o.Sensors != null && o.Sensors.Any(s => s.Id == sensor.Id)).ToList(); //context.Observers.AsNoTracking().Where(o => o.Sensors.Any(s => s.Id == sensor.Id)).ToList();
             }
 
             if (observers == null || observers.Count() == 0)

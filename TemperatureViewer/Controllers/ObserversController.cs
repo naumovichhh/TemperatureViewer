@@ -119,6 +119,7 @@ namespace TemperatureViewer.Controllers
                 try
                 {
                     var entity = await _observersRepository.GetByIdAsync(id, true);
+                    entity.Email = viewModel.Email;
                     entity.Sensors.Clear();
                     await _observersRepository.UpdateAsync(entity);
                     entity.Sensors = viewModel.Sensors?.Select(kv => _sensorsRepository.GetByIdAsync(kv.Value).Result).ToList();
