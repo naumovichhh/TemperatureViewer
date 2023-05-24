@@ -1,22 +1,23 @@
 ﻿using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using TemperatureViewer.Database;
+using TemperatureViewer.Repositories;
 
 namespace TemperatureViewer.Components
 {
     public class LocationsDropdown : ViewComponent
     {
-        private DefaultContext _context;
+        private ILocationsRepository _repository;
 
-        public LocationsDropdown(DefaultContext context)
+        public LocationsDropdown(ILocationsRepository repository)
         {
-            _context = context;
+            _repository = repository;
         }
 
-        public IViewComponentResult Invoke()
+        public async Task<IViewComponentResult> Invoke()
         {
-            var locations = _context.Locations.AsNoTracking().OrderBy(l => l.Name).AsEnumerable();
+            var locations = (await _repository.GetAllAsync()).OrderBy(l => l.Name);
             return View(locations);
         }
     }
