@@ -7,7 +7,7 @@ namespace TemperatureViewer.Models.ViewModels
     public class ObserverViewModel
     {
         public int Id { get; set; }
-        [Required]
+        [Required(ErrorMessage = "Поле обязательно для заполнения.")]
         [EmailAddress(ErrorMessage = "Некорректный адрес электронной почты.")]
         [MaxLength(40, ErrorMessage = "Максимальная длина адреса - 40.")]
         public string Email { get; set; }

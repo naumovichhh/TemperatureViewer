@@ -23,7 +23,7 @@ namespace TemperatureViewer.BackgroundNAccessServices
 
     public class SensorsAccessService : ISingletonProcessingService, ISensorsAccessService
     {
-        private const int fastTimeout = 600, slowTimeout = 3000;
+        private const int fastTimeout = 700, slowTimeout = 3000;
         private IServiceProvider serviceProvider;
         private object lockObj = new object();
         private object lockNotifications = new object();
@@ -53,6 +53,7 @@ namespace TemperatureViewer.BackgroundNAccessServices
                     now = DateTime.Now;
                     Parallel.ForEach(sensorsArray, s => HandleMeasurement(s, scope));
                     SendNotifications();
+                    hourCounter = (hourCounter + 1) % 12;
                     if (stoppingToken.IsCancellationRequested)
                         break;
 
@@ -234,7 +235,6 @@ namespace TemperatureViewer.BackgroundNAccessServices
                 QueueNotifications(measured.Value, sensor, scope);
             }
 
-            hourCounter = (hourCounter + 1) % 12;
         }
 
         private void WriteValue(decimal measured, Sensor sensor, IServiceScope scope)
@@ -263,14 +263,19 @@ namespace TemperatureViewer.BackgroundNAccessServices
             MailAddress from = new MailAddress(smtpSettings.Sender);
             foreach (var pair in notifications)
             {
-                var stringBuilder = new StringBuilder().AppendJoin("\r\n", pair.Value);
-                string resultMessage = stringBuilder.ToString();
-                MailAddress to = new MailAddress(pair.Key);
-                MailMessage message = new MailMessage(from, to);
-                message.IsBodyHtml = false;
-                message.Subject = "Температуры Радиоволна";
-                message.Body = resultMessage;
-                client.Send(message);
+                try
+                {
+                    var stringBuilder = new StringBuilder().AppendJoin("\r\n", pair.Value);
+                    string resultMessage = stringBuilder.ToString();
+                    MailAddress to = new MailAddress(pair.Key);
+                    MailMessage message = new MailMessage(from, to);
+                    message.IsBodyHtml = false;
+                    message.Subject = "Температуры Радиоволна";
+                    message.Body = resultMessage;
+                    client.Send(message);
+                }
+                catch
+                { }
             }
 
             notifications.Clear();

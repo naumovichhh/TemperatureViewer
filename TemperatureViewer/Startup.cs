@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
+using System.Data.SqlClient;
 using TemperatureViewer.Database;
 using TemperatureViewer.Services;
 using TemperatureViewer.Repositories;
@@ -26,10 +27,18 @@ namespace TemperatureViewer
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
-            var connectionString = Configuration.GetConnectionString("DefaultConnection");
-            services.AddDbContext<DefaultContext>(options =>
-                options.UseSqlServer(connectionString));
-            
+            var defaultString = Configuration.GetConnectionString("DefaultConnection");
+            if (CheckConnection(defaultString))
+            {
+                services.AddDbContext<DefaultContext>(options =>
+                    options.UseSqlServer(defaultString));
+            }
+            else
+            {
+                var localDBString = Configuration.GetConnectionString("LocalDBConnection");
+                services.AddDbContext<DefaultContext>(options =>
+                    options.UseSqlServer(localDBString));
+            }
             services.AddScoped<IUsersRepository, UsersRepository>();
             services.AddScoped<ISensorsRepository, SensorsRepository>();
             services.AddScoped<ILocationsRepository, LocationsRepository>();
@@ -47,6 +56,25 @@ namespace TemperatureViewer
                 options.SlidingExpiration = true;
                 options.LoginPath = new Microsoft.AspNetCore.Http.PathString("/Account/Login");
             });
+        }
+
+        private bool CheckConnection(string connectionString)
+        {
+            var builder = new SqlConnectionStringBuilder(connectionString);
+            builder.InitialCatalog = "";
+            try 
+            {
+                using (var connection = new SqlConnection(builder.ConnectionString))
+                {
+                    connection.Open();
+                    connection.Close();
+                    return true;
+                }
+            }
+            catch (SqlException ex)
+            {
+                return false;
+            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
