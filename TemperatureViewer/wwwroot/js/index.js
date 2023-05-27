@@ -66,3 +66,5 @@ function onValueUpdated() {
         setBackgroundColor(e, r, g, b);
     });
 }
+
+setTimeout(() => location.reload(), 1800000);

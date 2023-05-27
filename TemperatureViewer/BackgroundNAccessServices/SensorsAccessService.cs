@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using System.Xml;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using TemperatureViewer.Controllers;
 using TemperatureViewer.Repositories;
 using TemperatureViewer.Models.DTO;
 using TemperatureViewer.Models.Entities;
@@ -331,11 +330,6 @@ namespace TemperatureViewer.BackgroundNAccessServices
 
         private void QueueNotNormal(Sensor sensor, decimal measured, IList<Observer> observers)
         {
-            //SmtpSettings smtpSettings = SmtpService.GetSmtpSettings();
-            //SmtpClient client = new SmtpClient(smtpSettings.Server);
-            //client.EnableSsl = smtpSettings.SSL;
-            //client.Port = smtpSettings.Port;
-            //client.Credentials = new NetworkCredential(smtpSettings.Login, smtpSettings.Password);
             string body;
             if (measured >= sensor.Threshold.P4)
             {
@@ -350,12 +344,6 @@ namespace TemperatureViewer.BackgroundNAccessServices
             {
                 foreach (var observer in observers)
                 {
-                    //MailAddress from = new MailAddress(smtpSettings.Sender);
-                    //MailAddress to = new MailAddress(observer.Email);
-                    //MailMessage message = new MailMessage(from, to);
-                    //message.Subject = "Температуры Радиоволна";
-                    //message.Body = body;
-                    //client.Send(message);
                     if (notifications.ContainsKey(observer.Email))
                     {
                         notifications[observer.Email].Add(body);
@@ -373,11 +361,6 @@ namespace TemperatureViewer.BackgroundNAccessServices
 
         private void QueueReturnedToNormal(Sensor sensor, IList<Observer> observers)
         {
-            //SmtpSettings smtpSettings = SmtpService.GetSmtpSettings();
-            //SmtpClient client = new SmtpClient(smtpSettings.Server);
-            //client.EnableSsl = smtpSettings.SSL;
-            //client.Port = smtpSettings.Port;
-            //client.Credentials = new NetworkCredential(smtpSettings.Login, smtpSettings.Password);
             string body;
             body = $"Температура вернулась в нормальный диапазон: {sensor.Name}";
 
@@ -385,12 +368,6 @@ namespace TemperatureViewer.BackgroundNAccessServices
             {
                 foreach (var observer in observers)
                 {
-                    //MailAddress from = new MailAddress(smtpSettings.Sender);
-                    //MailAddress to = new MailAddress(observer.Email);
-                    //MailMessage message = new MailMessage(from, to);
-                    //message.Subject = "Температуры Радиоволна";
-                    //message.Body = body;
-                    //client.Send(message);
                     if (notifications.ContainsKey(observer.Email))
                     {
                         notifications[observer.Email].Add(body);

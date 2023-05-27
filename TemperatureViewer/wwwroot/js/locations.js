@@ -71,3 +71,5 @@ function onValueUpdated() {
         e.style.backgroundColor = thermColor;
     });
 }
+
+setTimeout(() => location.reload(), 1800000);
