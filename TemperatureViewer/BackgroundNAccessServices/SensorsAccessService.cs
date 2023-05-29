@@ -55,8 +55,8 @@ namespace TemperatureViewer.BackgroundNAccessServices
                     hourCounter = (hourCounter + 1) % 12;
                     if (stoppingToken.IsCancellationRequested)
                         break;
-
-                    await Task.Delay(nextMeasurementTime - DateTime.Now, stoppingToken);
+                    TimeSpan timeSpan = nextMeasurementTime - DateTime.Now;
+                    await Task.Delay(timeSpan > TimeSpan.Zero ? timeSpan : TimeSpan.FromSeconds(20), stoppingToken);
                     nextMeasurementTime = nextMeasurementTime + TimeSpan.FromMinutes(5);
                 }
             }

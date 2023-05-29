@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1">
   <Class Name="TemperatureViewer.Models.DTO.LocationDTO">
-    <Position X="12.5" Y="24.25" Width="1.5" />
+    <Position X="18" Y="19.25" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAACAAAAAAAAAAAAAAAAAAQAAAAAABAAAAAgAAAAAAA=</HashCode>
       <FileName>Models\DTO\LocationDTO.cs</FileName>
@@ -11,14 +11,14 @@
     </ShowAsCollectionAssociation>
   </Class>
   <Class Name="TemperatureViewer.Models.DTO.UserDTO">
-    <Position X="33.25" Y="3.5" Width="1.5" />
+    <Position X="30" Y="3.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAEAAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Models\DTO\UserDTO.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="TemperatureViewer.Models.DTO.ValueDTO">
-    <Position X="6.25" Y="24.5" Width="1.75" />
+    <Position X="9" Y="19.75" Width="1.75" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAA=</HashCode>
       <FileName>Models\DTO\ValueDTO.cs</FileName>
@@ -28,14 +28,14 @@
     </ShowAsAssociation>
   </Class>
   <Class Name="TemperatureViewer.Models.Entities.Location">
-    <Position X="6" Y="16.25" Width="1.5" />
+    <Position X="2.75" Y="16.25" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAACAAIAAAAAAAAAAAAAAAQAAAAAABAAAAAAAAAAAAA=</HashCode>
       <FileName>Models\Entities\Location.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="TemperatureViewer.Models.Entities.Observer">
-    <Position X="32.5" Y="1.25" Width="1.5" />
+    <Position X="29.25" Y="1.25" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAACAAIAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Models\Entities\Observer.cs</FileName>
@@ -45,7 +45,7 @@
     </ShowAsCollectionAssociation>
   </Class>
   <Class Name="TemperatureViewer.Models.Entities.Sensor">
-    <Position X="5.75" Y="19.5" Width="1.75" />
+    <Position X="3" Y="18.75" Width="1.75" />
     <TypeIdentifier>
       <HashCode>AAAKACEAAABAAAAAAAIAAAQAAAAAAAAACAAgAAAAiAA=</HashCode>
       <FileName>Models\Entities\Sensor.cs</FileName>
@@ -55,7 +55,7 @@
     </ShowAsAssociation>
   </Class>
   <Class Name="TemperatureViewer.Models.Entities.Threshold">
-    <Position X="10.75" Y="20.25" Width="1.5" />
+    <Position X="5.5" Y="19" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAACAAoAAAAAAAAAAAAAAQAAAACAAAAAAABAAAAAAAA=</HashCode>
       <FileName>Models\Entities\Threshold.cs</FileName>
@@ -65,7 +65,7 @@
     </ShowAsCollectionAssociation>
   </Class>
   <Class Name="TemperatureViewer.Models.Entities.User">
-    <Position X="2.5" Y="20.25" Width="1.5" />
+    <Position X="0.5" Y="18.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAACAAIAAAAAAAAAEAAAAAQAAAAAAAACAAAAAAAAAAA=</HashCode>
       <FileName>Models\Entities\User.cs</FileName>
@@ -75,7 +75,7 @@
     </ShowAsCollectionAssociation>
   </Class>
   <Class Name="TemperatureViewer.Controllers.HomeController">
-    <Position X="16.75" Y="14.25" Width="2" />
+    <Position X="13.5" Y="14.25" Width="2" />
     <Members>
       <Method Name="GetFromDateTime" Hidden="true" />
       <Method Name="GetToDateTime" Hidden="true" />
@@ -93,7 +93,7 @@
     </ShowAsAssociation>
   </Class>
   <Class Name="TemperatureViewer.Services.InformationService">
-    <Position X="15.5" Y="18.5" Width="3.75" />
+    <Position X="12.25" Y="18.5" Width="3.75" />
     <Members>
       <Method Name="DownloadAll" Hidden="true" />
       <Method Name="DownloadLocation" Hidden="true" />
@@ -106,14 +106,14 @@
       <FileName>Services\InformationService.cs</FileName>
     </TypeIdentifier>
     <ShowAsAssociation>
-      <Field Name="_locationsRepository" />
       <Field Name="_sensorsAccess" />
       <Field Name="_valuesRepository" />
+      <Field Name="_locationsRepository" />
       <Field Name="_sensorsRepository" />
     </ShowAsAssociation>
   </Class>
   <Class Name="TemperatureViewer.Controllers.AccountController">
-    <Position X="26.25" Y="0.5" Width="2.5" />
+    <Position X="23" Y="0.5" Width="2.5" />
     <Members>
       <Method Name="SetRoleClaim" Hidden="true" />
     </Members>
@@ -126,14 +126,14 @@
     </ShowAsAssociation>
   </Class>
   <Class Name="TemperatureViewer.Controllers.AdminController">
-    <Position X="37" Y="19" Width="3" />
+    <Position X="31" Y="15.25" Width="3" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAEACAAAAAA=</HashCode>
       <FileName>Controllers\AdminController.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="TemperatureViewer.Controllers.LocationsController">
-    <Position X="29.75" Y="19" Width="2.5" />
+    <Position X="16.75" Y="8.75" Width="2.5" />
     <Members>
       <Method Name="LocationExists" Hidden="true" />
       <Method Name="UploadFile" Hidden="true" />
@@ -147,7 +147,7 @@
     </ShowAsAssociation>
   </Class>
   <Class Name="TemperatureViewer.Controllers.ObserversController">
-    <Position X="6.5" Y="12.25" Width="2.5" />
+    <Position X="3.25" Y="12.25" Width="2.5" />
     <Members>
       <Method Name="ObserverExists" Hidden="true" />
     </Members>
@@ -161,10 +161,18 @@
     </ShowAsAssociation>
   </Class>
   <Class Name="TemperatureViewer.Controllers.SensorsController">
-    <Position X="16.5" Y="10" Width="2.5" />
+    <Position X="13.25" Y="10" Width="2.5" />
     <Members>
       <Method Name="SensorExists" Hidden="true" />
     </Members>
+    <AssociationLine Name="_locationsRepository" Type="TemperatureViewer.Repositories.ILocationsRepository" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="15.75" Y="12.044" />
+        <Point X="16.125" Y="12.044" />
+        <Point X="16.125" Y="13.062" />
+        <Point X="18.75" Y="13.062" />
+      </Path>
+    </AssociationLine>
     <TypeIdentifier>
       <HashCode>BAABACAAAAABAAAAIAAACAAAAAAEAEACAAEgAAAAAAA=</HashCode>
       <FileName>Controllers\SensorsController.cs</FileName>
@@ -175,7 +183,7 @@
     </ShowAsAssociation>
   </Class>
   <Class Name="TemperatureViewer.ThresholdsController">
-    <Position X="14.5" Y="6.75" Width="2.5" />
+    <Position X="12.25" Y="7.25" Width="2.5" />
     <Members>
       <Method Name="GetExistingThreshold" Hidden="true" />
     </Members>
@@ -189,7 +197,7 @@
     </ShowAsAssociation>
   </Class>
   <Class Name="TemperatureViewer.Controllers.UsersController">
-    <Position X="11.5" Y="13.25" Width="2.5" />
+    <Position X="8.25" Y="13.25" Width="2.5" />
     <Members>
       <Method Name="AllowEmptyPassword" Hidden="true" />
       <Method Name="GetUserFromViewModel" Hidden="true" />
@@ -208,7 +216,7 @@
     </ShowAsAssociation>
   </Class>
   <Class Name="TemperatureViewer.BackgroundNAccessServices.DefaultBackgroundService">
-    <Position X="33" Y="17.25" Width="2.75" />
+    <Position X="29.75" Y="18" Width="2.75" />
     <Members>
       <Method Name="DoWorkAsync" Hidden="true" />
     </Members>
@@ -218,7 +226,7 @@
     </TypeIdentifier>
   </Class>
   <Class Name="TemperatureViewer.BackgroundNAccessServices.SensorsAccessService" BaseTypeListCollapsed="true">
-    <Position X="19.75" Y="0.75" Width="2.75" />
+    <Position X="16.5" Y="0.75" Width="2.75" />
     <Members>
       <Method Name="GetTemperatureFromTxt" Hidden="true" />
       <Method Name="GetTemperatureFromXml" Hidden="true" />
@@ -244,7 +252,7 @@
     <Lollipop Position="0.2" Collapsed="true" />
   </Class>
   <Class Name="TemperatureViewer.Components.LocationsDropdown">
-    <Position X="22.75" Y="0.75" Width="2.25" />
+    <Position X="19.5" Y="0.75" Width="2.25" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAABIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Components\LocationsDropdown.cs</FileName>
@@ -254,14 +262,14 @@
     </ShowAsAssociation>
   </Class>
   <Class Name="TemperatureViewer.Database.DbInitializer">
-    <Position X="29.75" Y="0.5" Width="1.5" />
+    <Position X="26.5" Y="0.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Database\DbInitializer.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="TemperatureViewer.Database.DefaultContext">
-    <Position X="5.75" Y="4.25" Width="1.75" />
+    <Position X="2.5" Y="4.25" Width="1.75" />
     <Members>
       <Method Name="OnModelCreating" Hidden="true" />
     </Members>
@@ -271,7 +279,7 @@
     </TypeIdentifier>
   </Class>
   <Class Name="TemperatureViewer.Database.LocationsRepository">
-    <Position X="0.5" Y="8.5" Width="2.25" />
+    <Position X="5.5" Y="8.25" Width="2.25" />
     <TypeIdentifier>
       <HashCode>AAEAAAAAAAAABAAAAAAAAAAAAAAAAAgAAAAAAIAAIIA=</HashCode>
       <FileName>Database\LocationsRepository.cs</FileName>
@@ -282,7 +290,7 @@
     <Lollipop Position="0.2" />
   </Class>
   <Class Name="TemperatureViewer.Database.ObserversRepository">
-    <Position X="0.5" Y="0.5" Width="2.25" />
+    <Position X="8" Y="1.25" Width="2.25" />
     <TypeIdentifier>
       <HashCode>AAEAAAAAAAAABAAAAAAAAAAAAAAAAAgAAAAAAIAAIIA=</HashCode>
       <FileName>Database\ObserversRepository.cs</FileName>
@@ -293,7 +301,7 @@
     <Lollipop Position="0.2" />
   </Class>
   <Class Name="TemperatureViewer.Database.SensorsRepository">
-    <Position X="9.5" Y="4.5" Width="2" />
+    <Position X="6.25" Y="4.5" Width="2" />
     <TypeIdentifier>
       <HashCode>AAEAAAAAAAAABAAAAAAAAAAAAAAAAAgAAAAAAIAAIIA=</HashCode>
       <FileName>Database\SensorsRepository.cs</FileName>
@@ -304,7 +312,7 @@
     <Lollipop Position="0.2" />
   </Class>
   <Class Name="TemperatureViewer.Database.ThresholdsRepository">
-    <Position X="5.5" Y="8.5" Width="2.25" />
+    <Position X="2.25" Y="8.5" Width="2.25" />
     <TypeIdentifier>
       <HashCode>AAEAAAAAAAAABAAAAAAAAAAAAAAAAAgAAAAAAIAAIIA=</HashCode>
       <FileName>Database\ThresholdsRepository.cs</FileName>
@@ -315,7 +323,7 @@
     <Lollipop Position="0.2" />
   </Class>
   <Class Name="TemperatureViewer.Database.UsersRepository">
-    <Position X="1.75" Y="4.5" Width="2" />
+    <Position X="5.25" Y="1" Width="2" />
     <TypeIdentifier>
       <HashCode>AAEAAAAAAAAABAAAAAAAAAAAAAAAAAgAAAAAAIAAIIA=</HashCode>
       <FileName>Database\UsersRepository.cs</FileName>
@@ -326,7 +334,7 @@
     <Lollipop Position="0.2" />
   </Class>
   <Class Name="TemperatureViewer.Database.ValuesRepository">
-    <Position X="5.5" Y="0.5" Width="2" />
+    <Position X="2.25" Y="0.5" Width="2" />
     <TypeIdentifier>
       <HashCode>AAEABAAAAAAABAAAAAAAAAAAAAAAAAgAAAAAAIAAIIA=</HashCode>
       <FileName>Database\ValuesRepository.cs</FileName>
@@ -337,39 +345,39 @@
     <Lollipop Position="0.2" />
   </Class>
   <Class Name="TemperatureViewer.Models.Entities.Value">
-    <Position X="35.75" Y="13.5" Width="2" />
+    <Position X="30.25" Y="12.5" Width="2" />
     <TypeIdentifier>
       <HashCode>AAACIAQAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAA=</HashCode>
       <FileName>Models\Entities\Value.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="TemperatureViewer.Models.ViewModels.ErrorViewModel">
-    <Position X="37.25" Y="3.25" Width="1.75" />
+    <Position X="27.25" Y="4.5" Width="1.75" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAIAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Models\ViewModels\ErrorViewModel.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="TemperatureViewer.Models.ViewModels.ExtendedLocationViewModel">
-    <Position X="37.25" Y="10.5" Width="2.75" />
+    <Position X="21.25" Y="10.75" Width="2.75" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAQAAAAAABAAAAAiAAAgAAA=</HashCode>
       <FileName>Models\ViewModels\ExtendedLocationViewModel.cs</FileName>
     </TypeIdentifier>
     <ShowAsCollectionAssociation>
-      <Property Name="Values" />
       <Property Name="History" />
+      <Property Name="Values" />
     </ShowAsCollectionAssociation>
   </Class>
   <Class Name="TemperatureViewer.Models.ViewModels.LocationUploadModel">
-    <Position X="25.5" Y="8.75" Width="2.25" />
+    <Position X="22.25" Y="8.75" Width="2.25" />
     <TypeIdentifier>
       <HashCode>AAACAAAAAAAAAAAAAAAAAAQAAAAAABAAAAAAAAAAAAA=</HashCode>
       <FileName>Models\ViewModels\LocationUploadModel.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="TemperatureViewer.Models.ViewModels.LocationViewModel">
-    <Position X="27.25" Y="4" Width="2" />
+    <Position X="24" Y="4" Width="2" />
     <TypeIdentifier>
       <HashCode>AAACAAAAAAAAAAAAAAAAAAQAAAAAABAAAAAgAAAAAAA=</HashCode>
       <FileName>Models\ViewModels\LocationViewModel.cs</FileName>
@@ -379,21 +387,21 @@
     </ShowAsCollectionAssociation>
   </Class>
   <Class Name="TemperatureViewer.Models.ViewModels.LoginViewModel">
-    <Position X="36.75" Y="7.75" Width="1.75" />
+    <Position X="31" Y="7.25" Width="1.75" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAQAAAAAAAACAAAAAAAAAAA=</HashCode>
       <FileName>Models\ViewModels\LoginViewModel.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="TemperatureViewer.Models.ViewModels.ObserverViewModel">
-    <Position X="34" Y="6.25" Width="2.25" />
+    <Position X="11.75" Y="1.25" Width="2.25" />
     <TypeIdentifier>
       <HashCode>AAACAAIAACAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAA=</HashCode>
       <FileName>Models\ViewModels\ObserverViewModel.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="TemperatureViewer.Models.ViewModels.SensorHistoryViewModel">
-    <Position X="23.75" Y="22" Width="2.5" />
+    <Position X="23" Y="20.25" Width="2.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAAAAAAA=</HashCode>
       <FileName>Models\ViewModels\SensorHistoryViewModel.cs</FileName>
@@ -403,42 +411,42 @@
     </ShowAsCollectionAssociation>
   </Class>
   <Class Name="TemperatureViewer.Models.ViewModels.ValueOfTime">
-    <Position X="24.5" Y="24" Width="1.5" />
+    <Position X="24" Y="18.25" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAQA=</HashCode>
       <FileName>Models\ViewModels\SensorHistoryViewModel.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="TemperatureViewer.Models.ViewModels.SmtpSettings">
-    <Position X="29.5" Y="6.25" Width="1.5" />
+    <Position X="26.25" Y="6.25" Width="1.5" />
     <TypeIdentifier>
       <HashCode>EAAAAAAAAAAAAAAAAAAAAAAACAAAAAACAAAQAgAIAAA=</HashCode>
       <FileName>Models\ViewModels\SmtpSettings.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="TemperatureViewer.Models.ViewModels.ThresholdViewModel">
-    <Position X="32" Y="8.75" Width="2.25" />
+    <Position X="28.75" Y="8.75" Width="2.25" />
     <TypeIdentifier>
       <HashCode>AAAAAAoAAAAAAAAAAAAAAQAAAACAAAAAAABAAAIAAAA=</HashCode>
       <FileName>Models\ViewModels\ThresholdViewModel.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="TemperatureViewer.Models.ViewModels.UserViewModel">
-    <Position X="34.75" Y="10" Width="1.75" />
+    <Position X="31.5" Y="10" Width="1.75" />
     <TypeIdentifier>
       <HashCode>AAACAAIAAAAAAAAAEAAAAAQAAAAAAAACAAAAAAAAAAA=</HashCode>
       <FileName>Models\ViewModels\UserViewModel.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="TemperatureViewer.Models.ViewModels.ValueViewModel">
-    <Position X="25" Y="6" Width="1.75" />
+    <Position X="21.75" Y="6" Width="1.75" />
     <TypeIdentifier>
       <HashCode>AAAAIAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAQAAAEAAA=</HashCode>
       <FileName>Models\ViewModels\ValueViewModel.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="TemperatureViewer.Services.AccountService">
-    <Position X="20.5" Y="5.75" Width="2" />
+    <Position X="17.25" Y="5.75" Width="2" />
     <Members>
       <Method Name="GetHashedPassword" Hidden="true" />
     </Members>
@@ -448,7 +456,7 @@
     </TypeIdentifier>
   </Class>
   <Class Name="TemperatureViewer.Services.ExcelService">
-    <Position X="23.5" Y="3.5" Width="1.5" />
+    <Position X="20.25" Y="3.5" Width="1.5" />
     <Members>
       <Method Name="CheckEnumerableLengthEqual" Hidden="true" />
       <Method Name="WriteCells" Hidden="true" />
@@ -460,7 +468,7 @@
     </TypeIdentifier>
   </Class>
   <Class Name="TemperatureViewer.Services.SmtpService">
-    <Position X="29.5" Y="9.5" Width="2" />
+    <Position X="26.25" Y="9.5" Width="2" />
     <Members>
       <Method Name="Decrypt" Hidden="true" />
       <Method Name="Encrypt" Hidden="true" />
@@ -471,7 +479,7 @@
     </TypeIdentifier>
   </Class>
   <Class Name="TemperatureViewer.SignalR.PersistentConnection">
-    <Position X="23.25" Y="18" Width="2.25" />
+    <Position X="20" Y="18" Width="2.25" />
     <Members>
       <Method Name="UpdateClient" Hidden="true" />
     </Members>
@@ -487,7 +495,7 @@
     </ShowAsCollectionAssociation>
   </Class>
   <Class Name="TemperatureViewer.SignalR.TemperatureHub">
-    <Position X="27" Y="14.5" Width="2.25" />
+    <Position X="23.75" Y="14.5" Width="2.25" />
     <TypeIdentifier>
       <HashCode>EAAAAAAAAAAAAAEAAAAAAAAAAAACAAAgAAAAAAAAAAA=</HashCode>
       <FileName>SignalR\TemperatureHub.cs</FileName>
@@ -497,7 +505,7 @@
     </ShowAsAssociation>
   </Class>
   <Class Name="TemperatureViewer.Program">
-    <Position X="33.5" Y="20" Width="2" />
+    <Position X="27.5" Y="12.5" Width="2" />
     <Members>
       <Method Name="CreateDbIfNotExists" Hidden="true" />
     </Members>
@@ -507,7 +515,7 @@
     </TypeIdentifier>
   </Class>
   <Class Name="TemperatureViewer.Startup">
-    <Position X="30.25" Y="23" Width="2" />
+    <Position X="26.5" Y="19.5" Width="2" />
     <Members>
       <Method Name="CheckConnection" Hidden="true" />
     </Members>
@@ -517,60 +525,60 @@
     </TypeIdentifier>
   </Class>
   <Interface Name="TemperatureViewer.BackgroundNAccessServices.ISensorsAccessService">
-    <Position X="21.75" Y="16" Width="2.75" />
+    <Position X="18.5" Y="16" Width="2.75" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>BackgroundNAccessServices\ISensorsAccessService.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="TemperatureViewer.BackgroundNAccessServices.ISingletonProcessingService">
-    <Position X="27.5" Y="12.5" Width="2.75" />
+    <Position X="24.25" Y="12.5" Width="2.75" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAA=</HashCode>
       <FileName>BackgroundNAccessServices\ISingletonProcessingService.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="TemperatureViewer.Repositories.ILocationsRepository">
-    <Position X="22" Y="12.5" Width="2.25" />
+    <Position X="18.75" Y="12.5" Width="2.25" />
     <TypeIdentifier>
       <HashCode>AAEAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAIAAIIA=</HashCode>
       <FileName>Repositories\ILocationsRepository.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="TemperatureViewer.Repositories.IThresholdsRepository">
-    <Position X="14.25" Y="3.5" Width="2.25" />
+    <Position X="11.75" Y="4" Width="2.25" />
     <TypeIdentifier>
       <HashCode>AAEAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAIAAIIA=</HashCode>
       <FileName>Repositories\IThresholdsRepository.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="TemperatureViewer.Repositories.IValuesRepository">
-    <Position X="31.75" Y="12.25" Width="2" />
+    <Position X="27.25" Y="14.75" Width="2" />
     <TypeIdentifier>
       <HashCode>AAEABAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAIAAIIA=</HashCode>
       <FileName>Repositories\IValuesRepository.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="TemperatureViewer.Repositories.ISensorsRepository">
-    <Position X="12" Y="10" Width="2" />
+    <Position X="8.75" Y="10" Width="2" />
     <TypeIdentifier>
       <HashCode>AAEAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAIAAIIA=</HashCode>
       <FileName>Repositories\ISensorsRepository.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="TemperatureViewer.Repositories.IObserversRepository">
-    <Position X="10.5" Y="17" Width="2.25" />
+    <Position X="7.25" Y="17" Width="2.25" />
     <TypeIdentifier>
       <HashCode>AAEAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAIAAIIA=</HashCode>
       <FileName>Repositories\IObserversRepository.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="TemperatureViewer.Repositories.IUsersRepository">
-    <Position X="2.5" Y="13" Width="1.75" />
+    <Position X="9.75" Y="16.75" Width="1.75" />
     <TypeIdentifier>
       <HashCode>AAEAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAIAAIIA=</HashCode>
       <FileName>Repositories\IUsersRepository.cs</FileName>
     </TypeIdentifier>
   </Interface>
-  <Font Name="Segoe UI" Size="12" />
+  <Font Name="Segoe UI" Size="9" />
 </ClassDiagram>

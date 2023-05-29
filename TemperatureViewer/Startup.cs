@@ -47,7 +47,7 @@ namespace TemperatureViewer
             services.AddScoped<IThresholdsRepository, ThresholdsRepository>();
             services.AddScoped<InformationService>();
             services.AddScoped<AccountService>();
-
+            services.Configure<HostOptions>(hostOptions => hostOptions.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore);
             services.AddDatabaseDeveloperPageExceptionFilter();
             services.AddSignalR();
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options =>
