@@ -29,7 +29,7 @@
 
 function setBackgroundColor(e, r, g, b) {
     let thermColor = `rgb(${r}, ${g}, ${b})`;
-    let liColor = `rgb(${r + 110}, ${g + 110}, ${b + 110})`;
+    let liColor = `rgb(${r + 90}, ${g + 90}, ${b + 90})`;
     $(e).find(".therm").each((i, t) => {
         t.style.backgroundColor = thermColor;
     })
