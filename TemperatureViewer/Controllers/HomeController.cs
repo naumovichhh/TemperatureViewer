@@ -108,6 +108,7 @@ namespace TemperatureViewer.Controllers
                 }
 
                 ViewBag.id = id;
+                ViewBag.allSensors = false;
             }
             else
             {
@@ -119,7 +120,6 @@ namespace TemperatureViewer.Controllers
             toDate = GetToDateTime(to);
             ViewBag.from = from;
             ViewBag.to = to;
-            ViewBag.allSensors = false;
             IEnumerable<DateTime> measurementTimes;
 
 
