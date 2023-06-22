@@ -35,7 +35,6 @@ namespace TemperatureViewer.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel loginModel, string returnUrl)
         {
             if (ModelState.IsValid)

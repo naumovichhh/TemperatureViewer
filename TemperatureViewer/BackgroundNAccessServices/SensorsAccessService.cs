@@ -22,7 +22,7 @@ namespace TemperatureViewer.BackgroundNAccessServices
 
     public class SensorsAccessService : ISingletonProcessingService, ISensorsAccessService
     {
-        private const int fastTimeout = 700, slowTimeout = 3000;
+        private const int fastTimeout = 700, slowTimeout = 4000;
         private IServiceProvider serviceProvider;
         private object lockObj = new object();
         private object lockNotifications = new object();
