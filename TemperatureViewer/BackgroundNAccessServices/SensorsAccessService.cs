@@ -6,9 +6,10 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Mail;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml;
+using HtmlAgilityPack;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using TemperatureViewer.Repositories;
@@ -76,11 +77,11 @@ namespace TemperatureViewer.BackgroundNAccessServices
                     decimal? measured;
                     if (string.IsNullOrEmpty(sensorsArray[i].XPath))
                     {
-                        measured = GetTemperatureFromTxt(sensorsArray[i].Uri, slowly);
+                        measured = GetTemperatureFromTxt(sensorsArray[i].Uri, slowly, sensorsArray[i].Regex);
                     }
                     else
                     {
-                        measured = GetTemperatureFromXml(sensorsArray[i].Uri, sensorsArray[i].XPath, slowly);
+                        measured = GetTemperatureFromXml(sensorsArray[i].Uri, sensorsArray[i].XPath, slowly, sensorsArray[i].Regex);
                     }
 
                     
@@ -105,11 +106,11 @@ namespace TemperatureViewer.BackgroundNAccessServices
                     decimal? measured;
                     if (string.IsNullOrEmpty(sensorsArray[i].XPath))
                     {
-                        measured = GetTemperatureFromTxt(sensorsArray[i].Uri, slowly);
+                        measured = GetTemperatureFromTxt(sensorsArray[i].Uri, slowly, sensorsArray[i].Regex);
                     }
                     else
                     {
-                        measured = GetTemperatureFromXml(sensorsArray[i].Uri, sensorsArray[i].XPath, slowly);
+                        measured = GetTemperatureFromXml(sensorsArray[i].Uri, sensorsArray[i].XPath, slowly, sensorsArray[i].Regex);
                     }
 
                     result[i] = new ValueDTO() { Temperature = measured, Sensor = sensorsArray[i] };
@@ -133,11 +134,11 @@ namespace TemperatureViewer.BackgroundNAccessServices
                     decimal? measured;
                     if (string.IsNullOrEmpty(sensorsArray[i].XPath))
                     {
-                        measured = GetTemperatureFromTxt(sensorsArray[i].Uri, slowly);
+                        measured = GetTemperatureFromTxt(sensorsArray[i].Uri, slowly, sensorsArray[i].Regex);
                     }
                     else
                     {
-                        measured = GetTemperatureFromXml(sensorsArray[i].Uri, sensorsArray[i].XPath, slowly);
+                        measured = GetTemperatureFromXml(sensorsArray[i].Uri, sensorsArray[i].XPath, slowly, sensorsArray[i].Regex);
                     }
 
                     result[i] = new ValueDTO() { Temperature = measured, Sensor = sensorsArray[i] };
@@ -147,23 +148,30 @@ namespace TemperatureViewer.BackgroundNAccessServices
             }
         }
 
-        private decimal? GetTemperatureFromXml(string uri, string xPath, bool slowly)
+        private decimal? GetTemperatureFromXml(string uri, string xPath, bool slowly, string regex)
         {
             int timeout = slowly ? slowTimeout : fastTimeout;
-            var xmlDocument = new XmlDocument();
+            //var xmlDocument = new XmlDocument();
+            HtmlDocument htmlDoc = new HtmlDocument();
             string str;
             try
             {
                 using (var httpClient = new HttpClient())
                 {
                     httpClient.Timeout = TimeSpan.FromMilliseconds(timeout);
+                    //using (var stream = httpClient.GetStreamAsync(uri).Result)
+                    //{
+                    //    xmlDocument.Load(stream);
+                    //    
+                    //}
                     using (var stream = httpClient.GetStreamAsync(uri).Result)
                     {
-                        xmlDocument.Load(stream);
+                        htmlDoc.Load(stream);
                     }
                 }
 
-                var root = xmlDocument.DocumentElement;
+                //var root = xmlDocument.DocumentElement;
+                var root = htmlDoc.DocumentNode;
                 var node = root.SelectSingleNode(xPath);
                 str = node.InnerText;
             }
@@ -172,23 +180,16 @@ namespace TemperatureViewer.BackgroundNAccessServices
                 return null;
             }
 
-            decimal result;
-            if (decimal.TryParse(str, out result) || decimal.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out result))
-            {
-                result /= 1.000000000000000000000000000000000m;
-                return result;
-            }
-            else
-            {
-                return null;
-            }
+            if (regex != null)
+                str = ExtractByRegex(str, regex);
+
+            return ParseNumberString(str);
         }
 
-        private decimal? GetTemperatureFromTxt(string uri, bool slowly)
+        private decimal? GetTemperatureFromTxt(string uri, bool slowly, string regex)
         {
             int timeout = slowly ? slowTimeout : fastTimeout;
             string str;
-            decimal result;
             using (var httpClient = new HttpClient())
             {
                 try
@@ -202,6 +203,14 @@ namespace TemperatureViewer.BackgroundNAccessServices
                 }
             }
 
+            if (regex != null)
+                str = ExtractByRegex(str, regex);
+            return ParseNumberString(str);
+        }
+
+        private decimal? ParseNumberString(string str)
+        {
+            decimal result;
             if (decimal.TryParse(str, out result) || decimal.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out result))
             {
                 result /= 1.000000000000000000000000000000000m;
@@ -213,16 +222,23 @@ namespace TemperatureViewer.BackgroundNAccessServices
             }
         }
 
+        private string ExtractByRegex(string str, string regex)
+        {
+            regex = Regex.Replace(regex, @"\[value\]", @"(-?(0|[1-9]\d*)([.,]\d+)?)");
+            var match = Regex.Match(str, regex, RegexOptions.IgnoreCase);
+            return match.Groups[1].Value;
+        }
+
         private void HandleMeasurement(Sensor sensor, IServiceScope scope)
         {
             decimal? measured;
             if (string.IsNullOrEmpty(sensor.XPath))
             {
-                measured = GetTemperatureFromTxt(sensor.Uri, true);
+                measured = GetTemperatureFromTxt(sensor.Uri, true, sensor.Regex);
             }
             else
             {
-                measured = GetTemperatureFromXml(sensor.Uri, sensor.XPath, true);
+                measured = GetTemperatureFromXml(sensor.Uri, sensor.XPath, true, sensor.Regex);
             }
 
             if (measured != null)
