@@ -105,6 +105,7 @@ namespace TemperatureViewer.Controllers
                     fromRepository.Uri = sensor.Uri;
                     fromRepository.LocationId = sensor.LocationId;
                     fromRepository.XPath = sensor.XPath;
+                    fromRepository.JSON = sensor.JSON;
                     fromRepository.Regex = sensor.Regex;
                     await _sensorsRepository.UpdateAsync(fromRepository);
                 }

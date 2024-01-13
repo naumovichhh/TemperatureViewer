@@ -67,4 +67,4 @@ function onValueUpdated() {
     });
 }
 
-setTimeout(() => location.reload(), 1800000);
+setTimeout(() => location.reload(), 900000);

@@ -18,6 +18,7 @@ namespace TemperatureViewer.Models.Entities
         [DisplayName("Отключен")]
         public bool WasDisabled { get; set; }
         public string XPath { get; set; }
+        public string JSON { get; set; }
         [DisplayName("Регулярное выражение")]
         public string Regex { get; set; }
         public int? ThresholdId { get; set; }

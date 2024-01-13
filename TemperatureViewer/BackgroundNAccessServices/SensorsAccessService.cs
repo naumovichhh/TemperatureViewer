@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -12,6 +13,7 @@ using System.Threading.Tasks;
 using HtmlAgilityPack;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json.Linq;
 using TemperatureViewer.Repositories;
 using TemperatureViewer.Models.DTO;
 using TemperatureViewer.Models.Entities;
@@ -75,14 +77,7 @@ namespace TemperatureViewer.BackgroundNAccessServices
                 Parallel.For(0, sensorsArray.Length, (i) =>
                 {
                     decimal? measured;
-                    if (string.IsNullOrEmpty(sensorsArray[i].XPath))
-                    {
-                        measured = GetTemperatureFromTxt(sensorsArray[i].Uri, slowly, sensorsArray[i].Regex);
-                    }
-                    else
-                    {
-                        measured = GetTemperatureFromXml(sensorsArray[i].Uri, sensorsArray[i].XPath, slowly, sensorsArray[i].Regex);
-                    }
+                    measured = GetValue(sensorsArray[i], slowly);
 
                     
                     result[i] = new ValueDTO() { Temperature = measured, Sensor = sensorsArray[i] };
@@ -104,14 +99,7 @@ namespace TemperatureViewer.BackgroundNAccessServices
                 Parallel.For(0, sensorsArray.Length, (i) =>
                 {
                     decimal? measured;
-                    if (string.IsNullOrEmpty(sensorsArray[i].XPath))
-                    {
-                        measured = GetTemperatureFromTxt(sensorsArray[i].Uri, slowly, sensorsArray[i].Regex);
-                    }
-                    else
-                    {
-                        measured = GetTemperatureFromXml(sensorsArray[i].Uri, sensorsArray[i].XPath, slowly, sensorsArray[i].Regex);
-                    }
+                    measured = GetValue(sensorsArray[i], slowly);
 
                     result[i] = new ValueDTO() { Temperature = measured, Sensor = sensorsArray[i] };
                 });
@@ -126,20 +114,13 @@ namespace TemperatureViewer.BackgroundNAccessServices
             {
                 var sensorsRepository = scope.ServiceProvider.GetRequiredService<ISensorsRepository>();
                 Sensor[] sensorsArray;
-                sensorsArray = sensorsRepository.GetAllAsync(true).Result.Where(s => !s.WasDisabled && sensorIds.Contains(s.Id)).OrderBy(s => s.Name).ToArray();//context.Sensors.AsNoTracking().Where(s => !s.WasDisabled && sensorIds.Contains(s.Id)).OrderBy(s => s.Name).Include(s => s.Threshold).ToArray();
+                sensorsArray = sensorsRepository.GetAllAsync(true).Result.Where(s => !s.WasDisabled && sensorIds.Contains(s.Id)).OrderBy(s => s.Name).ToArray();
                 ValueDTO[] result = new ValueDTO[sensorsArray.Length];
 
                 Parallel.For(0, sensorsArray.Length, (i) =>
                 {
                     decimal? measured;
-                    if (string.IsNullOrEmpty(sensorsArray[i].XPath))
-                    {
-                        measured = GetTemperatureFromTxt(sensorsArray[i].Uri, slowly, sensorsArray[i].Regex);
-                    }
-                    else
-                    {
-                        measured = GetTemperatureFromXml(sensorsArray[i].Uri, sensorsArray[i].XPath, slowly, sensorsArray[i].Regex);
-                    }
+                    measured = GetValue(sensorsArray[i], slowly);
 
                     result[i] = new ValueDTO() { Temperature = measured, Sensor = sensorsArray[i] };
                 });
@@ -148,29 +129,88 @@ namespace TemperatureViewer.BackgroundNAccessServices
             }
         }
 
-        private decimal? GetTemperatureFromXml(string uri, string xPath, bool slowly, string regex)
+        private decimal? GetValue(Sensor sensor, bool slowly)
+        {
+            decimal? measured;
+            if (!string.IsNullOrEmpty(sensor.XPath))
+            {
+                measured = GetTemperatureFromDoc(sensor.Uri, sensor.XPath, slowly, sensor.Regex);
+            }
+            else if (!string.IsNullOrEmpty(sensor.JSON))
+            {
+                measured = GetTemperatureFromJSON(sensor.Uri, sensor.JSON, slowly, sensor.Regex);
+            }
+            else
+            {
+                measured = GetTemperatureFromTxt(sensor.Uri, slowly, sensor.Regex);
+            }
+
+            return measured;
+        }
+
+        private decimal? GetTemperatureFromJSON(string uri, string selector, bool slowly, string regex)
         {
             int timeout = slowly ? slowTimeout : fastTimeout;
-            //var xmlDocument = new XmlDocument();
+            
+            HtmlDocument htmlDoc = new HtmlDocument();
+            JObject jsonObject;
+            try
+            {
+                using (var httpClient = CreateHttpClient())
+                {
+                    httpClient.Timeout = TimeSpan.FromMilliseconds(timeout);
+                    using (var streamReader = new StreamReader(httpClient.GetStreamAsync(uri).Result))
+                    {
+                        jsonObject = JObject.Parse(streamReader.ReadToEnd());
+                    }
+                }
+
+                try
+                {
+                    decimal number;
+                    number = (decimal)jsonObject.SelectToken(selector);
+                    return number;
+                }
+                catch
+                {
+                    string str;
+                    str = (string)jsonObject.SelectToken(selector);
+                    if (regex != null)
+                        str = ExtractByRegex(str, regex);
+
+                    return ParseNumberString(str);
+                }
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+
+        }
+
+        private HttpClient CreateHttpClient()
+        {
+            HttpClientHandler clientHandler = new HttpClientHandler();
+            clientHandler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; };
+            return new HttpClient(clientHandler);
+        }
+
+        private decimal? GetTemperatureFromDoc(string uri, string xPath, bool slowly, string regex)
+        {
+            int timeout = slowly ? slowTimeout : fastTimeout;
             HtmlDocument htmlDoc = new HtmlDocument();
             string str;
             try
             {
-                using (var httpClient = new HttpClient())
+                using (var httpClient = CreateHttpClient())
                 {
                     httpClient.Timeout = TimeSpan.FromMilliseconds(timeout);
-                    //using (var stream = httpClient.GetStreamAsync(uri).Result)
-                    //{
-                    //    xmlDocument.Load(stream);
-                    //    
-                    //}
                     using (var stream = httpClient.GetStreamAsync(uri).Result)
                     {
                         htmlDoc.Load(stream);
                     }
                 }
 
-                //var root = xmlDocument.DocumentElement;
                 var root = htmlDoc.DocumentNode;
                 var node = root.SelectSingleNode(xPath);
                 str = node.InnerText;
@@ -190,7 +230,7 @@ namespace TemperatureViewer.BackgroundNAccessServices
         {
             int timeout = slowly ? slowTimeout : fastTimeout;
             string str;
-            using (var httpClient = new HttpClient())
+            using (var httpClient = CreateHttpClient())
             {
                 try
                 {
@@ -232,14 +272,7 @@ namespace TemperatureViewer.BackgroundNAccessServices
         private void HandleMeasurement(Sensor sensor, IServiceScope scope)
         {
             decimal? measured;
-            if (string.IsNullOrEmpty(sensor.XPath))
-            {
-                measured = GetTemperatureFromTxt(sensor.Uri, true, sensor.Regex);
-            }
-            else
-            {
-                measured = GetTemperatureFromXml(sensor.Uri, sensor.XPath, true, sensor.Regex);
-            }
+            measured = GetValue(sensor, true);
 
             if (measured != null)
             {
