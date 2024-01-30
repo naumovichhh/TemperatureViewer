@@ -134,21 +134,21 @@ namespace TemperatureViewer.BackgroundNAccessServices
             decimal? measured;
             if (!string.IsNullOrEmpty(sensor.XPath))
             {
-                measured = GetTemperatureFromDoc(sensor.Uri, sensor.XPath, slowly, sensor.Regex);
+                measured = GetTemperatureFromDoc(sensor, slowly);
             }
             else if (!string.IsNullOrEmpty(sensor.JSON))
             {
-                measured = GetTemperatureFromJSON(sensor.Uri, sensor.JSON, slowly, sensor.Regex);
+                measured = GetTemperatureFromJSON(sensor, slowly);
             }
             else
             {
-                measured = GetTemperatureFromTxt(sensor.Uri, slowly, sensor.Regex);
+                measured = GetTemperatureFromTxt(sensor, slowly);
             }
 
             return measured;
         }
 
-        private decimal? GetTemperatureFromJSON(string uri, string selector, bool slowly, string regex)
+        private decimal? GetTemperatureFromJSON(Sensor sensor, bool slowly)
         {
             int timeout = slowly ? slowTimeout : fastTimeout;
             
@@ -156,10 +156,10 @@ namespace TemperatureViewer.BackgroundNAccessServices
             JObject jsonObject;
             try
             {
-                using (var httpClient = CreateHttpClient())
+                using (var httpClient = CreateHttpClient(sensor))
                 {
                     httpClient.Timeout = TimeSpan.FromMilliseconds(timeout);
-                    using (var streamReader = new StreamReader(httpClient.GetStreamAsync(uri).Result))
+                    using (var streamReader = new StreamReader(httpClient.GetStreamAsync(sensor.Uri).Result))
                     {
                         jsonObject = JObject.Parse(streamReader.ReadToEnd());
                     }
@@ -168,15 +168,15 @@ namespace TemperatureViewer.BackgroundNAccessServices
                 try
                 {
                     decimal number;
-                    number = (decimal)jsonObject.SelectToken(selector);
+                    number = (decimal)jsonObject.SelectToken(sensor.JSON);
                     return number;
                 }
                 catch
                 {
                     string str;
-                    str = (string)jsonObject.SelectToken(selector);
-                    if (regex != null)
-                        str = ExtractByRegex(str, regex);
+                    str = (string)jsonObject.SelectToken(sensor.JSON);
+                    if (sensor.Regex != null)
+                        str = ExtractByRegex(str, sensor.Regex);
 
                     return ParseNumberString(str);
                 }
@@ -188,31 +188,45 @@ namespace TemperatureViewer.BackgroundNAccessServices
 
         }
 
-        private HttpClient CreateHttpClient()
+        private HttpClient CreateHttpClient(Sensor sensor)
         {
             HttpClientHandler clientHandler = new HttpClientHandler();
             clientHandler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; };
-            return new HttpClient(clientHandler);
+            var httpClient = new HttpClient(clientHandler);
+            if (sensor.HttpHeaders != null)
+                SetHeaders(httpClient, sensor);
+
+            return httpClient;
         }
 
-        private decimal? GetTemperatureFromDoc(string uri, string xPath, bool slowly, string regex)
+        private void SetHeaders(HttpClient httpClient, Sensor sensor)
+        {
+            string[] arrayOfHeaders = sensor.HttpHeaders.Split(";");
+            foreach (var header in arrayOfHeaders)
+            {
+                string[] nameAndValue = header.Split(":");
+                httpClient.DefaultRequestHeaders.Add(nameAndValue[0], nameAndValue[1]);
+            }
+        }
+
+        private decimal? GetTemperatureFromDoc(Sensor sensor, bool slowly)
         {
             int timeout = slowly ? slowTimeout : fastTimeout;
             HtmlDocument htmlDoc = new HtmlDocument();
             string str;
             try
             {
-                using (var httpClient = CreateHttpClient())
+                using (var httpClient = CreateHttpClient(sensor))
                 {
                     httpClient.Timeout = TimeSpan.FromMilliseconds(timeout);
-                    using (var stream = httpClient.GetStreamAsync(uri).Result)
+                    using (var stream = httpClient.GetStreamAsync(sensor.Uri).Result)
                     {
                         htmlDoc.Load(stream);
                     }
                 }
 
                 var root = htmlDoc.DocumentNode;
-                var node = root.SelectSingleNode(xPath);
+                var node = root.SelectSingleNode(sensor.XPath);
                 str = node.InnerText;
             }
             catch (Exception ex)
@@ -220,22 +234,22 @@ namespace TemperatureViewer.BackgroundNAccessServices
                 return null;
             }
 
-            if (regex != null)
-                str = ExtractByRegex(str, regex);
+            if (sensor.Regex != null)
+                str = ExtractByRegex(str, sensor.Regex);
 
             return ParseNumberString(str);
         }
 
-        private decimal? GetTemperatureFromTxt(string uri, bool slowly, string regex)
+        private decimal? GetTemperatureFromTxt(Sensor sensor, bool slowly)
         {
             int timeout = slowly ? slowTimeout : fastTimeout;
             string str;
-            using (var httpClient = CreateHttpClient())
+            using (var httpClient = CreateHttpClient(sensor))
             {
                 try
                 {
                     httpClient.Timeout = TimeSpan.FromMilliseconds(timeout);
-                    str = httpClient.GetStringAsync(uri).Result;
+                    str = httpClient.GetStringAsync(sensor.Uri).Result;
                 }
                 catch
                 {
@@ -243,8 +257,8 @@ namespace TemperatureViewer.BackgroundNAccessServices
                 }
             }
 
-            if (regex != null)
-                str = ExtractByRegex(str, regex);
+            if (sensor.Regex != null)
+                str = ExtractByRegex(str, sensor.Regex);
             return ParseNumberString(str);
         }
 

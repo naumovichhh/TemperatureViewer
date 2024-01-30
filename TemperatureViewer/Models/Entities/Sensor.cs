@@ -21,6 +21,8 @@ namespace TemperatureViewer.Models.Entities
         public string JSON { get; set; }
         [DisplayName("Регулярное выражение")]
         public string Regex { get; set; }
+        [DisplayName("Заголовки HTTP")]
+        public string HttpHeaders { get; set; }
         public int? ThresholdId { get; set; }
 
         public ICollection<Value> Values { get; set; }

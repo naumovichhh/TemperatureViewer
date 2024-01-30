@@ -107,6 +107,7 @@ namespace TemperatureViewer.Controllers
                     fromRepository.XPath = sensor.XPath;
                     fromRepository.JSON = sensor.JSON;
                     fromRepository.Regex = sensor.Regex;
+                    fromRepository.HttpHeaders = sensor.HttpHeaders;
                     await _sensorsRepository.UpdateAsync(fromRepository);
                 }
                 catch (DbUpdateConcurrencyException)
