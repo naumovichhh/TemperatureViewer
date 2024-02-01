@@ -175,7 +175,7 @@ namespace TemperatureViewer.Controllers
 
         private string UploadFile(IFormFile file)
         {
-            string fileName = $"{_environment.WebRootPath}\\img\\{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+            string fileName = $"{_environment.WebRootPath}{Path.DirectorySeparatorChar}img{Path.DirectorySeparatorChar}{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
             using (Stream readStream = file.OpenReadStream(), writeStream = System.IO.File.Create(fileName))
             {
                 byte[] buffer = new byte[readStream.Length];
